@@ -516,21 +516,21 @@ export default function ReportPage() {
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">📎</span>
-                <span className="font-bold text-amber-900 text-sm">Add Your Evidence</span>
+                <span className="font-bold text-amber-900 text-sm">{t('evidence.add', lang)}</span>
               </div>
-              <p className="text-xs text-amber-700 mb-3">Paste a link to any of these below:</p>
+              <p className="text-xs text-amber-700 mb-3">{t('evidence.paste_link', lang)}</p>
               <div className="flex flex-wrap gap-2">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-amber-200">
                   <span>📸</span>
-                  <span className="text-xs font-medium text-amber-800">Photo</span>
+                  <span className="text-xs font-medium text-amber-800">{t('evidence.photo', lang)}</span>
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-amber-200">
                   <span>🎥</span>
-                  <span className="text-xs font-medium text-amber-800">Video</span>
+                  <span className="text-xs font-medium text-amber-800">{t('evidence.video', lang)}</span>
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-amber-200">
                   <span>📄</span>
-                  <span className="text-xs font-medium text-amber-800">Document</span>
+                  <span className="text-xs font-medium text-amber-800">{t('evidence.document', lang)}</span>
                 </div>
               </div>
               <p className="text-[10px] text-amber-600 mt-2">✅ Google Drive, Imgur, YouTube, Dropbox, OneDrive, MediaFire only</p>
@@ -540,9 +540,9 @@ export default function ReportPage() {
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">📍</span>
-                <span className="font-bold text-green-900 text-sm">Tip: Add Geo Location</span>
+                <span className="font-bold text-green-900 text-sm">{t('evidence.geo_tip', lang)}</span>
               </div>
-              <p className="text-xs text-green-700 mb-2">Photos with location are more helpful — they show <strong>where</strong>, <strong>when</strong>, and <strong>what time</strong>.</p>
+              <p className="text-xs text-green-700 mb-2">{t('evidence.geo_desc', lang)}</p>
               <div className="bg-white rounded-xl p-3 border border-green-100 space-y-1.5">
                 <p className="text-[11px] text-green-800 font-medium">How to attach geo location:</p>
                 <div className="flex items-start gap-2">
@@ -571,13 +571,13 @@ export default function ReportPage() {
                 onClick={() => setShowEvidenceGuide(!showEvidenceGuide)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium hover:bg-blue-100 transition"
               >
-                <HelpCircle size={14} /> How to share a link?
+                <HelpCircle size={14} /> {t('report.evidence_guide', lang)}
               </button>
               <button
                 onClick={handleNoEvidence}
                 className="px-4 py-2.5 rounded-xl bg-gray-100 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-200 transition"
               >
-                I don&apos;t have evidence
+                {t('report.no_evidence', lang)}
               </button>
             </div>
 
@@ -636,15 +636,15 @@ export default function ReportPage() {
         {/* Review Screen */}
         {step === 'review' && (
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-sm">
-            <h3 className="font-bold text-gray-900">Review Your Report</h3>
+            <h3 className="font-bold text-gray-900">{t('report.review', lang)}</h3>
             {selectedScenario && (
               <div className="text-sm text-gray-600">
-                <span className="font-medium">Category:</span> {selectedScenario.name}
+                <span className="font-medium">{t('report.category', lang)}:</span> {selectedScenario.name}
               </div>
             )}
             {originalText && (
               <div className="text-sm text-gray-600">
-                <span className="font-medium">Description:</span> {originalText}
+                <span className="font-medium">{t('report.description', lang)}:</span> {originalText}
               </div>
             )}
             {location && (
@@ -672,7 +672,7 @@ export default function ReportPage() {
               {t('evidence.warning', lang)}
             </div>
             <button onClick={handleSubmit} className="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">
-              Submit Report
+              {t('report.submit', lang)}
             </button>
           </div>
         )}
@@ -681,11 +681,11 @@ export default function ReportPage() {
         {step === 'submitted' && (
           <div className="bg-white border border-green-200 rounded-2xl p-6 text-center shadow-sm">
             <div className="text-4xl mb-3">✅</div>
-            <h3 className="font-bold text-gray-900 text-lg mb-2">Report Submitted</h3>
+            <h3 className="font-bold text-gray-900 text-lg mb-2">{t('report.report_submitted', lang)}</h3>
             <div className="text-2xl font-mono font-bold text-primary mb-2">{incidentId}</div>
-            <p className="text-sm text-gray-500 mb-4">Save this ID to track your report</p>
+            <p className="text-sm text-gray-500 mb-4">{t('report.save_id', lang)}</p>
             <button onClick={() => router.push(`/track/${incidentId}`)} className="px-6 py-2 rounded-xl border border-primary text-primary font-medium hover:bg-primary hover:text-white transition text-sm">
-              Track This Incident
+              {t('report.track_incident', lang)}
             </button>
           </div>
         )}
@@ -711,7 +711,7 @@ export default function ReportPage() {
             {step === 'evidence_collect' && (
               <button onClick={handleSkipEvidence}
                 className="w-full mb-2 text-xs text-gray-400 hover:text-gray-600 py-1">
-                Skip for now →
+                {t('report.skip', lang)}
               </button>
             )}
 

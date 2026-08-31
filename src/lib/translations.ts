@@ -35,6 +35,57 @@ const translations: Record<string, Record<Language, string>> = {
   'status.INVALID': { en: 'Invalid', kn: 'ಅಮಾನ್ಯ', hi: 'अमान्य', te: 'చెల్లదు' },
   'status.CLOSED': { en: 'Closed', kn: 'ಮುಚ್ಚಲಾಗಿದೆ', hi: 'बंद', te: 'మూసివేయబడింది' },
   'status.RESOLVED': { en: 'Resolved', kn: 'ಪರಿಹರಿಸಲಾಗಿದೆ', hi: 'हल हो गया', te: 'పరిష్కరించబడింది' },
+
+  // Home page
+  'home.report_now': { en: 'Report Now', kn: 'ಈಗಲೇ ವರದಿ ಮಾಡಿ', hi: 'अभी रिपोर्ट करें', te: 'ఇప్పుడు నివేదించండి' },
+  'home.track_now': { en: 'Track My Reports', kn: 'ನನ್ನ ವರದಿಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ', hi: 'मेरी रिपोर्ट ट्रैक करें', te: 'నా నివేదికలను ట్రాక్ చేయండి' },
+  'home.community': { en: 'Community Pulse', kn: 'ಸಮುದಾಯ ಪಲ್ಸ್', hi: 'सामुदायिक पल्स', te: 'సమాజ పల్స్' },
+  'home.resources': { en: 'Official Resources', kn: 'ಅಧಿಕೃತ ಸಂಪನ್ಮೂಲಗಳು', hi: 'आधिकारिक संसाधन', te: 'అధికారిక వనరులు' },
+  'home.safety': { en: 'Emergency Contacts', kn: 'ತುರ್ತು ಸಂಪರ್ಕಗಳು', hi: 'आपातकालीन संपर्क', te: 'అత్యవసర సంప్రదింపులు' },
+
+  // Report page
+  'report.title': { en: 'Report Incident', kn: 'ಘಟನೆ ವರದಿ', hi: 'घटना रिपोर्ट', te: 'సంఘఠన నివేదిక' },
+  'report.evidence_guide': { en: 'How to share a link?', kn: 'ಲಿಂಕ್ ಹಂಚಿಕೊಳ್ಳುವುದು ಹೇಗೆ?', hi: 'लिंक कैसे साझा करें?', te: 'లింక్ ఎలా షేర్ చేయాలి?' },
+  'report.no_evidence': { en: "I don't have evidence", kn: 'ನನಗೆ ಸಾಕ್ಷ್ಯ ಇಲ್ಲ', hi: 'मेरे पास सबूत नहीं है', te: 'నా వద్ద సాక్ష్యం లేదు' },
+  'report.skip': { en: 'Skip for now →', kn: 'ಈಗ ಬಿಟ್ಟುಬಿಡಿ →', hi: 'अभी छोड़ें →', te: 'ఇప్పుడు దాటవేయండి →' },
+  'report.submit': { en: 'Submit Report', kn: 'ವರದಿ ಸಲ್ಲಿಸಿ', hi: 'रिपोर्ट सबमिट करें', te: 'నివేదిక సమర్పించండి' },
+  'report.review': { en: 'Review Your Report', kn: 'ನಿಮ್ಮ ವರದಿಯನ್ನು ಪರಿಶೀಲಿಸಿ', hi: 'अपनी रिपोर्ट की समीक्षा करें', te: 'మీ నివేదికను సమీక్షించండి' },
+  'report.category': { en: 'Category', kn: 'ವರ್ಗ', hi: 'श्रेणी', te: 'వర్గం' },
+  'report.description': { en: 'Description', kn: 'ವಿವರಣೆ', hi: 'विवरण', te: 'వివరణ' },
+  'report.location': { en: 'Location', kn: 'ಸ್ಥಳ', hi: 'स्थान', te: 'ప్రదేశం' },
+  'report.track_incident': { en: 'Track This Incident', kn: 'ಈ ಘಟನೆಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ', hi: 'इस घटना को ट्रैक करें', te: 'ఈ సంఘటనను ట్రాక్ చేయండి' },
+  'report.report_submitted': { en: 'Report Submitted', kn: 'ವರದಿ ಸಲ್ಲಿಸಲಾಗಿದೆ', hi: 'रिपोर्ट सबमिट हो गई', te: 'నివేదిక సమర్పించబడింది' },
+  'report.save_id': { en: 'Save this ID to track your report', kn: 'ವರದಿ ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಈ ಐಡಿ ಉಳಿಸಿ', hi: 'रिपोर्ट ट्रैक करने के लिए यह आईडी सेव करें', te: 'నివేదికను ట్రాక్ చేయడానికి ఈ ఐడిని సేవ్ చేయండి' },
+
+  // Tracking page
+  'track.title': { en: 'My Incidents', kn: 'ನನ್ನ ಘಟನೆಗಳು', hi: 'मेरी घटनाएँ', te: 'నా సంఘటనలు' },
+  'track.search': { en: 'Search', kn: 'ಹುಡುಕಿ', hi: 'खोजें', te: 'వెతకండి' },
+  'track.search_placeholder': { en: 'Search by Incident ID (e.g., NS-8F42K)', kn: 'ಘಟನೆ ಐಡಿಯಿಂದ ಹುಡುಕಿ (ಉದಾ., NS-8F42K)', hi: 'घटना आईडी से खोजें (जैसे, NS-8F42K)', te: 'సంఘటన ఐడి ద్వారా వెతకండి (ఉదా., NS-8F42K)' },
+  'track.your_report': { en: 'Your report:', kn: 'ನಿಮ್ಮ ವರದಿ:', hi: 'आपकी रिपोर्ट:', te: 'మీ నివేదిక:' },
+  'track.admin_notes': { en: 'Updates from Admin', kn: 'ಅಡ್ಮಿನ್‌ನಿಂದ ನವೀಕರಣಗಳು', hi: 'अडमिन से अपडेट', te: 'అడ్మిన్ నుండి నవీకరణలు' },
+  'track.admin_note': { en: 'Admin Note', kn: 'ಅಡ್ಮಿನ್ ಟಿಪ್ಪಣಿ', hi: 'अडमिन नोट', te: 'అడ్మిన్ నోట్' },
+  'track.new_update': { en: 'New update', kn: 'ಹೊಸ ನವೀಕರಣ', hi: 'नया अपडेट', te: 'కొత్త నవీకరణ' },
+  'track.admin_left_note': { en: 'Admin has left a note', kn: 'ಅಡ್ಮಿನ್ ಟಿಪ್ಪಣಿ ಬಿಟ್ಟಿದ್ದಾರೆ', hi: 'अडमिन ने नोट छोड़ा है', te: 'అడ్మిన్ నోట్ వదిలారు' },
+  'track.back': { en: '← Back to all incidents', kn: '← ಎಲ್ಲಾ ಘಟನೆಗಳಿಗೆ ಹಿಂತಿರುಗಿ', hi: '← सभी घटनाओं पर वापस', te: '← అన్ని సంఘటనలకు తిరిగి' },
+  'track.no_incidents': { en: 'No incidents yet. Start by reporting something.', kn: 'ಇನ್ನೂ ಯಾವುದೇ ಘಟನೆಗಳಿಲ್ಲ. ಏನನ್ನಾದರೂ ವರದಿ ಮಾಡಿ.', hi: 'अभी तक कोई घटना नहीं। कुछ रिपोर्ट करके शुरू करें।', te: 'ఇంకా సంఘటనలు లేవు. ఏదైనా నివేదించడం ద్వారా ప్రారంభించండి.' },
+  'track.report_something': { en: 'Report Something', kn: 'ಏನನ್ನಾದರೂ ವರದಿ ಮಾಡಿ', hi: 'कुछ रिपोर्ट करें', te: 'ఏదైనా నివేదించండి' },
+
+  // Evidence
+  'evidence.add': { en: 'Add Your Evidence', kn: 'ನಿಮ್ಮ ಸಾಕ್ಷ್ಯ ಸೇರಿಸಿ', hi: 'अपना सबूत जोड़ें', te: 'మీ సాక్ష్యం జోడించండి' },
+  'evidence.paste_link': { en: 'Paste a link to any of these below:', kn: 'ಇವುಗಳಿಗೆ ಲಿಂಕ್ ಅಂಟಿಸಿ:', hi: 'इनमें से किसी का लिंक पेस्ट करें:', te: 'వీటిలో దేనికైనా లింక్ పేస్ట్ చేయండి:' },
+  'evidence.photo': { en: 'Photo', kn: 'ಫೋಟೋ', hi: 'फ़ोटो', te: 'ఫోటో' },
+  'evidence.video': { en: 'Video', kn: 'ವೀಡಿಯೋ', hi: 'वीडियो', te: 'వీడియో' },
+  'evidence.document': { en: 'Document', kn: 'ಡಾಕ್ಯುಮೆಂಟ್', hi: 'दस्तावेज़', te: 'పత్రం' },
+  'evidence.geo_tip': { en: 'Tip: Add Geo Location', kn: 'ಸಲಹೆ: ಭೌಗೋಳಿಕ ಸ್ಥಳ ಸೇರಿಸಿ', hi: 'सुझाव: जियो लोकेशन जोड़ें', te: 'సూచన: జియో లొకేషన్ జోడించండి' },
+  'evidence.geo_desc': { en: 'Photos with location are more helpful — they show where, when, and what time.', kn: 'ಸ್ಥಳವಿರುವ ಫೋಟೋಗಳು ಹೆಚ್ಚು ಸಹಾಯಕವಾಗಿವೆ — ಎಲ್ಲಿ, ಯಾವಾಗ, ಯಾವ ಸಮಯ ತೋರಿಸುತ್ತವೆ.', hi: 'लोकेशन वाली फ़ोटो ज़्यादा मददगार होती हैं — ये दिखाती हैं कि कहाँ, कब, और किस समय।', te: 'లొకేషన్ ఉన్న ఫోటోలు ఎక్కువ సహాయకరంగా ఉంటాయి — ఎక్కడ, ఎప్పుడు, ఏ సమయం చూపిస్తాయి.' },
+  'evidence.invalid_link': { en: '❌ Invalid link format.\n\nPlease use one of these:\n📸 Google Drive\n🎥 YouTube\n📷 Imgur\n📁 Dropbox\n📤 OneDrive\n\nPaste a valid evidence link.', kn: '❌ ಅಮಾನ್ಯ ಲಿಂಕ್ ಫಾರ್ಮ್ಯಾಟ್.\n\nದಯವಿಟ್ಟು ಇವುಗಳಲ್ಲಿ ಒಂದನ್ನು ಬಳಸಿ:\n📸 Google Drive\n🎥 YouTube\n📷 Imgur\n📁 Dropbox\n📤 OneDrive\n\nಅಮಾನ್ಯ ಸಾಕ್ಷ್ಯ ಲಿಂಕ್ ಅಂಟಿಸಿ.', hi: '❌ अमान्य लिंक प्रारूप।\n\nकृपया इनमें से किसी का उपयोग करें:\n📸 Google Drive\n🎥 YouTube\n📷 Imgur\n📁 Dropbox\n📤 OneDrive\n\nमान्य सबूत लिंक पेस्ट करें।', te: '❌ చెల్లని లింక్ ఫార్మాట్.\n\nదయచేసి వీటిలో ఒకదాన్ని ఉపయోగించండి:\n📸 Google Drive\n🎥 YouTube\n📷 Imgur\n📁 Dropbox\n📤 OneDrive\n\nచెల్లుబాటు అయ్యే సాక్ష్య లింక్ పేస్ట్ చేయండి.' },
+  'evidence.link_added': { en: '✅ Evidence link added!\n\nYou can add more links or continue.', kn: '✅ ಸಾಕ್ಷ್ಯ ಲಿಂಕ್ ಸೇರಿಸಲಾಗಿದೆ!\n\nನೀವು ಹೆಚ್ಚಿನ ಲಿಂಕ್‌ಗಳನ್ನು ಸೇರಿಸಬಹುದು ಅಥವಾ ಮುಂದುವರಿಯಬಹುದು.', hi: '✅ सबूत लिंक जोड़ दिया!\n\nआप और लिंक जोड़ सकते हैं या आगे बढ़ सकते हैं।', te: '✅ సాక్ష్య లింక్ జోడించబడింది!\n\nమీరు మరిన్ని లింక్‌లు జోడించవచ్చు లేదా కొనసాగించవచ్చు.' },
+
+  // Language names
+  'lang.kn': { en: 'Kannada', kn: 'ಕನ್ನಡ', hi: 'कन्नड़', te: 'కన్నడ' },
+  'lang.en': { en: 'English', kn: 'ಇಂಗ್ಲಿಷ್', hi: 'अंग्रेज़ी', te: 'ఆంగ్లం' },
+  'lang.hi': { en: 'Hindi', kn: 'ಹಿಂದಿ', hi: 'हिन्दी', te: 'హిందీ' },
+  'lang.te': { en: 'Telugu', kn: 'ತೆಲುಗು', hi: 'तेलुगु', te: 'తెలుగు' },
 };
 
 export function t(key: string, lang: Language): string {
