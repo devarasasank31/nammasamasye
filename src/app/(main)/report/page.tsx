@@ -221,7 +221,7 @@ export default function ReportPage() {
 
       if (isEvidenceRelated) {
         setTimeout(() => {
-          addBotMessage("Great! Please paste a link to your evidence (photo, video, or document).\n\nTap the guide button below for help on how to share a link.");
+          addBotMessage("📎 **Add Evidence**\n\nPlease share a link to your:\n📸 Photo\n🎥 Video\n📄 Document\n\nPaste a Google Drive link, Imgur link, or any public URL below.");
           setStep('evidence_collect');
         }, 300);
         return;
@@ -231,7 +231,7 @@ export default function ReportPage() {
     // If the question itself is evidence type — show evidence collection
     if (question.type === 'evidence') {
       setTimeout(() => {
-        addBotMessage("Please paste a link to your evidence (photo, video, or document).\n\nTap the guide button below for help on how to share a link.");
+        addBotMessage("📎 **Add Evidence**\n\nPlease share a link to your:\n📸 Photo\n🎥 Video\n📄 Document\n\nPaste a Google Drive link, Imgur link, or any public URL below.");
         setStep('evidence_collect');
       }, 300);
       return;
@@ -466,13 +466,37 @@ export default function ReportPage() {
         {/* Evidence Collection Buttons */}
         {step === 'evidence_collect' && (
           <div className="space-y-3 mt-4">
+            {/* Pin-style evidence type indicators */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">📎</span>
+                <span className="font-bold text-amber-900 text-sm">Add Your Evidence</span>
+              </div>
+              <p className="text-xs text-amber-700 mb-3">Paste a link to any of these below:</p>
+              <div className="flex flex-wrap gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-amber-200">
+                  <span>📸</span>
+                  <span className="text-xs font-medium text-amber-800">Photo</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-amber-200">
+                  <span>🎥</span>
+                  <span className="text-xs font-medium text-amber-800">Video</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-amber-200">
+                  <span>📄</span>
+                  <span className="text-xs font-medium text-amber-800">Document</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-amber-600 mt-2">Google Drive, Imgur, YouTube, Dropbox, or any public link</p>
+            </div>
+
             {/* Quick action buttons */}
             <div className="flex gap-2">
               <button
                 onClick={() => setShowEvidenceGuide(!showEvidenceGuide)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium hover:bg-blue-100 transition"
               >
-                <HelpCircle size={14} /> How to share evidence?
+                <HelpCircle size={14} /> How to share a link?
               </button>
               <button
                 onClick={handleNoEvidence}
