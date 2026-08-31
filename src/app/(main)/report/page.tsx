@@ -240,36 +240,73 @@ export default function ReportPage() {
     moveToNextQuestion();
   };
 
+  const isValidEvidenceLink = (url: string): boolean => {
+    try {
+      const parsed = new URL(url);
+      const hostname = parsed.hostname.toLowerCase().replace('www.', '');
+      const allowedDomains = [
+        'drive.google.com',
+        'docs.google.com',
+        'photos.google.com',
+        'onedrive.live.com',
+        'onedrive.com',
+        'dropbox.com',
+        'imgur.com',
+        'i.imgur.com',
+        'youtube.com',
+        'youtu.be',
+        'live.com',
+        'sharepoint.com',
+        'mediafire.com',
+        'wetransfer.com',
+        'file.io',
+        'streamable.com',
+        'v.redd.it',
+        'i.redd.it',
+      ];
+      return allowedDomains.some(d => hostname === d || hostname.endsWith('.' + d));
+    } catch {
+      return false;
+    }
+  };
+
   const handleEvidenceLinkSubmit = () => {
     if (!inputValue.trim()) return;
     const link = inputValue.trim();
     setInputValue('');
 
-    if (link.startsWith('http')) {
-      setEvidenceLinks(prev => [...prev, link]);
-      addUserMessage(link);
-      addBotMessage('Evidence link added! You can add more links or continue.');
-
-      // Check if there are more evidence questions in workflow
-      if (selectedScenario) {
-        const nextEvidenceQ = selectedScenario.workflow.find(
-          (q, idx) => (q.type === 'evidence') && idx > currentQuestionIdx
-        );
-        if (nextEvidenceQ) {
-          setCurrentQuestionIdx(selectedScenario.workflow.indexOf(nextEvidenceQ));
-          setTimeout(() => addBotMessage(nextEvidenceQ.text[lang] || nextEvidenceQ.text.en), 300);
-          return;
-        }
-      }
-      // No more evidence questions, move to review
-      setTimeout(() => {
-        addBotMessage(t('bot.review_before_submit', lang));
-        setStep('review');
-      }, 300);
-    } else {
+    if (!link.startsWith('http')) {
       addUserMessage(link);
       addBotMessage('Please paste a valid link starting with http:// or https://');
+      return;
     }
+
+    if (!isValidEvidenceLink(link)) {
+      addUserMessage(link);
+      addBotMessage('❌ Invalid link format.\n\nPlease use one of these:\n📸 Google Drive\n🎥 YouTube\n📷 Imgur\n📁 Dropbox\n📤 OneDrive\n\nPaste a valid evidence link.');
+      return;
+    }
+
+    setEvidenceLinks(prev => [...prev, link]);
+    addUserMessage(link);
+    addBotMessage('✅ Evidence link added!\n\nYou can add more links or continue.');
+
+    // Check if there are more evidence questions in workflow
+    if (selectedScenario) {
+      const nextEvidenceQ = selectedScenario.workflow.find(
+        (q, idx) => (q.type === 'evidence') && idx > currentQuestionIdx
+      );
+      if (nextEvidenceQ) {
+        setCurrentQuestionIdx(selectedScenario.workflow.indexOf(nextEvidenceQ));
+        setTimeout(() => addBotMessage(nextEvidenceQ.text[lang] || nextEvidenceQ.text.en), 300);
+        return;
+      }
+    }
+    // No more evidence questions, move to review
+    setTimeout(() => {
+      addBotMessage(t('bot.review_before_submit', lang));
+      setStep('review');
+    }, 300);
   };
 
   const handleSkipEvidence = () => {
@@ -487,7 +524,7 @@ export default function ReportPage() {
                   <span className="text-xs font-medium text-amber-800">Document</span>
                 </div>
               </div>
-              <p className="text-[10px] text-amber-600 mt-2">Google Drive, Imgur, YouTube, Dropbox, or any public link</p>
+              <p className="text-[10px] text-amber-600 mt-2">✅ Google Drive, Imgur, YouTube, Dropbox, OneDrive, MediaFire only</p>
             </div>
 
             {/* Quick action buttons */}
@@ -526,12 +563,13 @@ export default function ReportPage() {
                   ))}
                 </div>
                 <div className="bg-white rounded-xl p-3 border border-blue-100">
-                  <p className="text-xs text-blue-700 font-medium">Supported links:</p>
+                  <p className="text-xs text-blue-700 font-medium">✅ Accepted links only:</p>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {['Google Drive', 'OneDrive', 'Dropbox', 'Imgur', 'YouTube', 'Any public URL'].map(s => (
-                      <span key={s} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px]">{s}</span>
+                    {['Google Drive', 'OneDrive', 'Dropbox', 'Imgur', 'YouTube', 'MediaFire', 'WeTransfer', 'Streamable'].map(s => (
+                      <span key={s} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px]">{s}</span>
                     ))}
                   </div>
+                  <p className="text-[10px] text-red-500 mt-1.5">❌ LinkedIn, Facebook, Twitter, Instagram not accepted</p>
                 </div>
                 <p className="text-[10px] text-blue-600">
                   Make sure link sharing is set to &quot;Anyone with the link&quot;
