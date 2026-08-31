@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getAllIncidents } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
 import { Users, FileText, Clock, Globe, LogOut, BarChart3, Shield } from 'lucide-react';
+import { getStatusBadgeClass } from '@/lib/status-colors';
 
 interface UserData {
   session_id: string;
@@ -135,11 +136,7 @@ export default function AdminUsersPage() {
                         <div className="text-xs text-gray-500 capitalize">{inc.subcategory.replace(/_/g, ' ')}</div>
                       </div>
                       <div className="text-right">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          inc.status === 'PROCEEDING' ? 'bg-green-100 text-green-700' :
-                          inc.status === 'NEW' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(inc.status as any)}`}>
                           {inc.status.replace(/_/g, ' ')}
                         </span>
                         <div className="text-xs text-gray-400 mt-1">{new Date(inc.created_at).toLocaleDateString()}</div>

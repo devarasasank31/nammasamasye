@@ -7,6 +7,7 @@ import { t } from '@/lib/translations';
 import { Language, Incident, StatusHistory, Evidence, AdminNote } from '@/types';
 import { getAllIncidents, getStatusHistory, getIncidentEvidence, getIncidentById } from '@/services/incident';
 import { ArrowLeft, CheckCircle, Circle, Clock, AlertCircle, MessageSquare } from 'lucide-react';
+import { getStatusBadgeClass, getStatusDotClass } from '@/lib/status-colors';
 
 export default function TrackPage() {
   const router = useRouter();
@@ -83,13 +84,8 @@ export default function TrackPage() {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'NEW': return <AlertCircle size={16} className="text-blue-500" />;
-      case 'UNDER_REVIEW': return <Clock size={16} className="text-yellow-500" />;
-      case 'PROCEEDING': return <CheckCircle size={16} className="text-green-500" />;
-      case 'CLOSED': case 'RESOLVED': return <CheckCircle size={16} className="text-green-600" />;
-      default: return <Circle size={16} className="text-gray-400" />;
-    }
+    const dotClass = getStatusDotClass(status as any);
+    return <div className={`w-3 h-3 rounded-full mt-1 ${dotClass}`} />;
   };
 
   return (
@@ -129,12 +125,7 @@ export default function TrackPage() {
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-gray-900 text-lg">{selectedIncident.incident_id}</h2>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                selectedIncident.status === 'PROCEEDING' ? 'bg-green-100 text-green-700' :
-                selectedIncident.status === 'NEW' ? 'bg-blue-100 text-blue-700' :
-                selectedIncident.status === 'UNDER_REVIEW' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-gray-100 text-gray-700'
-              }`}>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(selectedIncident.status)}`}>
                 {t(`status.${selectedIncident.status}`, lang)}
               </span>
             </div>

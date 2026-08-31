@@ -6,6 +6,7 @@ import { Incident } from '@/types';
 import { getAllIncidents } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
 import { Search, Download, ArrowLeft, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
+import { getStatusBadgeClass } from '@/lib/status-colors';
 
 export default function AdminReportsPage() {
   const router = useRouter();
@@ -150,13 +151,7 @@ export default function AdminReportsPage() {
                         <td className="px-4 py-3 text-gray-700 capitalize">{inc.subcategory.replace(/_/g, ' ')}</td>
                         <td className="px-4 py-3 text-gray-500">{inc.location_area || '-'}</td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            inc.status === 'PROCEEDING' ? 'bg-green-100 text-green-700' :
-                            inc.status === 'NEW' ? 'bg-blue-100 text-blue-700' :
-                            inc.status === 'UNDER_REVIEW' ? 'bg-yellow-100 text-yellow-700' :
-                            inc.status === 'INVALID' ? 'bg-red-100 text-red-700' :
-                            'bg-gray-100 text-gray-600'
-                          }`}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(inc.status)}`}>
                             {inc.status.replace(/_/g, ' ')}
                           </span>
                         </td>

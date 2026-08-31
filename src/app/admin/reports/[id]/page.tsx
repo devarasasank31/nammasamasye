@@ -6,6 +6,7 @@ import { Incident, StatusHistory, Evidence, AdminNote } from '@/types';
 import { getIncidentInternal, getIncidentEvidence, getStatusHistory, getAdminNotes, addAdminNote, updateIncidentStatus } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
 import { ArrowLeft, CheckCircle, ExternalLink, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
+import { getStatusBadgeClass, getStatusColor } from '@/lib/status-colors';
 
 export default function AdminIncidentDetailPage() {
   const router = useRouter();
@@ -128,28 +129,27 @@ export default function AdminIncidentDetailPage() {
           {/* Status & Actions */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                incident.status === 'PROCEEDING' ? 'bg-green-100 text-green-700' :
-                incident.status === 'NEW' ? 'bg-blue-100 text-blue-700' :
-                'bg-gray-100 text-gray-600'
-              }`}>
+              <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${getStatusBadgeClass(incident.status)}`}>
                 {incident.status.replace(/_/g, ' ')}
               </span>
               <div className="flex gap-2 flex-wrap">
                 {[
-                  { status: 'UNDER_REVIEW', label: 'Review', color: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' },
-                  { status: 'MISSING_INFORMATION', label: 'Request Info', color: 'bg-purple-100 text-purple-700 hover:bg-purple-200' },
-                  { status: 'ON_HOLD', label: 'Hold', color: 'bg-orange-100 text-orange-700 hover:bg-orange-200' },
-                  { status: 'PROCEEDING', label: 'Proceed', color: 'bg-green-100 text-green-700 hover:bg-green-200' },
-                  { status: 'INVALID', label: 'Invalid', color: 'bg-red-100 text-red-700 hover:bg-red-200' },
-                  { status: 'CLOSED', label: 'Close', color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
-                  { status: 'RESOLVED', label: 'Resolved', color: 'bg-green-100 text-green-700 hover:bg-green-200' },
-                ].map(btn => (
-                  <button key={btn.status} onClick={() => handleStatusChange(btn.status)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${btn.color}`}>
-                    {btn.label}
-                  </button>
-                ))}
+                  { status: 'UNDER_REVIEW', label: 'Review' },
+                  { status: 'MISSING_INFORMATION', label: 'Request Info' },
+                  { status: 'ON_HOLD', label: 'Hold' },
+                  { status: 'PROCEEDING', label: 'Proceed' },
+                  { status: 'INVALID', label: 'Invalid' },
+                  { status: 'CLOSED', label: 'Close' },
+                  { status: 'RESOLVED', label: 'Resolved' },
+                ].map(btn => {
+                  const colors = getStatusColor(btn.status as any);
+                  return (
+                    <button key={btn.status} onClick={() => handleStatusChange(btn.status)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${colors.bg} ${colors.text} ${colors.hover}`}>
+                      {btn.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

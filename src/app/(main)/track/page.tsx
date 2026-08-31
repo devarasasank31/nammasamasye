@@ -7,6 +7,7 @@ import { t } from '@/lib/translations';
 import { Language, Incident, AdminNote } from '@/types';
 import { getAllIncidents } from '@/services/incident';
 import { ArrowLeft, MessageSquare, Search } from 'lucide-react';
+import { getStatusBadgeClass } from '@/lib/status-colors';
 
 export default function TrackPage() {
   const router = useRouter();
@@ -111,12 +112,7 @@ function IncidentCard({ inc, lang, onClick }: { inc: Incident; lang: Language; o
           </div>
           <div className="text-xs text-gray-500 mt-0.5 capitalize">{inc.subcategory.replace(/_/g, ' ')}</div>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          inc.status === 'PROCEEDING' ? 'bg-green-100 text-green-700' :
-          inc.status === 'NEW' ? 'bg-blue-100 text-blue-700' :
-          inc.status === 'UNDER_REVIEW' ? 'bg-yellow-100 text-yellow-700' :
-          'bg-gray-100 text-gray-600'
-        }`}>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(inc.status)}`}>
           {t(`status.${inc.status}`, lang)}
         </span>
       </div>
