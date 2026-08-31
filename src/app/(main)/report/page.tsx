@@ -527,6 +527,35 @@ export default function ReportPage() {
               <p className="text-[10px] text-amber-600 mt-2">✅ Google Drive, Imgur, YouTube, Dropbox, OneDrive, MediaFire only</p>
             </div>
 
+            {/* Geo Location Tip */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">📍</span>
+                <span className="font-bold text-green-900 text-sm">Tip: Add Geo Location</span>
+              </div>
+              <p className="text-xs text-green-700 mb-2">Photos with location are more helpful — they show <strong>where</strong>, <strong>when</strong>, and <strong>what time</strong>.</p>
+              <div className="bg-white rounded-xl p-3 border border-green-100 space-y-1.5">
+                <p className="text-[11px] text-green-800 font-medium">How to attach geo location:</p>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-600 text-[10px]">1.</span>
+                  <span className="text-[10px] text-gray-600">Open your phone Camera app</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-600 text-[10px]">2.</span>
+                  <span className="text-[10px] text-gray-600">Enable <strong>Location/GPS</strong> in camera settings</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-600 text-[10px]">3.</span>
+                  <span className="text-[10px] text-gray-600">Take a photo — location is auto-embedded</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-600 text-[10px]">4.</span>
+                  <span className="text-[10px] text-gray-600">Share the photo via Google Drive link</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-green-600 mt-2">🕐 This helps verify the <strong>date & time</strong> of the incident automatically.</p>
+            </div>
+
             {/* Quick action buttons */}
             <div className="flex gap-2">
               <button
