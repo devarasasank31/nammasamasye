@@ -18,6 +18,8 @@ export default function AdminIncidentDetailPage() {
   const [answers, setAnswers] = useState<any[]>([]);
   const [newNote, setNewNote] = useState('');
   const [noteIsPublic, setNoteIsPublic] = useState(false);
+  const [requestInfoText, setRequestInfoText] = useState('');
+  const [showRequestInfo, setShowRequestInfo] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -74,6 +76,33 @@ export default function AdminIncidentDetailPage() {
     }
     setNewNote('');
     setNoteIsPublic(false);
+    loadIncident();
+  };
+
+  const handleRequestInfo = async () => {
+    if (!incident || !requestInfoText.trim()) return;
+    // Add as public note visible to user
+    const { isDemoMode } = await import('@/lib/supabase');
+    if (isDemoMode) {
+      const { demoStore } = await import('@/lib/demo-store');
+      demoStore.addAdminNotePublic(incident.id, 'admin', `📋 REQUEST INFO: ${requestInfoText.trim()}`, false);
+    } else {
+      await addAdminNote(incident.id, 'admin', `📋 REQUEST INFO: ${requestInfoText.trim()}`);
+    }
+    // Update status to MISSING_INFORMATION
+    await updateIncidentStatus(incident.id, 'MISSING_INFORMATION', 'admin', `Requested: ${requestInfoText.trim()}`);
+    setRequestInfoText('');
+    setShowRequestInfo(false);
+    loadIncident();
+  };
+
+  const handleUserReply = async (replyText: string) => {
+    if (!incident || !replyText.trim()) return;
+    const { isDemoMode } = await import('@/lib/supabase');
+    if (isDemoMode) {
+      const { demoStore } = await import('@/lib/demo-store');
+      demoStore.addAdminNotePublic(incident.id, 'user', `📩 USER REPLY: ${replyText.trim()}`, false);
+    }
     loadIncident();
   };
 
@@ -135,7 +164,7 @@ export default function AdminIncidentDetailPage() {
               <div className="flex gap-2 flex-wrap">
                 {[
                   { status: 'UNDER_REVIEW', label: 'Review' },
-                  { status: 'MISSING_INFORMATION', label: 'Request Info' },
+                  { status: 'MISSING_INFORMATION', label: 'Request Info', isRequestInfo: true },
                   { status: 'ON_HOLD', label: 'Hold' },
                   { status: 'PROCEEDING', label: 'Proceed' },
                   { status: 'INVALID', label: 'Invalid' },
@@ -144,7 +173,14 @@ export default function AdminIncidentDetailPage() {
                 ].map(btn => {
                   const colors = getStatusColor(btn.status as any);
                   return (
-                    <button key={btn.status} onClick={() => handleStatusChange(btn.status)}
+                    <button key={btn.status}
+                      onClick={() => {
+                        if (btn.isRequestInfo) {
+                          setShowRequestInfo(!showRequestInfo);
+                        } else {
+                          handleStatusChange(btn.status);
+                        }
+                      }}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${colors.bg} ${colors.text} ${colors.hover}`}>
                       {btn.label}
                     </button>
@@ -152,6 +188,32 @@ export default function AdminIncidentDetailPage() {
                 })}
               </div>
             </div>
+
+            {/* Request Info Form */}
+            {showRequestInfo && (
+              <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-xl space-y-3">
+                <h4 className="font-bold text-purple-900 text-sm">📋 What information do you need?</h4>
+                <p className="text-xs text-purple-700">This will be visible to the user. They can reply with the requested info.</p>
+                <textarea
+                  value={requestInfoText}
+                  onChange={e => setRequestInfoText(e.target.value)}
+                  placeholder="e.g., Please share the vehicle number, exact time of incident, witness contact details..."
+                  className="w-full px-3 py-2.5 rounded-xl border border-purple-200 text-sm focus:border-purple-500 outline-none resize-none"
+                  rows={3}
+                />
+                <div className="flex gap-2">
+                  <button onClick={handleRequestInfo}
+                    disabled={!requestInfoText.trim()}
+                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition disabled:opacity-40">
+                    Send Request to User
+                  </button>
+                  <button onClick={() => { setShowRequestInfo(false); setRequestInfoText(''); }}
+                    className="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Incident Info */}
@@ -240,19 +302,36 @@ export default function AdminIncidentDetailPage() {
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
             <h2 className="font-bold text-gray-900 mb-4">Admin Notes</h2>
             <div className="space-y-3 mb-4">
-              {notes.map(n => (
-                <div key={n.id} className={`p-3 rounded-lg ${n.is_private ? 'bg-gray-50' : 'bg-blue-50 border border-blue-200'}`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    {n.is_private ? (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600">Private</span>
-                    ) : (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-200 text-blue-700">Visible to user</span>
-                    )}
+              {notes.map(n => {
+                const isUserReply = n.content.startsWith('📩 USER REPLY:');
+                const content = n.content.replace('📩 USER REPLY: ', '');
+
+                if (isUserReply) {
+                  return (
+                    <div key={n.id} className="p-3 rounded-lg bg-green-50 border-2 border-green-300">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-200 text-green-700 font-bold">📩 User Reply — Info Received</span>
+                      </div>
+                      <div className="text-sm text-green-900 font-medium">{content}</div>
+                      <div className="text-xs text-green-600 mt-1">{new Date(n.created_at).toLocaleString()}</div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={n.id} className={`p-3 rounded-lg ${n.is_private ? 'bg-gray-50' : 'bg-blue-50 border border-blue-200'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      {n.is_private ? (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600">Private</span>
+                      ) : (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-200 text-blue-700">Visible to user</span>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-800">{n.content}</div>
+                    <div className="text-xs text-gray-400 mt-1">{n.admin_id} · {new Date(n.created_at).toLocaleString()}</div>
                   </div>
-                  <div className="text-sm text-gray-800">{n.content}</div>
-                  <div className="text-xs text-gray-400 mt-1">{n.admin_id} · {new Date(n.created_at).toLocaleString()}</div>
-                </div>
-              ))}
+                );
+              })}
               {notes.length === 0 && <div className="text-sm text-gray-400">No notes yet.</div>}
             </div>
             <div className="space-y-2">

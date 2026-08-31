@@ -6,7 +6,7 @@ import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
 import { Language, Incident, StatusHistory, Evidence, AdminNote } from '@/types';
 import { getAllIncidents, getStatusHistory, getIncidentEvidence, getIncidentById } from '@/services/incident';
-import { ArrowLeft, CheckCircle, Circle, Clock, AlertCircle, MessageSquare } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Circle, Clock, AlertCircle, MessageSquare, Send } from 'lucide-react';
 import { getStatusBadgeClass, getStatusDotClass } from '@/lib/status-colors';
 
 export default function TrackPage() {
@@ -20,6 +20,8 @@ export default function TrackPage() {
   const [adminNotes, setAdminNotes] = useState<AdminNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasNewNote, setHasNewNote] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
   useEffect(() => {
     setLang(getStoredLanguage());
@@ -81,6 +83,20 @@ export default function TrackPage() {
     const notes = await getPublicNotes(inc.id);
     setAdminNotes(notes);
     if (notes.length > 0) setHasNewNote(true);
+  };
+
+  const handleReply = async () => {
+    if (!selectedIncident || !replyText.trim()) return;
+    const { isDemoMode } = await import('@/lib/supabase');
+    if (isDemoMode) {
+      const { demoStore } = await import('@/lib/demo-store');
+      demoStore.addAdminNotePublic(selectedIncident.id, 'user', `📩 USER REPLY: ${replyText.trim()}`, false);
+    }
+    setReplyText('');
+    setReplyingTo(null);
+    // Reload notes
+    const notes = await getPublicNotes(selectedIncident.id);
+    setAdminNotes(notes);
   };
 
   const getStatusIcon = (status: string) => {
@@ -149,20 +165,76 @@ export default function TrackPage() {
 
             {/* Admin Notes (visible to user) */}
             {adminNotes.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <h3 className="font-medium text-gray-900 text-sm flex items-center gap-2">
                   <MessageSquare size={14} className="text-blue-500" />
                   Updates from Admin
                 </h3>
-                {adminNotes.map(note => (
-                  <div key={note.id} className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold text-blue-700">📋 Admin Note</span>
-                      <span className="text-[10px] text-blue-500">{new Date(note.created_at).toLocaleString()}</span>
+                {adminNotes.map(note => {
+                  const isRequestInfo = note.content.startsWith('📋 REQUEST INFO:');
+                  const isUserReply = note.content.startsWith('📩 USER REPLY:');
+                  const content = note.content.replace('📋 REQUEST INFO: ', '').replace('📩 USER REPLY: ', '');
+
+                  if (isRequestInfo) {
+                    return (
+                      <div key={note.id} className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">📋</span>
+                          <span className="text-xs font-bold text-purple-700">Information Requested</span>
+                          <span className="text-[10px] text-purple-500">{new Date(note.created_at).toLocaleString()}</span>
+                        </div>
+                        <p className="text-sm text-purple-900 font-medium">{content}</p>
+
+                        {/* Reply form */}
+                        {replyingTo === note.id ? (
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={replyText}
+                              onChange={e => setReplyText(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && handleReply()}
+                              placeholder="Type your reply..."
+                              className="flex-1 px-3 py-2 rounded-xl border border-purple-200 text-sm focus:border-purple-500 outline-none"
+                              autoFocus
+                            />
+                            <button onClick={handleReply}
+                              disabled={!replyText.trim()}
+                              className="px-3 py-2 rounded-xl bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition disabled:opacity-40">
+                              <Send size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button onClick={() => setReplyingTo(note.id)}
+                            className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 transition">
+                            Reply to this request
+                          </button>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  if (isUserReply) {
+                    return (
+                      <div key={note.id} className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-bold text-green-700">📩 Your Reply</span>
+                          <span className="text-[10px] text-green-500">{new Date(note.created_at).toLocaleString()}</span>
+                        </div>
+                        <p className="text-sm text-green-900">{content}</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={note.id} className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-blue-700">📋 Admin Note</span>
+                        <span className="text-[10px] text-blue-500">{new Date(note.created_at).toLocaleString()}</span>
+                      </div>
+                      <p className="text-sm text-blue-900">{note.content}</p>
                     </div>
-                    <p className="text-sm text-blue-900">{note.content}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
