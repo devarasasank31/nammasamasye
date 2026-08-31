@@ -31,7 +31,7 @@ const categoryButtons = [
   { id: 'civic_water_supply', icon: '💧', label: 'Water Supply' },
   { id: 'civic_stray_animals', icon: '🐕', label: 'Stray Animals' },
   { id: 'traffic_interaction', icon: '👮', label: 'Police / Traffic Interaction' },
-  { id: 'unofficial_payment', icon: '💰', label: 'Unofficial Payment' },
+  { id: 'bribes', icon: '💰', label: 'Bribes' },
   { id: 'safety_harassment', icon: '🛡️', label: 'Safety / Harassment' },
   { id: 'cybercrime', icon: '💻', label: 'Cybercrime' },
   { id: 'housing_tenant', icon: '🏠', label: 'Tenant / Landlord' },

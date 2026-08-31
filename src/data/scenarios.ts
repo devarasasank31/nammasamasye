@@ -369,6 +369,43 @@ export const scenarios: IncidentCategory[] = [
       { id: 'additional', text: { en: 'Additional information?', kn: 'ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'अतिरिक्त जानकारी?', te: 'అదనపు సమాచారం?' }, type: 'text', required: false },
     ],
   },
+  {
+    id: 'bribes',
+    parent: 'CORRUPTION',
+    name: 'Bribes',
+    nameKn: 'ಲಂಚ',
+    nameHi: 'रिश्वत',
+    nameTe: 'లంచం',
+    icon: '💰',
+    workflow: [
+      { id: 'department', text: { en: 'Which department/office asked for bribe?', kn: 'ಯಾವ ಇಲಾಖೆ/ಕಛೇರಿ ಲಂಚ ಕೇಳಿತು?', hi: 'कौन सा विभाग/कार्यालय रिश्वत माँग रहा है?', te: 'ఏ శాఖ/కార్యాలయం లంచం అడిగింది?' }, type: 'select', required: true, options: [
+        { value: 'rto', label: { en: 'RTO (Transport)', kn: 'ಆರ್‌ಟಿಓ (ಸಾರಿಗೆ)', hi: 'RTO (परिवहन)', te: 'RTO (రవాణా)' } },
+        { value: 'bbmp', label: { en: 'BBMP (Municipal)', kn: 'ಬಿಬಿಎಂಪಿ (ನಗರಪಾಲಿಕೆ)', hi: 'BBMP (नगरपालिका)', te: 'BBMP (మున్సిపల్)' } },
+        { value: 'police', label: { en: 'Police', kn: 'ಪೊಲೀಸ್', hi: 'पुलिस', te: 'పోలీస్' } },
+        { value: 'electricity', label: { en: 'Electricity Board (BESCOM)', kn: 'ವಿದ್ಯುತ್ ಮಂಡಳಿ (ಬೆಸ್ಕಾಂ)', hi: 'बिजली बोर्ड (BESCOM)', te: 'విద్యుత్ బోర్డు (BESCOM)' } },
+        { value: 'water', label: { en: 'Water Board (BWSSB)', kn: 'ನೀರಿನ ಮಂಡಳಿ (BWSSB)', hi: 'जल बोर्ड (BWSSB)', te: 'నీటి బోర్డు (BWSSB)' } },
+        { value: 'bda', label: { en: 'BDA (Planning)', kn: 'ಬಿಡಿಎ (ಯೋಜನೆ)', hi: 'BDA (योजना)', te: 'BDA (ప్లానింగ్)' } },
+        { value: 'khata', label: { en: 'Khata / Property Registration', kn: 'ಖಾತಾ / ಆಸ್ತಿ ನೋಂದಣಿ', hi: 'खाता / संपत्ति पंजीकरण', te: 'ఖతా / ఆస్తి రిజిస్ట్రేషన్' } },
+        { value: 'health', label: { en: 'Health / Hospital', kn: 'ಆರೋಗ್ಯ / ಆಸ್ಪತ್ರೆ', hi: 'स्वास्थ्य / अस्पताल', te: 'ఆరోగ్యం / ఆసుపత్రి' } },
+        { value: 'education', label: { en: 'Education / School', kn: 'ಶಿಕ್ಷಣ / ಶಾಲೆ', hi: 'शिक्षा / स्कूल', te: 'విద్య / పాఠశాల' } },
+        { value: 'other', label: { en: 'Other Department', kn: 'ಇತರೆ ಇಲಾಖೆ', hi: 'अन्य विभाग', te: 'ఇతర శాఖ' } },
+      ]},
+      { id: 'amount', text: { en: 'How much bribe was asked?', kn: 'ಎಷ್ಟು ಲಂಚ ಕೇಳಿದರು?', hi: 'कितनी रिश्वत माँगी गई?', te: 'ఎంత లంచం అడిగారు?' }, type: 'text', required: true },
+      { id: 'bribe_for', text: { en: 'What was the bribe for?', kn: 'ಲಂಚ ಯಾವುದಕ್ಕಾಗಿ ಕೇಳಿದರು?', hi: 'रिश्वत किस लिए माँगी गई?', te: 'లంచం దేనికోసం అడిగారు?' }, type: 'text', required: true },
+      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
+      { id: 'time_of_day', text: { en: 'What time of day?', kn: 'ದಿನದ ಯಾವ ಸಮಯ?', hi: 'दिन का कौन सा समय?', te: 'రోజులో ఏ సమయం?' }, type: 'select', required: true, options: [
+        { value: 'morning', label: { en: 'Morning (6AM-12PM)', kn: 'ಬೆಳಿಗ್ಗೆ (6AM-12PM)', hi: 'सुबह (6AM-12PM)', te: 'ఉదయం (6AM-12PM)' } },
+        { value: 'afternoon', label: { en: 'Afternoon (12PM-4PM)', kn: 'ಮಧ್ಯಾಹ್ನ (12PM-4PM)', hi: 'दोपहर (12PM-4PM)', te: 'మధ్యాహ్నం (12PM-4PM)' } },
+        { value: 'evening', label: { en: 'Evening (4PM-8PM)', kn: 'ಸಂಜೆ (4PM-8PM)', hi: 'शाम (4PM-8PM)', te: 'సాయంత్రం (4PM-8PM)' } },
+        { value: 'night', label: { en: 'Night (8PM-6AM)', kn: 'ರಾತ್ರಿ (8PM-6AM)', hi: 'रात (8PM-6AM)', te: 'రాత్రి (8PM-6AM)' } },
+      ]},
+      { id: 'person_name', text: { en: 'Name of person who asked (if known)?', kn: 'ಕೇಳಿದ ವ್ಯಕ್ತಿಯ ಹೆಸರು (ತಿಳಿದಿದ್ದರೆ)?', hi: 'माँगने वाले का नाम (अगर पता हो)?', te: 'అడిగిన వ్యక్తి పేరు (తెలిస్తే)?' }, type: 'text', required: false },
+      { id: 'person_designation', text: { en: 'Their designation/role (if known)?', kn: 'ಅವರ ಹುದ್ದೆ/ಪಾತ್ರ (ತಿಳಿದಿದ್ದರೆ)?', hi: 'उनका पद/भूमिका (अगर पता हो)?', te: 'వారి పదవి/పాత్ర (తెలిస్తే)?' }, type: 'text', required: false },
+      { id: 'location', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: false },
+      { id: 'evidence', text: { en: 'Any evidence (receipt, recording, screenshot)?', kn: 'ಯಾವುದಾದರೂ ಸಾಕ್ಷ್ಯ (ರಸೀದಿ, ರೆಕಾರ್ಡಿಂಗ್, ಸ್ಕ್ರೀನ್‌ಶಾಟ್)?', hi: 'कोई सबूत (रसीद, रिकॉर्डिंग, स्क्रीनशॉट)?', te: 'ఏదైనా సాక్ష్యం (రసీదు, రికార్డింగ్, స్క్రీన్‌షాట్)?' }, type: 'evidence', required: false },
+      { id: 'additional', text: { en: 'Additional information?', kn: 'ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'अतिरिक्त जानकारी?', te: 'అదనపు సమాచారం?' }, type: 'text', required: false },
+    ],
+  },
 ];
 
 export function getScenarioById(id: string): IncidentCategory | undefined {

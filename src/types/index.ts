@@ -23,7 +23,8 @@ export type CategoryParent =
   | 'ENVIRONMENT'
   | 'UTILITIES'
   | 'DIGITAL'
-  | 'ACCESS_INTEGRATION';
+  | 'ACCESS_INTEGRATION'
+  | 'CORRUPTION';
 
 export interface IncidentCategory {
   id: string;

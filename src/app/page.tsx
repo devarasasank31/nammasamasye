@@ -184,6 +184,7 @@ export default function LandingPage() {
               { icon: '💧', label: 'Water Supply' },
               { icon: '🐕', label: 'Stray Animals' },
               { icon: '👮', label: 'Police Interaction' },
+              { icon: '💰', label: 'Bribes' },
               { icon: '🛡️', label: 'Safety' },
             ].map((c, i) => (
               <div key={i} className="flex flex-col items-center p-4 rounded-xl bg-white border border-gray-100 hover:border-primary hover:shadow-md transition cursor-pointer"
