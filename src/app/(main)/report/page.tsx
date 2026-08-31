@@ -243,6 +243,12 @@ export default function ReportPage() {
     moveToNextQuestion();
   };
 
+  const handleSkipQuestion = () => {
+    if (!selectedScenario) return;
+    addUserMessage("Skip");
+    moveToNextQuestion();
+  };
+
   const isValidEvidenceLink = (url: string): boolean => {
     try {
       const parsed = new URL(url);
@@ -536,7 +542,26 @@ export default function ReportPage() {
                   <span className="text-xs font-medium text-amber-800">{t('evidence.document', lang)}</span>
                 </div>
               </div>
-              <p className="text-[10px] text-amber-600 mt-2">✅ Google Drive, Imgur, YouTube, Dropbox, OneDrive, MediaFire only</p>
+
+              {/* Supported platforms pin */}
+              <div className="mt-3 bg-white rounded-xl p-3 border border-amber-100">
+                <p className="text-[11px] text-amber-800 font-bold mb-2">📌 Supported platforms:</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { name: 'Google Drive', icon: '📁' },
+                    { name: 'YouTube', icon: '🎥' },
+                    { name: 'Imgur', icon: '📷' },
+                    { name: 'Dropbox', icon: '📦' },
+                    { name: 'OneDrive', icon: '☁️' },
+                    { name: 'MediaFire', icon: '📂' },
+                  ].map(p => (
+                    <div key={p.name} className="flex items-center gap-1.5 text-[10px] text-gray-600">
+                      <span>{p.icon}</span> {p.name}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[9px] text-red-500 mt-2">❌ LinkedIn, Facebook, Twitter, Instagram not supported</p>
+              </div>
             </div>
 
             {/* Geo Location Tip */}
@@ -716,6 +741,17 @@ export default function ReportPage() {
                 className="w-full mb-2 text-xs text-gray-400 hover:text-gray-600 py-1">
                 {t('report.skip', lang)}
               </button>
+            )}
+
+            {/* Location skip hint */}
+            {step === 'workflow' && currentQuestion?.type === 'location' && (
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[10px] text-gray-400">📍 Location is optional — geo-tagged photos already show location</span>
+                <button onClick={handleSkipQuestion}
+                  className="text-[10px] text-primary hover:underline font-medium">
+                  Skip →
+                </button>
+              </div>
             )}
 
             <div className="flex items-center gap-2">
