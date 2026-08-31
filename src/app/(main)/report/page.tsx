@@ -412,6 +412,65 @@ export default function ReportPage() {
           </div>
         ))}
 
+        {/* SELECT type options — show clickable buttons */}
+        {step === 'workflow' && currentQuestion?.type === 'select' && currentQuestion.options && (
+          <div className="grid grid-cols-2 gap-2">
+            {currentQuestion.options.map(opt => (
+              <button key={opt.value} onClick={() => {
+                setInputValue(opt.label[lang] || opt.label.en);
+                setTimeout(() => {
+                  const answer = opt.label[lang] || opt.label.en;
+                  addUserMessage(answer);
+                  const q = selectedScenario!.workflow[currentQuestionIdx];
+                  setAnswers(prev => ({ ...prev, [q.id]: opt.value }));
+                  moveToNextQuestion();
+                }, 100);
+              }}
+                className="text-left p-3 rounded-xl bg-white border border-gray-200 hover:border-primary hover:shadow-md transition text-sm">
+                {opt.label[lang] || opt.label.en}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* BOOLEAN type — show Yes/No buttons */}
+        {step === 'workflow' && currentQuestion?.type === 'boolean' && (
+          <div className="flex gap-2">
+            <button onClick={() => {
+              setInputValue('Yes');
+              setTimeout(() => {
+                addUserMessage('Yes');
+                const q = selectedScenario!.workflow[currentQuestionIdx];
+                setAnswers(prev => ({ ...prev, [q.id]: 'Yes' }));
+                const evKeywords = ['photo', 'video', 'evidence', 'witness', 'screenshots', 'communication', 'documents', 'notices'];
+                if (evKeywords.some(kw => q.id.toLowerCase().includes(kw))) {
+                  setTimeout(() => {
+                    addBotMessage("📎 Paste your evidence links below.");
+                    setShowEvidenceForm(true);
+                  }, 300);
+                  return;
+                }
+                moveToNextQuestion();
+              }, 100);
+            }}
+              className="flex-1 py-2.5 rounded-xl bg-green-50 border border-green-200 text-green-700 font-medium text-sm hover:bg-green-100 transition">
+              Yes
+            </button>
+            <button onClick={() => {
+              setInputValue('No');
+              setTimeout(() => {
+                addUserMessage('No');
+                const q = selectedScenario!.workflow[currentQuestionIdx];
+                setAnswers(prev => ({ ...prev, [q.id]: 'No' }));
+                moveToNextQuestion();
+              }, 100);
+            }}
+              className="flex-1 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 font-medium text-sm hover:bg-red-100 transition">
+              No
+            </button>
+          </div>
+        )}
+
         {/* INLINE Evidence Form — appears right after evidence question */}
         {showEvidenceForm && step === 'workflow' && (
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 space-y-3">
