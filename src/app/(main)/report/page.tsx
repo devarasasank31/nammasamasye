@@ -8,7 +8,7 @@ import { scenarios, getScenarioById } from '@/data/scenarios';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { t } from '@/lib/translations';
 import { createIncident } from '@/services/incident';
-import { Send, Mic, ArrowLeft, Globe, ChevronRight, MapPin, Link2, Image, HelpCircle, X } from 'lucide-react';
+import { Send, Mic, MicOff, ArrowLeft, Globe, ChevronRight, MapPin, HelpCircle, X, Square } from 'lucide-react';
 
 type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'evidence_collect' | 'review' | 'submitted';
 
@@ -21,7 +21,7 @@ interface ChatMessage {
 
 const categoryButtons = [
   { id: 'traffic_accident', icon: '🚗', label: 'Traffic / Accident' },
-  { id: 'civic_pothole', icon: '🕳️', label: 'Pothole / Road Damage' },
+  { id: 'traffic_pothole', icon: '🕳️', label: 'Pothole / Road Damage' },
   { id: 'civic_garbage', icon: '🗑️', label: 'Garbage' },
   { id: 'traffic_parking', icon: '🅿️', label: 'Illegal Parking' },
   { id: 'civic_streetlight', icon: '💡', label: 'Streetlight' },
@@ -51,6 +51,7 @@ export default function ReportPage() {
   const router = useRouter();
   const chatRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
 
   const [lang, setLang] = useState<Language>('en');
   const [step, setStep] = useState<Step>('greeting');
@@ -68,12 +69,16 @@ export default function ReportPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [showLangSwitch, setShowLangSwitch] = useState(false);
   const [showEvidenceGuide, setShowEvidenceGuide] = useState(false);
-  const [pendingEvidenceQuestion, setPendingEvidenceQuestion] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = getStoredLanguage();
     setLang(stored);
     initSession();
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -126,7 +131,8 @@ export default function ReportPage() {
 
   const handleCategorySelect = (scenarioId: string) => {
     if (scenarioId === 'something_else') {
-      addUserMessage(t('bot.ask_what_happened', lang));
+      addUserMessage("Something Else");
+      addBotMessage("Please describe your issue in detail.");
       setStep('free_text');
       return;
     }
@@ -141,6 +147,9 @@ export default function ReportPage() {
         setStep('workflow');
         setCurrentQuestionIdx(0);
       }
+    } else {
+      addBotMessage("Please describe your issue in detail.");
+      setStep('free_text');
     }
   };
 
@@ -186,6 +195,11 @@ export default function ReportPage() {
     }
   };
 
+  const isYesAnswer = (answer: string) => {
+    const lower = answer.toLowerCase().trim();
+    return lower === 'yes' || lower === 'ಹೌದು' || lower === 'हाँ' || lower === 'हूँ' || lower === 'అవును';
+  };
+
   const handleWorkflowAnswer = () => {
     if (!inputValue.trim() || !selectedScenario) return;
 
@@ -200,11 +214,12 @@ export default function ReportPage() {
     addUserMessage(answer);
     setAnswers(prev => ({ ...prev, [question.id]: answer }));
 
-    // If this is a boolean evidence question and user said "yes", collect evidence
-    if (question.type === 'boolean' && (answer.toLowerCase() === 'yes' || answer.toLowerCase() === 'ಹೌದು' || answer.toLowerCase() === 'हाँ' || answer.toLowerCase() === 'అవును')) {
-      const hasEvidenceQ = selectedScenario.workflow.find(q => q.type === 'evidence');
-      if (hasEvidenceQ) {
-        setPendingEvidenceQuestion(hasEvidenceQ.id);
+    // If user said "Yes" to a boolean question about photos/video/evidence/witnesses
+    if (question.type === 'boolean' && isYesAnswer(answer)) {
+      const photoVideoKeywords = ['photo', 'video', 'evidence', 'witness', 'screenshots', 'communication', 'documents', 'notices'];
+      const isEvidenceRelated = photoVideoKeywords.some(kw => question.id.toLowerCase().includes(kw));
+
+      if (isEvidenceRelated) {
         setTimeout(() => {
           addBotMessage("Great! Please paste a link to your evidence (photo, video, or document).\n\nTap the guide button below for help on how to share a link.");
           setStep('evidence_collect');
@@ -213,13 +228,12 @@ export default function ReportPage() {
       }
     }
 
-    // If the question itself is evidence type
+    // If the question itself is evidence type — show evidence collection
     if (question.type === 'evidence') {
-      if (answer.startsWith('http')) {
-        setEvidenceLinks(prev => [...prev, answer]);
-        setTimeout(() => addBotMessage('Evidence link added!'), 300);
-      }
-      moveToNextQuestion();
+      setTimeout(() => {
+        addBotMessage("Please paste a link to your evidence (photo, video, or document).\n\nTap the guide button below for help on how to share a link.");
+        setStep('evidence_collect');
+      }, 300);
       return;
     }
 
@@ -236,10 +250,10 @@ export default function ReportPage() {
       addUserMessage(link);
       addBotMessage('Evidence link added! You can add more links or continue.');
 
-      // Check if there are more evidence questions
+      // Check if there are more evidence questions in workflow
       if (selectedScenario) {
         const nextEvidenceQ = selectedScenario.workflow.find(
-          (q, idx) => q.type === 'evidence' && idx > currentQuestionIdx
+          (q, idx) => (q.type === 'evidence') && idx > currentQuestionIdx
         );
         if (nextEvidenceQ) {
           setCurrentQuestionIdx(selectedScenario.workflow.indexOf(nextEvidenceQ));
@@ -321,6 +335,11 @@ export default function ReportPage() {
   };
 
   const handleVoiceInput = () => {
+    if (isRecording && recognitionRef.current) {
+      recognitionRef.current.stop();
+      return;
+    }
+
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
       addBotMessage('Voice input is not supported in this browser. Please type your message.');
       return;
@@ -328,31 +347,42 @@ export default function ReportPage() {
 
     const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
     const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
     recognition.lang = lang === 'kn' ? 'kn-IN' : lang === 'hi' ? 'hi-IN' : lang === 'te' ? 'te-IN' : 'en-IN';
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
     setIsRecording(true);
     recognition.start();
 
     recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
       setInputValue(transcript);
-      setIsRecording(false);
+      if (event.results[0].isFinal) {
+        setIsRecording(false);
+      }
     };
 
-    recognition.onerror = () => {
+    recognition.onerror = (event: any) => {
       setIsRecording(false);
-      addBotMessage(t('bot.try_again', lang));
+      if (event.error === 'not-allowed') {
+        addBotMessage('Microphone access denied. Please allow microphone in your browser settings.');
+      } else if (event.error !== 'aborted') {
+        addBotMessage(t('bot.try_again', lang));
+      }
     };
 
     recognition.onend = () => {
       setIsRecording(false);
+      recognitionRef.current = null;
     };
   };
 
   const currentQuestion = selectedScenario?.workflow[currentQuestionIdx];
-  const isEvidenceStep = currentQuestion?.type === 'evidence' || step === 'evidence_collect';
+  const isEvidenceStep = step === 'evidence_collect';
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -491,7 +521,6 @@ export default function ReportPage() {
                 <p className="text-xs text-gray-500 font-medium">Added evidence ({evidenceLinks.length}):</p>
                 {evidenceLinks.map((link, i) => (
                   <div key={i} className="flex items-center gap-2 p-2 bg-green-50 rounded-lg border border-green-200">
-                    <Link2 size={14} className="text-green-600" />
                     <span className="text-xs text-green-700 truncate flex-1">{link}</span>
                     <button onClick={() => setEvidenceLinks(prev => prev.filter((_, idx) => idx !== i))}
                       className="text-green-400 hover:text-red-500">
@@ -566,13 +595,33 @@ export default function ReportPage() {
       {step !== 'submitted' && step !== 'review' && (
         <div className="sticky bottom-0 glass border-t border-gray-200">
           <div className="max-w-2xl mx-auto px-4 py-3">
+            {/* Recording indicator */}
+            {isRecording && (
+              <div className="mb-2 flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-50 border border-red-200">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-xs text-red-600 font-medium">Listening... Speak now</span>
+                <button onClick={handleVoiceInput}
+                  className="ml-2 p-1 rounded-full bg-red-200 hover:bg-red-300 transition text-red-700">
+                  <Square size={10} fill="currentColor" />
+                </button>
+              </div>
+            )}
+
+            {/* Evidence skip for evidence_collect step */}
+            {step === 'evidence_collect' && (
+              <button onClick={handleSkipEvidence}
+                className="w-full mb-2 text-xs text-gray-400 hover:text-gray-600 py-1">
+                Skip for now →
+              </button>
+            )}
+
             <div className="flex items-center gap-2">
               <button
                 onClick={handleVoiceInput}
                 disabled={isRecording}
-                className={`p-3 rounded-xl transition ${isRecording ? 'bg-red-100 text-red-600 pulse-glow' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                className={`p-3 rounded-xl transition ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
               >
-                <Mic size={20} />
+                {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
               <input
                 ref={inputRef}
@@ -610,12 +659,6 @@ export default function ReportPage() {
                 <Send size={20} />
               </button>
             </div>
-            {step === 'evidence_collect' && (
-              <button onClick={handleSkipEvidence}
-                className="w-full mt-2 text-xs text-gray-400 hover:text-gray-600 py-1">
-                Skip for now →
-              </button>
-            )}
           </div>
         </div>
       )}
