@@ -178,13 +178,13 @@ export default function LandingPage() {
               { icon: '🗑️', label: 'Garbage' },
               { icon: '🅿️', label: 'Parking' },
               { icon: '💡', label: 'Streetlight' },
+              { icon: '🚶', label: 'Footpath' },
+              { icon: '🚰', label: 'Drainage' },
+              { icon: '🌳', label: 'Parks' },
+              { icon: '💧', label: 'Water Supply' },
+              { icon: '🐕', label: 'Stray Animals' },
               { icon: '👮', label: 'Police Interaction' },
-              { icon: '💰', label: 'Unofficial Payment' },
               { icon: '🛡️', label: 'Safety' },
-              { icon: '💻', label: 'Cybercrime' },
-              { icon: '🏠', label: 'Tenant Issue' },
-              { icon: '🔊', label: 'Noise' },
-              { icon: '⚡', label: 'Power Outage' },
             ].map((c, i) => (
               <div key={i} className="flex flex-col items-center p-4 rounded-xl bg-white border border-gray-100 hover:border-primary hover:shadow-md transition cursor-pointer"
                 onClick={() => { setStoredLanguage(lang); router.push('/report'); }}>
