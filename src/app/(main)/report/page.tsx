@@ -387,20 +387,29 @@ export default function ReportPage() {
     recognitionRef.current = recognition;
     recognition.lang = lang === 'kn' ? 'kn-IN' : lang === 'hi' ? 'hi-IN' : lang === 'te' ? 'te-IN' : 'en-IN';
     recognition.interimResults = true;
+    recognition.continuous = true;
     recognition.maxAlternatives = 1;
 
     setIsRecording(true);
+    setInputValue('');
     recognition.start();
 
+    let finalTranscript = '';
+
     recognition.onresult = (event: any) => {
-      let transcript = '';
+      let interimTranscript = '';
+
       for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript;
+        } else {
+          interimTranscript += result[0].transcript;
+        }
       }
-      setInputValue(transcript);
-      if (event.results[0].isFinal) {
-        setIsRecording(false);
-      }
+
+      // Show final + interim together in input field
+      setInputValue(finalTranscript + interimTranscript);
     };
 
     recognition.onerror = (event: any) => {
