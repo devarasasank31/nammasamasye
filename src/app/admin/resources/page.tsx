@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { isDemoMode } from '@/lib/supabase';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
 
 interface Resource {
   id: string;
@@ -54,29 +54,42 @@ export default function AdminResourcesPage() {
     }
   };
 
+  const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    window.location.href = '/admin/login';
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <aside className="fixed left-0 top-0 h-full w-64 bg-gray-900 text-white z-50 hidden lg:block">
         <div className="p-6">
-          <div className="flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center font-bold text-xs">NS</div>
-            <span className="font-bold">Admin</span>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-blue-900 flex items-center justify-center font-bold text-xs">NS</div>
+            <span className="font-bold">Admin Panel</span>
           </div>
+          <p className="text-gray-500 text-xs mb-8">Namma Samasye</p>
           <nav className="space-y-1">
             {[
-              { label: 'Dashboard', href: '/admin/dashboard' },
-              { label: 'Reports', href: '/admin/reports' },
-              { label: 'Resources', href: '/admin/resources' },
-              { label: 'Analytics', href: '/admin/analytics' },
+              { icon: BarChart3, label: 'Dashboard', href: '/admin/dashboard' },
+              { icon: FileText, label: 'All Reports', href: '/admin/reports' },
+              { icon: Users, label: 'Users / Sessions', href: '/admin/users' },
+              { icon: Shield, label: 'Resources', href: '/admin/resources' },
+              { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
             ].map(item => (
               <a key={item.href} href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
                   item.href === '/admin/resources' ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                 }`}>
-                {item.label}
+                {item.icon && <item.icon size={18} />} {item.label}
               </a>
             ))}
           </nav>
+          <div className="absolute bottom-6 left-6 right-6">
+            <button onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-gray-800 transition w-full">
+              <LogOut size={18} /> Logout
+            </button>
+          </div>
         </div>
       </aside>
 
