@@ -2,15 +2,15 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Language, IncidentCategory, WorkflowQuestion } from '@/types';
+import { Language, IncidentCategory } from '@/types';
 import { getStoredLanguage, setStoredLanguage, getOrCreateSession } from '@/services/session';
-import { scenarios, getScenarioById, getScenarioName } from '@/data/scenarios';
+import { scenarios, getScenarioById } from '@/data/scenarios';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { t } from '@/lib/translations';
 import { createIncident } from '@/services/incident';
-import { Send, Mic, Paperclip, ArrowLeft, Globe, ChevronRight, AlertTriangle, MapPin } from 'lucide-react';
+import { Send, Mic, ArrowLeft, Globe, ChevronRight, MapPin, Link2, Image, HelpCircle, X } from 'lucide-react';
 
-type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'review' | 'submitted';
+type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'evidence_collect' | 'review' | 'submitted';
 
 interface ChatMessage {
   id: string;
@@ -26,10 +26,10 @@ const categoryButtons = [
   { id: 'traffic_parking', icon: '🅿️', label: 'Illegal Parking' },
   { id: 'civic_streetlight', icon: '💡', label: 'Streetlight' },
   { id: 'traffic_interaction', icon: '👮', label: 'Police / Traffic Interaction' },
-  { id: 'unofficial_payment', icon: '💰', label: 'Unofficial Payment Concern' },
+  { id: 'unofficial_payment', icon: '💰', label: 'Unofficial Payment' },
   { id: 'safety_harassment', icon: '🛡️', label: 'Safety / Harassment' },
   { id: 'cybercrime', icon: '💻', label: 'Cybercrime' },
-  { id: 'housing_tenant', icon: '🏠', label: 'Tenant / Landlord Issue' },
+  { id: 'housing_tenant', icon: '🏠', label: 'Tenant / Landlord' },
   { id: 'env_noise', icon: '🔊', label: 'Noise Pollution' },
   { id: 'util_power', icon: '⚡', label: 'Power Outage' },
   { id: 'civic_footpath', icon: '🚶', label: 'Footpath Issue' },
@@ -37,6 +37,14 @@ const categoryButtons = [
   { id: 'access_language', icon: '🌐', label: 'Language Barrier' },
   { id: 'govt_service', icon: '📄', label: 'Government Service' },
   { id: 'something_else', icon: '❓', label: 'Something Else' },
+];
+
+const evidenceGuideSteps = [
+  { step: 1, text: 'Open Google Drive (drive.google.com) or any cloud storage' },
+  { step: 2, text: 'Upload your photo/video/screenshot' },
+  { step: 3, text: 'Right-click the file → "Share" → "Get link"' },
+  { step: 4, text: 'Set access to "Anyone with the link"' },
+  { step: 5, text: 'Copy the link and paste it here' },
 ];
 
 export default function ReportPage() {
@@ -59,6 +67,8 @@ export default function ReportPage() {
   const [originalText, setOriginalText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [showLangSwitch, setShowLangSwitch] = useState(false);
+  const [showEvidenceGuide, setShowEvidenceGuide] = useState(false);
+  const [pendingEvidenceQuestion, setPendingEvidenceQuestion] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = getStoredLanguage();
@@ -96,6 +106,23 @@ export default function ReportPage() {
       timestamp: new Date(),
     }]);
   }, []);
+
+  const moveToNextQuestion = () => {
+    if (!selectedScenario) return;
+    const nextIdx = currentQuestionIdx + 1;
+    if (nextIdx < selectedScenario.workflow.length) {
+      setCurrentQuestionIdx(nextIdx);
+      const nextQ = selectedScenario.workflow[nextIdx];
+      setTimeout(() => {
+        addBotMessage(nextQ.text[lang] || nextQ.text.en);
+      }, 300);
+    } else {
+      setTimeout(() => {
+        addBotMessage(t('bot.review_before_submit', lang));
+        setStep('review');
+      }, 300);
+    }
+  };
 
   const handleCategorySelect = (scenarioId: string) => {
     if (scenarioId === 'something_else') {
@@ -170,44 +197,101 @@ export default function ReportPage() {
       setLocation(answer);
     }
 
-    if (question.type === 'evidence' && answer.startsWith('http')) {
-      setEvidenceLinks(prev => [...prev, answer]);
-      addUserMessage(answer);
-      addBotMessage('Evidence link added.');
-    } else {
-      addUserMessage(answer);
-      setAnswers(prev => ({ ...prev, [question.id]: answer }));
+    addUserMessage(answer);
+    setAnswers(prev => ({ ...prev, [question.id]: answer }));
+
+    // If this is a boolean evidence question and user said "yes", collect evidence
+    if (question.type === 'boolean' && (answer.toLowerCase() === 'yes' || answer.toLowerCase() === 'ಹೌದು' || answer.toLowerCase() === 'हाँ' || answer.toLowerCase() === 'అవును')) {
+      const hasEvidenceQ = selectedScenario.workflow.find(q => q.type === 'evidence');
+      if (hasEvidenceQ) {
+        setPendingEvidenceQuestion(hasEvidenceQ.id);
+        setTimeout(() => {
+          addBotMessage("Great! Please paste a link to your evidence (photo, video, or document).\n\nTap the guide button below for help on how to share a link.");
+          setStep('evidence_collect');
+        }, 300);
+        return;
+      }
     }
 
-    const nextIdx = currentQuestionIdx + 1;
-    if (nextIdx < selectedScenario.workflow.length) {
-      setCurrentQuestionIdx(nextIdx);
-      const nextQ = selectedScenario.workflow[nextIdx];
-      setTimeout(() => {
-        addBotMessage(nextQ.text[lang] || nextQ.text.en);
-      }, 300);
-    } else {
+    // If the question itself is evidence type
+    if (question.type === 'evidence') {
+      if (answer.startsWith('http')) {
+        setEvidenceLinks(prev => [...prev, answer]);
+        setTimeout(() => addBotMessage('Evidence link added!'), 300);
+      }
+      moveToNextQuestion();
+      return;
+    }
+
+    moveToNextQuestion();
+  };
+
+  const handleEvidenceLinkSubmit = () => {
+    if (!inputValue.trim()) return;
+    const link = inputValue.trim();
+    setInputValue('');
+
+    if (link.startsWith('http')) {
+      setEvidenceLinks(prev => [...prev, link]);
+      addUserMessage(link);
+      addBotMessage('Evidence link added! You can add more links or continue.');
+
+      // Check if there are more evidence questions
+      if (selectedScenario) {
+        const nextEvidenceQ = selectedScenario.workflow.find(
+          (q, idx) => q.type === 'evidence' && idx > currentQuestionIdx
+        );
+        if (nextEvidenceQ) {
+          setCurrentQuestionIdx(selectedScenario.workflow.indexOf(nextEvidenceQ));
+          setTimeout(() => addBotMessage(nextEvidenceQ.text[lang] || nextEvidenceQ.text.en), 300);
+          return;
+        }
+      }
+      // No more evidence questions, move to review
       setTimeout(() => {
         addBotMessage(t('bot.review_before_submit', lang));
         setStep('review');
       }, 300);
+    } else {
+      addUserMessage(link);
+      addBotMessage('Please paste a valid link starting with http:// or https://');
     }
   };
 
-  const handleEvidenceSkip = () => {
-    if (!selectedScenario) return;
-    addUserMessage(t('bot.no_evidence', lang));
-    const nextIdx = currentQuestionIdx + 1;
-    if (nextIdx < selectedScenario.workflow.length) {
-      setCurrentQuestionIdx(nextIdx);
-      const nextQ = selectedScenario.workflow[nextIdx];
-      setTimeout(() => addBotMessage(nextQ.text[lang] || nextQ.text.en), 300);
-    } else {
-      setTimeout(() => {
-        addBotMessage(t('bot.review_before_submit', lang));
-        setStep('review');
-      }, 300);
+  const handleSkipEvidence = () => {
+    addUserMessage("Skip evidence");
+    if (selectedScenario) {
+      const nextEvidenceQ = selectedScenario.workflow.find(
+        (q, idx) => q.type === 'evidence' && idx > currentQuestionIdx
+      );
+      if (nextEvidenceQ) {
+        setCurrentQuestionIdx(selectedScenario.workflow.indexOf(nextEvidenceQ));
+        setTimeout(() => addBotMessage(nextEvidenceQ.text[lang] || nextEvidenceQ.text.en), 300);
+        return;
+      }
     }
+    setTimeout(() => {
+      addBotMessage(t('bot.review_before_submit', lang));
+      setStep('review');
+    }, 300);
+  };
+
+  const handleNoEvidence = () => {
+    addUserMessage(t('bot.no_evidence', lang));
+    if (selectedScenario) {
+      const nextEvidenceQ = selectedScenario.workflow.find(
+        (q, idx) => q.type === 'evidence' && idx > currentQuestionIdx
+      );
+      if (nextEvidenceQ) {
+        setCurrentQuestionIdx(selectedScenario.workflow.indexOf(nextEvidenceQ));
+        setTimeout(() => addBotMessage(nextEvidenceQ.text[lang] || nextEvidenceQ.text.en), 300);
+        return;
+      }
+    }
+    setTimeout(() => {
+      addBotMessage(t('bot.review_before_submit', lang));
+      setStep('review');
+    }, 300);
   };
 
   const handleSubmit = async () => {
@@ -268,6 +352,7 @@ export default function ReportPage() {
   };
 
   const currentQuestion = selectedScenario?.workflow[currentQuestionIdx];
+  const isEvidenceStep = currentQuestion?.type === 'evidence' || step === 'evidence_collect';
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -348,6 +433,77 @@ export default function ReportPage() {
           </div>
         )}
 
+        {/* Evidence Collection Buttons */}
+        {step === 'evidence_collect' && (
+          <div className="space-y-3 mt-4">
+            {/* Quick action buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowEvidenceGuide(!showEvidenceGuide)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium hover:bg-blue-100 transition"
+              >
+                <HelpCircle size={14} /> How to share evidence?
+              </button>
+              <button
+                onClick={handleNoEvidence}
+                className="px-4 py-2.5 rounded-xl bg-gray-100 border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-200 transition"
+              >
+                I don&apos;t have evidence
+              </button>
+            </div>
+
+            {/* Evidence Guide */}
+            {showEvidenceGuide && (
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-blue-900 text-sm">How to Share Evidence</h4>
+                  <button onClick={() => setShowEvidenceGuide(false)} className="text-blue-400 hover:text-blue-600">
+                    <X size={16} />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {evidenceGuideSteps.map(s => (
+                    <div key={s.step} className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-blue-200 text-blue-800 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        {s.step}
+                      </div>
+                      <span className="text-xs text-blue-800">{s.text}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-white rounded-xl p-3 border border-blue-100">
+                  <p className="text-xs text-blue-700 font-medium">Supported links:</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {['Google Drive', 'OneDrive', 'Dropbox', 'Imgur', 'YouTube', 'Any public URL'].map(s => (
+                      <span key={s} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px]">{s}</span>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[10px] text-blue-600">
+                  Make sure link sharing is set to &quot;Anyone with the link&quot;
+                </p>
+              </div>
+            )}
+
+            {/* Already added evidence */}
+            {evidenceLinks.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500 font-medium">Added evidence ({evidenceLinks.length}):</p>
+                {evidenceLinks.map((link, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2 bg-green-50 rounded-lg border border-green-200">
+                    <Link2 size={14} className="text-green-600" />
+                    <span className="text-xs text-green-700 truncate flex-1">{link}</span>
+                    <button onClick={() => setEvidenceLinks(prev => prev.filter((_, idx) => idx !== i))}
+                      className="text-green-400 hover:text-red-500">
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Review Screen */}
         {step === 'review' && (
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-sm">
@@ -374,7 +530,13 @@ export default function ReportPage() {
             ))}
             {evidenceLinks.length > 0 && (
               <div className="text-sm text-gray-600">
-                <span className="font-medium">Evidence:</span> {evidenceLinks.length} link(s)
+                <span className="font-medium">Evidence ({evidenceLinks.length} link(s)):</span>
+                <div className="mt-1 space-y-1">
+                  {evidenceLinks.map((link, i) => (
+                    <a key={i} href={link} target="_blank" rel="noopener noreferrer"
+                      className="block text-xs text-primary hover:underline truncate">{link}</a>
+                  ))}
+                </div>
               </div>
             )}
             <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800">
@@ -404,16 +566,6 @@ export default function ReportPage() {
       {step !== 'submitted' && step !== 'review' && (
         <div className="sticky bottom-0 glass border-t border-gray-200">
           <div className="max-w-2xl mx-auto px-4 py-3">
-            {currentQuestion && currentQuestion.type === 'evidence' && (
-              <div className="mb-2 flex gap-2">
-                <button onClick={handleEvidenceSkip} className="text-xs text-gray-500 hover:text-primary px-3 py-1 rounded-full border border-gray-200 hover:border-primary transition">
-                  Skip
-                </button>
-                <button onClick={handleEvidenceSkip} className="text-xs text-gray-500 hover:text-primary px-3 py-1 rounded-full border border-gray-200 hover:border-primary transition">
-                  I don&apos;t have evidence
-                </button>
-              </div>
-            )}
             <div className="flex items-center gap-2">
               <button
                 onClick={handleVoiceInput}
@@ -430,6 +582,7 @@ export default function ReportPage() {
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
                     if (step === 'free_text') handleFreeTextSubmit();
+                    else if (step === 'evidence_collect') handleEvidenceLinkSubmit();
                     else if (step === 'workflow') handleWorkflowAnswer();
                     else if (step === 'category_select' || step === 'scenario_match') {
                       if (inputValue.trim()) handleFreeTextSubmit();
@@ -438,6 +591,7 @@ export default function ReportPage() {
                 }}
                 placeholder={
                   step === 'free_text' ? t('bot.ask_what_happened', lang) :
+                  step === 'evidence_collect' ? 'Paste Google Drive link here...' :
                   step === 'workflow' && currentQuestion ? (currentQuestion.text[lang] || currentQuestion.text.en) :
                   'Type a message...'
                 }
@@ -446,6 +600,7 @@ export default function ReportPage() {
               <button
                 onClick={() => {
                   if (step === 'free_text') handleFreeTextSubmit();
+                  else if (step === 'evidence_collect') handleEvidenceLinkSubmit();
                   else if (step === 'workflow') handleWorkflowAnswer();
                   else if (inputValue.trim()) handleFreeTextSubmit();
                 }}
@@ -455,6 +610,12 @@ export default function ReportPage() {
                 <Send size={20} />
               </button>
             </div>
+            {step === 'evidence_collect' && (
+              <button onClick={handleSkipEvidence}
+                className="w-full mt-2 text-xs text-gray-400 hover:text-gray-600 py-1">
+                Skip for now →
+              </button>
+            )}
           </div>
         </div>
       )}
