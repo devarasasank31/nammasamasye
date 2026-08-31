@@ -91,6 +91,7 @@ export default function ReportPage() {
   const [incidentId, setIncidentId] = useState('');
   const [originalText, setOriginalText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [liveTranscript, setLiveTranscript] = useState('');
   const [showLangSwitch, setShowLangSwitch] = useState(false);
 
   useEffect(() => {
@@ -99,6 +100,8 @@ export default function ReportPage() {
     initSession();
     return () => {
       if (recognitionRef.current) {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
         try { recognitionRef.current.stop(); } catch {}
       }
     };
@@ -315,7 +318,15 @@ export default function ReportPage() {
   };
 
   const handleVoiceInput = () => {
-    if (isRecording && recognitionRef.current) { recognitionRef.current.stop(); return; }
+    if (isRecording && recognitionRef.current) {
+      recognitionRef.current.onend = null;
+      recognitionRef.current.onerror = null;
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsRecording(false);
+      setLiveTranscript('');
+      return;
+    }
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
       addBotMessage('Voice input not supported. Please type.');
       return;
@@ -327,6 +338,7 @@ export default function ReportPage() {
     recognition.interimResults = true;
     recognition.continuous = true;
     setIsRecording(true);
+    setLiveTranscript('');
     setInputValue('');
     recognition.start();
     let final = '';
@@ -337,13 +349,31 @@ export default function ReportPage() {
         else interim += event.results[i][0].transcript;
       }
       setInputValue(final + interim);
+      setLiveTranscript(interim);
     };
     recognition.onerror = (e: any) => {
-      setIsRecording(false);
-      if (e.error === 'not-allowed') addBotMessage('Microphone access denied.');
-      else if (e.error !== 'aborted') addBotMessage(t('bot.try_again', lang));
+      if (e.error === 'not-allowed') {
+        setIsRecording(false);
+        addBotMessage('Microphone access denied.');
+      } else if (e.error === 'no-speech') {
+        // Auto-restart on no-speech (silence timeout)
+        if (recognitionRef.current) {
+          try { recognition.start(); } catch {}
+        }
+      } else if (e.error !== 'aborted') {
+        setIsRecording(false);
+        addBotMessage(t('bot.try_again', lang));
+      }
     };
-    recognition.onend = () => { setIsRecording(false); recognitionRef.current = null; };
+    recognition.onend = () => {
+      // Auto-restart if still recording (browser auto-stops after silence)
+      if (recognitionRef.current) {
+        try { recognition.start(); } catch {}
+      } else {
+        setIsRecording(false);
+        setLiveTranscript('');
+      }
+    };
   };
 
   const currentQuestion = selectedScenario?.workflow[currentQuestionIdx];
@@ -517,10 +547,22 @@ export default function ReportPage() {
         <div className="sticky bottom-0 glass border-t border-gray-200">
           <div className="max-w-2xl mx-auto px-4 py-3">
             {isRecording && (
-              <div className="mb-2 flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-50 border border-red-200">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-xs text-red-600 font-medium">Listening... Speak now</span>
-                <button onClick={handleVoiceInput} className="ml-2 p-1 rounded-full bg-red-200 hover:bg-red-300 transition text-red-700"><Square size={10} fill="currentColor" /></button>
+              <div className="mb-2 p-3 rounded-xl bg-red-50 border-2 border-red-300 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                    <span className="text-xs text-red-600 font-medium">Listening... Speak now</span>
+                  </div>
+                  <button onClick={handleVoiceInput}
+                    className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition flex items-center gap-1.5">
+                    <Square size={10} fill="currentColor" /> Stop
+                  </button>
+                </div>
+                {liveTranscript && (
+                  <div className="text-sm text-red-800 italic bg-red-100 rounded-lg px-3 py-2 border border-red-200">
+                    {liveTranscript}
+                  </div>
+                )}
               </div>
             )}
 
@@ -532,7 +574,7 @@ export default function ReportPage() {
             )}
 
             <div className="flex items-center gap-2">
-              <button onClick={handleVoiceInput} disabled={isRecording}
+              <button onClick={handleVoiceInput}
                 className={`p-3 rounded-xl transition ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                 {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
