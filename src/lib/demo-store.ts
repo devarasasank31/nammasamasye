@@ -1,7 +1,7 @@
 import { Language, Incident, IncidentStatus, Session, Evidence, StatusHistory, AdminNote } from '@/types';
 
 // ============================================================
-// IN-MEMORY DEMO STORE — works without Supabase
+// PERSISTENT DEMO STORE — uses localStorage to survive restarts
 // ============================================================
 
 interface DemoIncident extends Incident {
@@ -11,12 +11,30 @@ interface DemoIncident extends Incident {
   adminNotes: AdminNote[];
 }
 
-let sessions: Session[] = [];
-let incidents: DemoIncident[] = [];
-let idCounter = 100;
+function loadFromStorage<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveToStorage(key: string, value: any): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+
+let sessions: Session[] = loadFromStorage<Session[]>('ns_sessions', []);
+let incidents: DemoIncident[] = loadFromStorage<DemoIncident[]>('ns_incidents', []);
+let idCounter = loadFromStorage<number>('ns_id_counter', 100);
 
 function genId(): string {
   idCounter++;
+  saveToStorage('ns_id_counter', idCounter);
   return `ns-${idCounter}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
@@ -29,6 +47,11 @@ function genIncidentId(): string {
   return id;
 }
 
+function persistAll(): void {
+  saveToStorage('ns_sessions', sessions);
+  saveToStorage('ns_incidents', incidents);
+}
+
 // ============================================================
 // SESSION
 // ============================================================
@@ -36,6 +59,13 @@ function genIncidentId(): string {
 export const demoStore = {
   // --- Sessions ---
   createSession(lang: Language): Session {
+    const existing = sessions.find(s => s.language === lang && 
+      (Date.now() - new Date(s.last_active).getTime()) < 30 * 60 * 1000);
+    if (existing) {
+      existing.last_active = new Date().toISOString();
+      persistAll();
+      return existing;
+    }
     const s: Session = {
       id: genId(),
       language: lang,
@@ -43,6 +73,7 @@ export const demoStore = {
       last_active: new Date().toISOString(),
     };
     sessions.push(s);
+    persistAll();
     return s;
   },
 
@@ -52,7 +83,10 @@ export const demoStore = {
 
   updateSession(id: string): void {
     const s = sessions.find(s => s.id === id);
-    if (s) s.last_active = new Date().toISOString();
+    if (s) {
+      s.last_active = new Date().toISOString();
+      persistAll();
+    }
   },
 
   // --- Incidents ---
@@ -125,6 +159,7 @@ export const demoStore = {
     };
 
     incidents.push(incident);
+    persistAll();
     return this.toPublicIncident(incident);
   },
 
@@ -187,6 +222,7 @@ export const demoStore = {
       admin_note: note || '',
       timestamp: new Date().toISOString(),
     });
+    persistAll();
     return true;
   },
 
@@ -201,6 +237,7 @@ export const demoStore = {
       is_private: true,
       created_at: new Date().toISOString(),
     });
+    persistAll();
   },
 
   getStats() {
@@ -222,6 +259,13 @@ export const demoStore = {
     const { answers, evidence, statusHistory, adminNotes, ...pub } = inc;
     return pub;
   },
+
+  clearAll(): void {
+    sessions = [];
+    incidents = [];
+    idCounter = 100;
+    persistAll();
+  },
 };
 
 // ============================================================
@@ -231,5 +275,4 @@ export const demoStore = {
 
 export function seedDemoData() {
   // No fake data — only real submissions from users
-  console.log('[Demo] No seed data — clean store ready for real reports');
 }
