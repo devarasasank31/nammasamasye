@@ -92,6 +92,8 @@ export default function ReportPage() {
   const [originalText, setOriginalText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customInputValue, setCustomInputValue] = useState('');
   const [showLangSwitch, setShowLangSwitch] = useState(false);
 
   useEffect(() => {
@@ -413,10 +415,14 @@ export default function ReportPage() {
         ))}
 
         {/* SELECT type options — show clickable buttons */}
-        {step === 'workflow' && currentQuestion?.type === 'select' && currentQuestion.options && (
+        {step === 'workflow' && currentQuestion?.type === 'select' && currentQuestion.options && !showCustomInput && (
           <div className="grid grid-cols-2 gap-2">
             {currentQuestion.options.map(opt => (
               <button key={opt.value} onClick={() => {
+                if (opt.value === 'other') {
+                  setShowCustomInput(true);
+                  return;
+                }
                 const answer = opt.label[lang] || opt.label.en;
                 addUserMessage(answer);
                 const q = selectedScenario!.workflow[currentQuestionIdx];
@@ -427,6 +433,48 @@ export default function ReportPage() {
                 {opt.label[lang] || opt.label.en}
               </button>
             ))}
+          </div>
+        )}
+
+        {/* CUSTOM INPUT — when Other is selected */}
+        {step === 'workflow' && currentQuestion?.type === 'select' && showCustomInput && (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={customInputValue}
+              onChange={e => setCustomInputValue(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && customInputValue.trim()) {
+                  addUserMessage(customInputValue.trim());
+                  const q = selectedScenario!.workflow[currentQuestionIdx];
+                  setAnswers(prev => ({ ...prev, [q.id]: customInputValue.trim() }));
+                  setCustomInputValue('');
+                  setShowCustomInput(false);
+                  moveToNextQuestion();
+                }
+              }}
+              placeholder={currentQuestion.id === 'department' ? 'Type department name...' : 'Type your answer...'}
+              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition text-sm"
+              autoFocus
+            />
+            <button onClick={() => {
+              if (customInputValue.trim()) {
+                addUserMessage(customInputValue.trim());
+                const q = selectedScenario!.workflow[currentQuestionIdx];
+                setAnswers(prev => ({ ...prev, [q.id]: customInputValue.trim() }));
+                setCustomInputValue('');
+                setShowCustomInput(false);
+                moveToNextQuestion();
+              }
+            }}
+              disabled={!customInputValue.trim()}
+              className="px-4 py-3 rounded-xl gradient-bg text-white text-sm font-medium hover:opacity-90 transition disabled:opacity-40">
+              <Send size={20} />
+            </button>
+            <button onClick={() => { setShowCustomInput(false); setCustomInputValue(''); }}
+              className="px-3 py-3 rounded-xl bg-gray-100 text-gray-500 text-sm hover:bg-gray-200 transition">
+              ← Back
+            </button>
           </div>
         )}
 
