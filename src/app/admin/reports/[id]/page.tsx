@@ -16,6 +16,7 @@ export default function AdminIncidentDetailPage() {
   const [notes, setNotes] = useState<AdminNote[]>([]);
   const [answers, setAnswers] = useState<any[]>([]);
   const [newNote, setNewNote] = useState('');
+  const [noteIsPublic, setNoteIsPublic] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,8 +64,15 @@ export default function AdminIncidentDetailPage() {
 
   const handleAddNote = async () => {
     if (!incident || !newNote.trim()) return;
-    await addAdminNote(incident.id, 'admin', newNote.trim());
+    const { isDemoMode } = await import('@/lib/supabase');
+    if (isDemoMode) {
+      const { demoStore } = await import('@/lib/demo-store');
+      demoStore.addAdminNotePublic(incident.id, 'admin', newNote.trim(), !noteIsPublic);
+    } else {
+      await addAdminNote(incident.id, 'admin', newNote.trim());
+    }
     setNewNote('');
+    setNoteIsPublic(false);
     loadIncident();
   };
 
@@ -233,21 +241,43 @@ export default function AdminIncidentDetailPage() {
             <h2 className="font-bold text-gray-900 mb-4">Admin Notes</h2>
             <div className="space-y-3 mb-4">
               {notes.map(n => (
-                <div key={n.id} className="bg-gray-50 p-3 rounded-lg">
+                <div key={n.id} className={`p-3 rounded-lg ${n.is_private ? 'bg-gray-50' : 'bg-blue-50 border border-blue-200'}`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    {n.is_private ? (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600">Private</span>
+                    ) : (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-200 text-blue-700">Visible to user</span>
+                    )}
+                  </div>
                   <div className="text-sm text-gray-800">{n.content}</div>
                   <div className="text-xs text-gray-400 mt-1">{n.admin_id} · {new Date(n.created_at).toLocaleString()}</div>
                 </div>
               ))}
               {notes.length === 0 && <div className="text-sm text-gray-400">No notes yet.</div>}
             </div>
-            <div className="flex gap-2">
-              <input type="text" value={newNote} onChange={e => setNewNote(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleAddNote()}
-                placeholder="Add a private note..."
-                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-primary outline-none" />
-              <button onClick={handleAddNote} className="px-4 py-2.5 rounded-xl gradient-bg text-white text-sm font-medium hover:opacity-90 transition">
-                Add Note
-              </button>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setNoteIsPublic(false)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${!noteIsPublic ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                  🔒 Private
+                </button>
+                <button onClick={() => setNoteIsPublic(true)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${noteIsPublic ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                  👁️ Visible to User
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <input type="text" value={newNote} onChange={e => setNewNote(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleAddNote()}
+                  placeholder={noteIsPublic ? "Write a note the user will see..." : "Add a private note..."}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-primary outline-none" />
+                <button onClick={handleAddNote} className="px-4 py-2.5 rounded-xl gradient-bg text-white text-sm font-medium hover:opacity-90 transition">
+                  Add Note
+                </button>
+              </div>
+              {noteIsPublic && (
+                <p className="text-xs text-blue-600">This note will be visible to the user on their tracking page.</p>
+              )}
             </div>
           </div>
         </main>

@@ -240,6 +240,25 @@ export const demoStore = {
     persistAll();
   },
 
+  addAdminNotePublic(incidentId: string, adminId: string, content: string, isPrivate: boolean): void {
+    const inc = incidents.find(i => i.id === incidentId);
+    if (!inc) return;
+    inc.adminNotes.push({
+      id: genId(),
+      incident_id: incidentId,
+      admin_id: adminId,
+      content,
+      is_private: isPrivate,
+      created_at: new Date().toISOString(),
+    });
+    persistAll();
+  },
+
+  getPublicNotes(incidentId: string): AdminNote[] {
+    const inc = incidents.find(i => i.id === incidentId);
+    return (inc?.adminNotes || []).filter(n => !n.is_private);
+  },
+
   getStats() {
     const total = incidents.length;
     const byCategory: Record<string, number> = {};

@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
-import { Language, Incident, StatusHistory, Evidence } from '@/types';
+import { Language, Incident, StatusHistory, Evidence, AdminNote } from '@/types';
 import { getAllIncidents, getStatusHistory, getIncidentEvidence, getIncidentById } from '@/services/incident';
-import { seedDemoData } from '@/lib/demo-store';
-import { ArrowLeft, CheckCircle, Circle, Clock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Circle, Clock, AlertCircle, MessageSquare } from 'lucide-react';
 
 export default function TrackPage() {
   const router = useRouter();
@@ -17,10 +16,11 @@ export default function TrackPage() {
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [statusHistory, setStatusHistory] = useState<StatusHistory[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
+  const [adminNotes, setAdminNotes] = useState<AdminNote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasNewNote, setHasNewNote] = useState(false);
 
   useEffect(() => {
-    seedDemoData();
     setLang(getStoredLanguage());
     loadIncidents();
   }, []);
@@ -29,7 +29,28 @@ export default function TrackPage() {
     setLoading(true);
     const allInc = await getAllIncidents();
     setIncidents(allInc);
+
+    // Check for any incidents with new public notes
+    for (const inc of allInc) {
+      const notes = await getPublicNotes(inc.id);
+      if (notes.length > 0) {
+        setHasNewNote(true);
+        break;
+      }
+    }
+
     setLoading(false);
+  };
+
+  const getPublicNotes = async (incidentId: string): Promise<AdminNote[]> => {
+    const { isDemoMode } = await import('@/lib/supabase');
+    if (isDemoMode) {
+      const { demoStore } = await import('@/lib/demo-store');
+      return demoStore.getPublicNotes(incidentId);
+    }
+    const { supabase } = await import('@/lib/supabase');
+    const { data } = await supabase.from('admin_notes').select('*').eq('incident_id', incidentId).eq('is_private', false).order('created_at', { ascending: false });
+    return data || [];
   };
 
   const handleSearch = async () => {
@@ -43,8 +64,22 @@ export default function TrackPage() {
         setStatusHistory(hist);
         const ev = await getIncidentEvidence(internal.id);
         setEvidence(ev);
+        const notes = await getPublicNotes(internal.id);
+        setAdminNotes(notes);
+        if (notes.length > 0) setHasNewNote(true);
       }
     }
+  };
+
+  const handleSelectIncident = async (inc: Incident) => {
+    setSelectedIncident(inc);
+    const hist = await getStatusHistory(inc.id);
+    setStatusHistory(hist);
+    const ev = await getIncidentEvidence(inc.id);
+    setEvidence(ev);
+    const notes = await getPublicNotes(inc.id);
+    setAdminNotes(notes);
+    if (notes.length > 0) setHasNewNote(true);
   };
 
   const getStatusIcon = (status: string) => {
@@ -65,6 +100,11 @@ export default function TrackPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold text-gray-900">My Incidents</h1>
+          {hasNewNote && (
+            <span className="ml-auto flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium animate-pulse">
+              <MessageSquare size={12} /> New update
+            </span>
+          )}
         </div>
       </header>
 
@@ -116,6 +156,25 @@ export default function TrackPage() {
               </div>
             )}
 
+            {/* Admin Notes (visible to user) */}
+            {adminNotes.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-900 text-sm flex items-center gap-2">
+                  <MessageSquare size={14} className="text-blue-500" />
+                  Updates from Admin
+                </h3>
+                {adminNotes.map(note => (
+                  <div key={note.id} className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold text-blue-700">📋 Admin Note</span>
+                      <span className="text-[10px] text-blue-500">{new Date(note.created_at).toLocaleString()}</span>
+                    </div>
+                    <p className="text-sm text-blue-900">{note.content}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Status Timeline */}
             <div className="space-y-3">
               <h3 className="font-medium text-gray-900 text-sm">Status Timeline</h3>
@@ -141,6 +200,11 @@ export default function TrackPage() {
                 ))}
               </div>
             )}
+
+            <button onClick={() => { setSelectedIncident(null); setAdminNotes([]); setHasNewNote(false); }}
+              className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 transition">
+              ← Back to all incidents
+            </button>
           </div>
         )}
 
@@ -159,28 +223,56 @@ export default function TrackPage() {
               </div>
             ) : (
               incidents.map(inc => (
-                <div key={inc.id} onClick={() => { setSelectedIncident(inc); }}
-                  className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition cursor-pointer">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-mono font-bold text-primary text-sm">{inc.incident_id}</div>
-                      <div className="text-xs text-gray-500 mt-0.5 capitalize">{inc.subcategory.replace(/_/g, ' ')}</div>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      inc.status === 'PROCEEDING' ? 'bg-green-100 text-green-700' :
-                      inc.status === 'NEW' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-600'
-                    }`}>
-                      {t(`status.${inc.status}`, lang)}
-                    </span>
-                  </div>
-                  <div className="text-xs text-gray-400 mt-2">{new Date(inc.created_at).toLocaleString()}</div>
-                </div>
+                <IncidentCard key={inc.id} inc={inc} lang={lang} onSelect={handleSelectIncident} getPublicNotes={getPublicNotes} />
               ))
             )}
           </div>
         )}
       </main>
+    </div>
+  );
+}
+
+function IncidentCard({ inc, lang, onSelect, getPublicNotes }: {
+  inc: Incident;
+  lang: Language;
+  onSelect: (inc: Incident) => void;
+  getPublicNotes: (id: string) => Promise<AdminNote[]>;
+}) {
+  const [hasNotes, setHasNotes] = useState(false);
+
+  useEffect(() => {
+    getPublicNotes(inc.id).then(notes => {
+      if (notes.length > 0) setHasNotes(true);
+    });
+  }, [inc.id]);
+
+  return (
+    <div onClick={() => onSelect(inc)}
+      className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition cursor-pointer">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="font-mono font-bold text-primary text-sm flex items-center gap-2">
+            {inc.incident_id}
+            {hasNotes && <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
+          </div>
+          <div className="text-xs text-gray-500 mt-0.5 capitalize">{inc.subcategory.replace(/_/g, ' ')}</div>
+        </div>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          inc.status === 'PROCEEDING' ? 'bg-green-100 text-green-700' :
+          inc.status === 'NEW' ? 'bg-blue-100 text-blue-700' :
+          inc.status === 'UNDER_REVIEW' ? 'bg-yellow-100 text-yellow-700' :
+          'bg-gray-100 text-gray-600'
+        }`}>
+          {t(`status.${inc.status}`, lang)}
+        </span>
+      </div>
+      <div className="text-xs text-gray-400 mt-2">{new Date(inc.created_at).toLocaleString()}</div>
+      {hasNotes && (
+        <div className="mt-2 flex items-center gap-1 text-xs text-blue-600 font-medium">
+          <MessageSquare size={12} /> Admin has left a note
+        </div>
+      )}
     </div>
   );
 }
