@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Language } from '@/types';
 import { getStoredLanguage, setStoredLanguage, getOrCreateSession } from '@/services/session';
+import { seedDemoData } from '@/lib/demo-store';
 import { t } from '@/lib/translations';
 import { Shield, Globe, Mic, Paperclip, MapPin, ChevronRight, Menu, X } from 'lucide-react';
 
@@ -29,6 +30,7 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    seedDemoData();
     const stored = getStoredLanguage();
     setLang(stored);
   }, []);

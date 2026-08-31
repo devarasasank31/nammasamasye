@@ -4,11 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
-import { supabase } from '@/lib/supabase';
 import { Language, Incident, StatusHistory, Evidence } from '@/types';
+import { getAllIncidents, getStatusHistory, getIncidentEvidence, getIncidentById } from '@/services/incident';
+import { seedDemoData } from '@/lib/demo-store';
 import { ArrowLeft, CheckCircle, Circle, Clock, AlertCircle } from 'lucide-react';
-
-const statusSteps = ['NEW', 'UNDER_REVIEW', 'MISSING_INFORMATION', 'PROCEEDING', 'CLOSED', 'RESOLVED'];
 
 export default function TrackPage() {
   const router = useRouter();
@@ -21,51 +20,31 @@ export default function TrackPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    seedDemoData();
     setLang(getStoredLanguage());
     loadIncidents();
   }, []);
 
   const loadIncidents = async () => {
     setLoading(true);
-    const { data: session } = await supabase.from('sessions').select('id').limit(1).single();
-    if (session) {
-      const { data } = await supabase
-        .from('incidents')
-        .select('*')
-        .eq('session_id', session.id)
-        .order('created_at', { ascending: false });
-      setIncidents(data || []);
-    }
+    const allInc = await getAllIncidents();
+    setIncidents(allInc);
     setLoading(false);
   };
 
   const handleSearch = async () => {
     if (!searchId.trim()) return;
-    const { data } = await supabase
-      .from('incidents')
-      .select('*')
-      .eq('incident_id', searchId.trim().toUpperCase())
-      .single();
-
-    if (data) {
-      setSelectedIncident(data);
-      loadIncidentDetails(data.id);
+    const inc = await getIncidentById(searchId.trim().toUpperCase());
+    if (inc) {
+      setSelectedIncident(inc);
+      const internal = incidents.find(i => i.incident_id === searchId.trim().toUpperCase());
+      if (internal) {
+        const hist = await getStatusHistory(internal.id);
+        setStatusHistory(hist);
+        const ev = await getIncidentEvidence(internal.id);
+        setEvidence(ev);
+      }
     }
-  };
-
-  const loadIncidentDetails = async (id: string) => {
-    const { data: history } = await supabase
-      .from('status_history')
-      .select('*')
-      .eq('incident_id', id)
-      .order('timestamp', { ascending: true });
-    setStatusHistory(history || []);
-
-    const { data: ev } = await supabase
-      .from('evidence')
-      .select('*')
-      .eq('incident_id', id);
-    setEvidence(ev || []);
   };
 
   const getStatusIcon = (status: string) => {
@@ -140,7 +119,7 @@ export default function TrackPage() {
             {/* Status Timeline */}
             <div className="space-y-3">
               <h3 className="font-medium text-gray-900 text-sm">Status Timeline</h3>
-              {statusHistory.map((h, i) => (
+              {statusHistory.map((h) => (
                 <div key={h.id} className="flex items-start gap-3">
                   {getStatusIcon(h.new_status)}
                   <div className="flex-1">
@@ -180,7 +159,7 @@ export default function TrackPage() {
               </div>
             ) : (
               incidents.map(inc => (
-                <div key={inc.id} onClick={() => { setSelectedIncident(inc); loadIncidentDetails(inc.id); }}
+                <div key={inc.id} onClick={() => { setSelectedIncident(inc); }}
                   className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition cursor-pointer">
                   <div className="flex items-center justify-between">
                     <div>

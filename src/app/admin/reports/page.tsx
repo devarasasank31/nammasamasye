@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { Incident } from '@/types';
-import { Search, Filter, Download, ArrowLeft } from 'lucide-react';
+import { getAllIncidents } from '@/services/incident';
+import { seedDemoData } from '@/lib/demo-store';
+import { Search, Download, ArrowLeft } from 'lucide-react';
 
 export default function AdminReportsPage() {
   const router = useRouter();
@@ -15,16 +16,14 @@ export default function AdminReportsPage() {
   const [categoryFilter, setCategoryFilter] = useState('ALL');
 
   useEffect(() => {
+    seedDemoData();
     loadIncidents();
   }, []);
 
   const loadIncidents = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('incidents')
-      .select('*')
-      .order('created_at', { ascending: false });
-    setIncidents(data || []);
+    const data = await getAllIncidents();
+    setIncidents(data);
     setLoading(false);
   };
 
@@ -90,7 +89,6 @@ export default function AdminReportsPage() {
         </header>
 
         <main className="p-6">
-          {/* Filters */}
           <div className="flex flex-wrap gap-3 mb-6">
             <div className="flex-1 min-w-[200px] relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -114,7 +112,6 @@ export default function AdminReportsPage() {
             </select>
           </div>
 
-          {/* Table */}
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

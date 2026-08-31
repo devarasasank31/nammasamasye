@@ -1,41 +1,57 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { OfficialResource } from '@/types';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { isDemoMode } from '@/lib/supabase';
+import { Plus, Trash2 } from 'lucide-react';
+
+interface Resource {
+  id: string;
+  title: string;
+  category: string;
+  authority: string;
+  official_url: string;
+  official_phone: string;
+  description: string;
+  language: string;
+  last_verified_at: string;
+  source: string;
+  active: boolean;
+}
+
+const demoResources: Resource[] = [
+  { id: 'res-1', title: 'Bangalore Traffic Police', category: 'TRAFFIC', authority: 'Bangalore City Traffic Police', official_url: 'https://www.bangaloretrafficpolice.gov.in', official_phone: '080-22943400', description: 'Traffic complaints and accident reports.', language: 'en', last_verified_at: new Date().toISOString(), source: 'Official website', active: true },
+  { id: 'res-2', title: 'BBMP', category: 'CIVIC', authority: 'BBMP', official_url: 'https://bbmp.gov.in', official_phone: '1918', description: 'Civic issues: potholes, garbage, streetlights, drainage.', language: 'en', last_verified_at: new Date().toISOString(), source: 'Official website', active: true },
+  { id: 'res-3', title: 'BESCOM', category: 'UTILITIES', authority: 'BESCOM', official_url: 'https://bescom.karnataka.gov.in', official_phone: '1912', description: 'Power outage and electricity complaints.', language: 'en', last_verified_at: new Date().toISOString(), source: 'Official website', active: true },
+  { id: 'res-4', title: 'Cyber Crime Portal', category: 'DIGITAL', authority: 'MHA', official_url: 'https://cybercrime.gov.in', official_phone: '1930', description: 'Report cybercrime and online fraud.', language: 'en', last_verified_at: new Date().toISOString(), source: 'Official website', active: true },
+  { id: 'res-5', title: 'Karnataka Police', category: 'PUBLIC_SAFETY', authority: 'KSP', official_url: 'https://karnataka.gov.in/police', official_phone: '100', description: 'Public safety and emergency.', language: 'en', last_verified_at: new Date().toISOString(), source: 'Official website', active: true },
+];
 
 export default function AdminResourcesPage() {
-  const [resources, setResources] = useState<OfficialResource[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newResource, setNewResource] = useState({
-    title: '', category: 'TRAFFIC', authority: '', official_url: '', official_phone: '', description: '', source: '',
-  });
 
   useEffect(() => { loadResources(); }, []);
 
   const loadResources = async () => {
     setLoading(true);
-    const { data } = await supabase.from('official_resources').select('*').order('category');
-    setResources(data || []);
+    if (isDemoMode) {
+      setResources(demoResources);
+    } else {
+      const { supabase } = await import('@/lib/supabase');
+      const { data } = await supabase.from('official_resources').select('*').order('category');
+      setResources(data || []);
+    }
     setLoading(false);
   };
 
-  const handleAdd = async () => {
-    if (!newResource.title || !newResource.official_url) return;
-    await supabase.from('official_resources').insert({
-      ...newResource,
-      language: 'en',
-      last_verified_at: new Date().toISOString(),
-      active: true,
-    });
-    setNewResource({ title: '', category: 'TRAFFIC', authority: '', official_url: '', official_phone: '', description: '', source: '' });
-    loadResources();
-  };
-
   const handleDelete = async (id: string) => {
-    await supabase.from('official_resources').delete().eq('id', id);
-    loadResources();
+    if (isDemoMode) {
+      setResources(prev => prev.filter(r => r.id !== id));
+    } else {
+      const { supabase } = await import('@/lib/supabase');
+      await supabase.from('official_resources').delete().eq('id', id);
+      loadResources();
+    }
   };
 
   return (
@@ -70,35 +86,6 @@ export default function AdminResourcesPage() {
         </header>
 
         <main className="p-6 max-w-4xl space-y-6">
-          {/* Add New */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="font-bold text-gray-900 mb-4">Add Resource</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input type="text" placeholder="Title" value={newResource.title} onChange={e => setNewResource(p => ({ ...p, title: e.target.value }))}
-                className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
-              <select value={newResource.category} onChange={e => setNewResource(p => ({ ...p, category: e.target.value }))}
-                className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm bg-white">
-                {['TRAFFIC', 'CIVIC', 'PUBLIC_SAFETY', 'GOVERNMENT', 'HOUSING', 'ENVIRONMENT', 'UTILITIES', 'DIGITAL'].map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <input type="text" placeholder="Authority" value={newResource.authority} onChange={e => setNewResource(p => ({ ...p, authority: e.target.value }))}
-                className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
-              <input type="url" placeholder="Official URL" value={newResource.official_url} onChange={e => setNewResource(p => ({ ...p, official_url: e.target.value }))}
-                className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
-              <input type="tel" placeholder="Phone" value={newResource.official_phone} onChange={e => setNewResource(p => ({ ...p, official_phone: e.target.value }))}
-                className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
-              <input type="text" placeholder="Source" value={newResource.source} onChange={e => setNewResource(p => ({ ...p, source: e.target.value }))}
-                className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
-              <input type="text" placeholder="Description" value={newResource.description} onChange={e => setNewResource(p => ({ ...p, description: e.target.value }))}
-                className="sm:col-span-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm" />
-            </div>
-            <button onClick={handleAdd} className="mt-4 flex items-center gap-2 px-6 py-2.5 rounded-xl gradient-bg text-white text-sm font-medium hover:opacity-90 transition">
-              <Plus size={16} /> Add Resource
-            </button>
-          </div>
-
-          {/* Existing */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
             <h2 className="font-bold text-gray-900 mb-4">Existing Resources ({resources.length})</h2>
             <div className="space-y-3">
@@ -108,8 +95,9 @@ export default function AdminResourcesPage() {
                 <div key={r.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-gray-900 text-sm">{r.title}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">{r.authority} • {r.category}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{r.authority} · {r.category}</div>
                     <div className="text-xs text-primary mt-0.5 truncate">{r.official_url}</div>
+                    {r.official_phone && <div className="text-xs text-gray-400 mt-0.5">📞 {r.official_phone}</div>}
                   </div>
                   <button onClick={() => handleDelete(r.id)} className="p-2 text-red-400 hover:text-red-600 transition">
                     <Trash2 size={16} />

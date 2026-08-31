@@ -3,8 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ExternalLink, Phone } from 'lucide-react';
-import { officialResources } from '@/data/resources';
-import { OfficialResource } from '@/types';
+
+const officialResources = [
+  { id: 'res-1', title: 'Bangalore Traffic Police', category: 'TRAFFIC', authority: 'Bangalore City Traffic Police', official_url: 'https://www.bangaloretrafficpolice.gov.in', official_phone: '080-22943400', description: 'For traffic-related complaints, accident reports, and challan inquiries.', last_verified_at: new Date().toISOString() },
+  { id: 'res-2', title: 'BBMP - Bruhat Bengaluru Mahanagara Palike', category: 'CIVIC', authority: 'BBMP', official_url: 'https://bbmp.gov.in', official_phone: '1918', description: 'For civic issues: potholes, garbage, streetlights, drainage, road damage.', last_verified_at: new Date().toISOString() },
+  { id: 'res-3', title: 'Bangalore Electricity Supply Company (BESCOM)', category: 'UTILITIES', authority: 'BESCOM', official_url: 'https://bescom.karnataka.gov.in', official_phone: '1912', description: 'For power outages, electricity complaints, and new connections.', last_verified_at: new Date().toISOString() },
+  { id: 'res-4', title: 'Karnataka Police', category: 'PUBLIC_SAFETY', authority: 'Karnataka State Police', official_url: 'https://karnataka.gov.in/police', official_phone: '100', description: 'For public safety concerns, harassment, and criminal matters.', last_verified_at: new Date().toISOString() },
+  { id: 'res-5', title: 'National Cyber Crime Reporting Portal', category: 'DIGITAL', authority: 'Ministry of Home Affairs', official_url: 'https://cybercrime.gov.in', official_phone: '1930', description: 'For reporting cybercrime, online fraud, and digital scams.', last_verified_at: new Date().toISOString() },
+  { id: 'res-6', title: 'Jana Sahayavani (Citizen Helpline)', category: 'GOVERNMENT', authority: 'Government of Karnataka', official_url: 'https://karnataka.gov.in', official_phone: '1800-425-1111', description: 'General citizen assistance and government service complaints.', last_verified_at: new Date().toISOString() },
+  { id: 'res-7', title: 'Karnataka Legal Services Authority', category: 'HOUSING', authority: 'High Court of Karnataka', official_url: 'https://karnatakalaw.kar.nic.in', official_phone: '', description: 'Free legal aid and tenant/landlord dispute guidance.', last_verified_at: new Date().toISOString() },
+];
 
 export default function ResourcesPage() {
   const router = useRouter();
@@ -25,7 +33,6 @@ export default function ResourcesPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-        {/* Category Filter */}
         <div className="flex gap-2 overflow-x-auto pb-2">
           {categories.map(cat => (
             <button key={cat} onClick={() => setFilter(cat)}
@@ -37,7 +44,6 @@ export default function ResourcesPage() {
           ))}
         </div>
 
-        {/* Resources */}
         <div className="space-y-3">
           {filtered.map(r => (
             <div key={r.id} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
@@ -58,9 +64,6 @@ export default function ResourcesPage() {
                   <Phone size={14} /> {r.official_phone}
                 </a>
               )}
-              <div className="mt-2 text-xs text-gray-400">
-                Last verified: {new Date(r.last_verified_at).toLocaleDateString()}
-              </div>
             </div>
           ))}
         </div>

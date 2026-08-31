@@ -2,54 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { Language } from '@/types';
 import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
-import { ArrowLeft, TrendingUp, BarChart3, MapPin } from 'lucide-react';
-
-interface CommunityStats {
-  total: number;
-  byCategory: Record<string, number>;
-  byArea: Record<string, number>;
-  recentTrend: { date: string; count: number }[];
-}
+import { getDashboardStats } from '@/services/incident';
+import { seedDemoData } from '@/lib/demo-store';
+import { ArrowLeft, BarChart3, MapPin } from 'lucide-react';
 
 export default function CommunityPage() {
   const router = useRouter();
   const [lang, setLang] = useState<Language>('en');
-  const [stats, setStats] = useState<CommunityStats | null>(null);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    seedDemoData();
     setLang(getStoredLanguage());
     loadStats();
   }, []);
 
   const loadStats = async () => {
     setLoading(true);
-    const { data: incidents } = await supabase
-      .from('incidents')
-      .select('category_id, location_area, created_at, status');
-
-    if (incidents) {
-      const byCategory: Record<string, number> = {};
-      const byArea: Record<string, number> = {};
-
-      incidents.forEach(inc => {
-        byCategory[inc.category_id] = (byCategory[inc.category_id] || 0) + 1;
-        if (inc.location_area) {
-          byArea[inc.location_area] = (byArea[inc.location_area] || 0) + 1;
-        }
-      });
-
-      setStats({
-        total: incidents.length,
-        byCategory,
-        byArea,
-        recentTrend: [],
-      });
-    }
+    const data = await getDashboardStats();
+    setStats(data);
     setLoading(false);
   };
 
@@ -88,31 +63,33 @@ export default function CommunityPage() {
             </div>
 
             {/* By Category */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-              <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <BarChart3 size={18} /> Reports by Category
-              </h2>
-              <div className="space-y-3">
-                {Object.entries(stats.byCategory)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([cat, count]) => (
-                    <div key={cat} className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-700">{categoryLabels[cat] || cat}</span>
-                          <span className="text-gray-500">{count}</span>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full gradient-bg rounded-full"
-                            style={{ width: `${(count / stats.total) * 100}%` }}
-                          />
+            {Object.keys(stats.byCategory).length > 0 && (
+              <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <BarChart3 size={18} /> Reports by Category
+                </h2>
+                <div className="space-y-3">
+                  {Object.entries(stats.byCategory)
+                    .sort(([, a]: [string, any], [, b]: [string, any]) => b - a)
+                    .map(([cat, count]: [string, any]) => (
+                      <div key={cat} className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-700">{categoryLabels[cat] || cat}</span>
+                            <span className="text-gray-500">{count}</span>
+                          </div>
+                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full gradient-bg rounded-full"
+                              style={{ width: `${(count / stats.total) * 100}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* By Area */}
             {Object.keys(stats.byArea).length > 0 && (
@@ -122,9 +99,9 @@ export default function CommunityPage() {
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {Object.entries(stats.byArea)
-                    .sort(([, a], [, b]) => b - a)
+                    .sort(([, a]: [string, any], [, b]: [string, any]) => b - a)
                     .slice(0, 12)
-                    .map(([area, count]) => (
+                    .map(([area, count]: [string, any]) => (
                       <div key={area} className="p-3 rounded-xl bg-gray-50 border border-gray-100">
                         <div className="text-lg font-bold text-gray-900">{count}</div>
                         <div className="text-xs text-gray-500">{area}</div>

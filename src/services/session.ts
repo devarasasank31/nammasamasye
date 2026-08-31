@@ -1,5 +1,6 @@
-import { supabase } from '@/lib/supabase';
 import { Language, Session } from '@/types';
+import { isDemoMode } from '@/lib/supabase';
+import { demoStore } from '@/lib/demo-store';
 
 const SESSION_KEY = 'ns_session_id';
 
@@ -9,6 +10,25 @@ export async function getOrCreateSession(): Promise<Session> {
   }
 
   let sessionId = localStorage.getItem(SESSION_KEY);
+
+  if (isDemoMode) {
+    if (!sessionId) {
+      const session = demoStore.createSession(getStoredLanguage());
+      localStorage.setItem(SESSION_KEY, session.id);
+      return session;
+    }
+    const existing = demoStore.getSession(sessionId);
+    if (existing) {
+      demoStore.updateSession(sessionId);
+      return existing;
+    }
+    const session = demoStore.createSession(getStoredLanguage());
+    localStorage.setItem(SESSION_KEY, session.id);
+    return session;
+  }
+
+  // Real Supabase mode
+  const { supabase } = await import('@/lib/supabase');
 
   if (!sessionId) {
     const { data, error } = await supabase

@@ -1,51 +1,48 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { DashboardStats } from '@/types';
 import { BarChart3, FileText, AlertCircle, Clock, CheckCircle, XCircle, TrendingUp, Eye, Shield } from 'lucide-react';
+import { getAllIncidents } from '@/services/incident';
+import { seedDemoData } from '@/lib/demo-store';
 
 export default function AdminDashboard() {
-  const router = useRouter();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    seedDemoData();
     loadStats();
   }, []);
 
   const loadStats = async () => {
     setLoading(true);
-    const { data: incidents } = await supabase.from('incidents').select('*');
+    const incidents = await getAllIncidents();
 
-    if (incidents) {
-      const byDay: Record<string, number> = {};
-      const byCategory: Record<string, number> = {};
-      const byArea: Record<string, number> = {};
+    const byDay: Record<string, number> = {};
+    const byCategory: Record<string, number> = {};
+    const byArea: Record<string, number> = {};
 
-      incidents.forEach(inc => {
-        const day = new Date(inc.created_at).toISOString().split('T')[0];
-        byDay[day] = (byDay[day] || 0) + 1;
-        byCategory[inc.category_id] = (byCategory[inc.category_id] || 0) + 1;
-        if (inc.location_area) byArea[inc.location_area] = (byArea[inc.location_area] || 0) + 1;
-      });
+    incidents.forEach((inc: any) => {
+      const day = new Date(inc.created_at).toISOString().split('T')[0];
+      byDay[day] = (byDay[day] || 0) + 1;
+      byCategory[inc.category_id] = (byCategory[inc.category_id] || 0) + 1;
+      if (inc.location_area) byArea[inc.location_area] = (byArea[inc.location_area] || 0) + 1;
+    });
 
-      setStats({
-        total: incidents.length,
-        new_count: incidents.filter(i => i.status === 'NEW').length,
-        under_review: incidents.filter(i => i.status === 'UNDER_REVIEW').length,
-        missing_info: incidents.filter(i => i.status === 'MISSING_INFORMATION').length,
-        on_hold: incidents.filter(i => i.status === 'ON_HOLD').length,
-        proceeding: incidents.filter(i => i.status === 'PROCEEDING').length,
-        invalid: incidents.filter(i => i.status === 'INVALID').length,
-        closed: incidents.filter(i => i.status === 'CLOSED').length,
-        resolved: incidents.filter(i => i.status === 'RESOLVED').length,
-        reports_per_day: Object.entries(byDay).sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count })),
-        reports_per_category: Object.entries(byCategory).map(([category, count]) => ({ category, count })),
-        reports_per_area: Object.entries(byArea).map(([area, count]) => ({ area, count })),
-      });
-    }
+    setStats({
+      total: incidents.length,
+      new_count: incidents.filter((i: any) => i.status === 'NEW').length,
+      under_review: incidents.filter((i: any) => i.status === 'UNDER_REVIEW').length,
+      missing_info: incidents.filter((i: any) => i.status === 'MISSING_INFORMATION').length,
+      on_hold: incidents.filter((i: any) => i.status === 'ON_HOLD').length,
+      proceeding: incidents.filter((i: any) => i.status === 'PROCEEDING').length,
+      invalid: incidents.filter((i: any) => i.status === 'INVALID').length,
+      closed: incidents.filter((i: any) => i.status === 'CLOSED').length,
+      resolved: incidents.filter((i: any) => i.status === 'RESOLVED').length,
+      reports_per_day: Object.entries(byDay).sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count })),
+      reports_per_category: Object.entries(byCategory).map(([category, count]) => ({ category, count })),
+      reports_per_area: Object.entries(byArea).map(([area, count]) => ({ area, count })),
+    });
     setLoading(false);
   };
 
@@ -62,7 +59,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-64 bg-gray-900 text-white z-50 hidden lg:block">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-8">
@@ -85,7 +81,6 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="lg:ml-64">
         <header className="bg-white border-b border-gray-200 px-6 py-4">
           <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -96,7 +91,6 @@ export default function AdminDashboard() {
             <div className="text-center py-12 text-gray-400">Loading dashboard...</div>
           ) : stats ? (
             <div className="space-y-6">
-              {/* KPI Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4">
                 {kpiCards.map(kpi => (
                   <div key={kpi.label} className={`${kpi.bg} rounded-2xl p-5 border border-gray-100`}>
@@ -109,16 +103,14 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
-              {/* Charts Row */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Category Distribution */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
                   <h3 className="font-bold text-gray-900 mb-4">Reports by Category</h3>
                   <div className="space-y-3">
                     {stats.reports_per_category
-                      .sort((a, b) => b.count - a.count)
+                      .sort((a: any, b: any) => b.count - a.count)
                       .slice(0, 8)
-                      .map(cat => (
+                      .map((cat: any) => (
                         <div key={cat.category} className="flex items-center gap-3">
                           <div className="flex-1">
                             <div className="flex justify-between text-sm mb-1">
@@ -135,14 +127,13 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Area Distribution */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
                   <h3 className="font-bold text-gray-900 mb-4">Reports by Area</h3>
                   <div className="space-y-3">
                     {stats.reports_per_area
-                      .sort((a, b) => b.count - a.count)
+                      .sort((a: any, b: any) => b.count - a.count)
                       .slice(0, 8)
-                      .map(area => (
+                      .map((area: any) => (
                         <div key={area.area} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                           <span className="text-sm text-gray-700">{area.area || 'Unknown'}</span>
                           <span className="font-bold text-gray-900 text-sm">{area.count}</span>
@@ -152,14 +143,13 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Daily Trend */}
               <div className="bg-white rounded-2xl border border-gray-200 p-5">
                 <h3 className="font-bold text-gray-900 mb-4">Reports per Day</h3>
                 <div className="flex items-end gap-1 h-40">
-                  {stats.reports_per_day.slice(-30).map(d => (
+                  {stats.reports_per_day.slice(-30).map((d: any) => (
                     <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
                       <div className="w-full gradient-bg rounded-t"
-                        style={{ height: `${(d.count / Math.max(...stats.reports_per_day.map(x => x.count), 1)) * 120}px` }} />
+                        style={{ height: `${(d.count / Math.max(...stats.reports_per_day.map((x: any) => x.count), 1)) * 120}px` }} />
                       <span className="text-[10px] text-gray-400">{d.date.slice(5)}</span>
                     </div>
                   ))}

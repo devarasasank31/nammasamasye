@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { Incident, StatusHistory, Evidence, AdminNote } from '@/types';
-import { updateIncidentStatus } from '@/services/incident';
-import { ArrowLeft, CheckCircle, Clock, XCircle, AlertCircle, MessageSquare, ExternalLink } from 'lucide-react';
+import { getIncidentInternal, getIncidentEvidence, getStatusHistory, getAdminNotes, addAdminNote, updateIncidentStatus } from '@/services/incident';
+import { seedDemoData } from '@/lib/demo-store';
+import { ArrowLeft, CheckCircle, ExternalLink } from 'lucide-react';
 
 export default function AdminIncidentDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const [incident, setIncident] = useState<Incident | null>(null);
+  const [incident, setIncident] = useState<any>(null);
   const [statusHistory, setStatusHistory] = useState<StatusHistory[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
   const [notes, setNotes] = useState<AdminNote[]>([]);
@@ -19,28 +19,40 @@ export default function AdminIncidentDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    seedDemoData();
     loadIncident();
   }, [params.id]);
 
   const loadIncident = async () => {
     setLoading(true);
-    const { data: inc } = await supabase.from('incidents').select('*').eq('id', params.id).single();
+    const inc = await getIncidentInternal(params.id as string);
     setIncident(inc);
 
     if (inc) {
-      const { data: hist } = await supabase.from('status_history').select('*').eq('incident_id', inc.id).order('timestamp', { ascending: true });
-      setStatusHistory(hist || []);
+      const hist = await getStatusHistory(inc.id);
+      setStatusHistory(hist);
 
-      const { data: ev } = await supabase.from('evidence').select('*').eq('incident_id', inc.id);
-      setEvidence(ev || []);
+      const ev = await getIncidentEvidence(inc.id);
+      setEvidence(ev);
 
-      const { data: nt } = await supabase.from('admin_notes').select('*').eq('incident_id', inc.id).order('created_at', { ascending: false });
-      setNotes(nt || []);
+      const nt = await getAdminNotes(inc.id);
+      setNotes(nt);
 
-      const { data: an } = await supabase.from('incident_answers').select('*').eq('incident_id', inc.id);
-      setAnswers(an || []);
+      const an = await getIncidentAnswers(inc.id);
+      setAnswers(an);
     }
     setLoading(false);
+  };
+
+  const getIncidentAnswers = async (incidentId: string) => {
+    const { isDemoMode } = await import('@/lib/supabase');
+    if (isDemoMode) {
+      const { demoStore } = await import('@/lib/demo-store');
+      return demoStore.getIncidentAnswers(incidentId);
+    }
+    const { supabase } = await import('@/lib/supabase');
+    const { data } = await supabase.from('incident_answers').select('*').eq('incident_id', incidentId);
+    return data || [];
   };
 
   const handleStatusChange = async (newStatus: string, note?: string) => {
@@ -51,12 +63,7 @@ export default function AdminIncidentDetailPage() {
 
   const handleAddNote = async () => {
     if (!incident || !newNote.trim()) return;
-    await supabase.from('admin_notes').insert({
-      incident_id: incident.id,
-      admin_id: 'admin',
-      content: newNote.trim(),
-      is_private: true,
-    });
+    await addAdminNote(incident.id, 'admin', newNote.trim());
     setNewNote('');
     loadIncident();
   };
@@ -100,15 +107,13 @@ export default function AdminIncidentDetailPage() {
           {/* Status & Actions */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <div>
-                <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                  incident.status === 'PROCEEDING' ? 'bg-green-100 text-green-700' :
-                  incident.status === 'NEW' ? 'bg-blue-100 text-blue-700' :
-                  'bg-gray-100 text-gray-600'
-                }`}>
-                  {incident.status.replace(/_/g, ' ')}
-                </span>
-              </div>
+              <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+                incident.status === 'PROCEEDING' ? 'bg-green-100 text-green-700' :
+                incident.status === 'NEW' ? 'bg-blue-100 text-blue-700' :
+                'bg-gray-100 text-gray-600'
+              }`}>
+                {incident.status.replace(/_/g, ' ')}
+              </span>
               <div className="flex gap-2 flex-wrap">
                 {[
                   { status: 'UNDER_REVIEW', label: 'Review', color: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' },
@@ -168,8 +173,8 @@ export default function AdminIncidentDetailPage() {
             <div className="bg-white rounded-2xl border border-gray-200 p-5">
               <h2 className="font-bold text-gray-900 mb-4">Q&A</h2>
               <div className="space-y-3">
-                {answers.map(a => (
-                  <div key={a.id} className="bg-gray-50 p-3 rounded-lg">
+                {answers.map((a: any) => (
+                  <div key={a.question_id} className="bg-gray-50 p-3 rounded-lg">
                     <div className="text-xs font-medium text-gray-500 capitalize">{a.question_id.replace(/_/g, ' ')}</div>
                     <div className="text-sm text-gray-800 mt-1">{a.answer}</div>
                   </div>
@@ -217,7 +222,7 @@ export default function AdminIncidentDetailPage() {
               {notes.map(n => (
                 <div key={n.id} className="bg-gray-50 p-3 rounded-lg">
                   <div className="text-sm text-gray-800">{n.content}</div>
-                  <div className="text-xs text-gray-400 mt-1">{n.admin_id} • {new Date(n.created_at).toLocaleString()}</div>
+                  <div className="text-xs text-gray-400 mt-1">{n.admin_id} · {new Date(n.created_at).toLocaleString()}</div>
                 </div>
               ))}
               {notes.length === 0 && <div className="text-sm text-gray-400">No notes yet.</div>}

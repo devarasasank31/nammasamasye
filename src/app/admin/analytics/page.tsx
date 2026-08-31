@@ -1,35 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { getDashboardStats } from '@/services/incident';
+import { seedDemoData } from '@/lib/demo-store';
 
 export default function AdminAnalyticsPage() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { loadStats(); }, []);
+  useEffect(() => {
+    seedDemoData();
+    loadStats();
+  }, []);
 
   const loadStats = async () => {
     setLoading(true);
-    const { data: incidents } = await supabase.from('incidents').select('*');
-    if (incidents) {
-      const byLang: Record<string, number> = {};
-      const bySeverity: Record<string, number> = {};
-      const recurring = incidents.filter(i => i.is_recurring);
-
-      incidents.forEach(inc => {
-        byLang[inc.language] = (byLang[inc.language] || 0) + 1;
-        bySeverity[inc.severity || 'medium'] = (bySeverity[inc.severity || 'medium'] || 0) + 1;
-      });
-
-      setStats({
-        total: incidents.length,
-        byLang,
-        bySeverity,
-        recurringCount: recurring.length,
-        withEvidence: incidents.filter(i => i.ai_confidence > 0).length,
-      });
-    }
+    const data = await getDashboardStats();
+    setStats(data);
     setLoading(false);
   };
 
@@ -69,18 +56,14 @@ export default function AdminAnalyticsPage() {
             <div className="text-center py-12 text-gray-400">Loading analytics...</div>
           ) : stats ? (
             <>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
                   <div className="text-2xl font-bold text-primary">{stats.total}</div>
                   <div className="text-xs text-gray-500 mt-1">Total Reports</div>
                 </div>
                 <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
-                  <div className="text-2xl font-bold text-green-600">{stats.recurringCount}</div>
-                  <div className="text-xs text-gray-500 mt-1">Recurring Issues</div>
-                </div>
-                <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
-                  <div className="text-2xl font-bold text-blue-600">{stats.withEvidence}</div>
-                  <div className="text-xs text-gray-500 mt-1">With AI Match</div>
+                  <div className="text-2xl font-bold text-blue-600">{Object.keys(stats.byArea).length}</div>
+                  <div className="text-xs text-gray-500 mt-1">Areas Covered</div>
                 </div>
                 <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
                   <div className="text-2xl font-bold text-purple-600">{Object.keys(stats.byLang).length}</div>
@@ -110,15 +93,31 @@ export default function AdminAnalyticsPage() {
                 </div>
 
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                  <h3 className="font-bold text-gray-900 mb-4">By Severity</h3>
+                  <h3 className="font-bold text-gray-900 mb-4">By Category</h3>
                   <div className="space-y-3">
-                    {Object.entries(stats.bySeverity as Record<string, number>).map(([sev, count]) => (
-                      <div key={sev} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                        <span className="text-sm text-gray-700 capitalize">{sev}</span>
-                        <span className="font-bold text-gray-900">{count}</span>
+                    {Object.entries(stats.byCategory as Record<string, number>)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([cat, count]) => (
+                        <div key={cat} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                          <span className="text-sm text-gray-700 capitalize">{cat.replace(/_/g, ' ')}</span>
+                          <span className="font-bold text-gray-900">{count}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                <h3 className="font-bold text-gray-900 mb-4">Reports by Area</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {Object.entries(stats.byArea as Record<string, number>)
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([area, count]) => (
+                      <div key={area} className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <div className="text-lg font-bold text-gray-900">{count}</div>
+                        <div className="text-xs text-gray-500">{area}</div>
                       </div>
                     ))}
-                  </div>
                 </div>
               </div>
             </>
