@@ -1,17 +1,16 @@
 // AI Chatbot Configuration
-// Replace with your API key when ready to use AI features
+// API keys are loaded from environment variables (private)
+// Add your keys to .env.local file
 
 export const AI_CONFIG = {
-  // Get your API key from: https://platform.openai.com/api-keys
-  // Or use: https://generativelanguage.googleapis.com (Google Gemini - free tier)
-  API_KEY: '', // <-- PASTE YOUR API KEY HERE
+  // API key from environment variable (never expose to frontend)
+  API_KEY: process.env.AI_API_KEY || '',
 
-  // Choose provider: 'openai' or 'gemini'
-  PROVIDER: 'openai' as const,
+  // Provider: 'openai' or 'gemini'
+  PROVIDER: (process.env.AI_PROVIDER || 'openai') as 'openai' | 'gemini',
 
   // Model settings
-  MODEL: 'gpt-3.5-turbo', // OpenAI model
-  // MODEL: 'gemini-pro', // Google Gemini model
+  MODEL: process.env.AI_MODEL || 'gpt-3.5-turbo',
 
   // Max tokens for response
   MAX_TOKENS: 150,
@@ -32,25 +31,25 @@ Given a user's description of a problem, you MUST respond with ONLY a JSON objec
 }
 
 Available scenario IDs:
-- traffic_accident: Vehicle accidents, crashes, collisions
-- traffic_wrong_side: Wrong-side driving, wrong direction
-- traffic_pothole: Potholes, road damage, road cracks
-- civic_garbage: Garbage, waste, trash, littering, dumping
-- traffic_parking: Illegal parking, no-parking zone, blocking
-- civic_streetlight: Streetlight not working, dark road, no light
-- civic_footpath: Broken footpath, sidewalk blocked, encroachment
-- civic_drainage: Drainage blocked, water logging, flooding, stagnant water
-- civic_parks: Park maintenance, garden issues, broken benches
-- civic_water_supply: No water, low pressure, water tank
-- civic_stray_animals: Stray dogs, aggressive animals, animal menace
-- traffic_interaction: Police bribery, traffic cop issue, challan
-- bribes: Government bribe, asking money for work, corruption
-- safety_harassment: Eve teasing, harassment, safety concern, women safety
-- cybercrime: Online fraud, scam, hacking, phishing, OTP fraud
-- housing_tenant: Landlord issue, tenant problem, deposit not returned
-- env_noise: Noise pollution, loud music, construction noise, factory noise
-- util_power: Power cut, electricity outage, transformer issue
-- access_language: Language barrier, no Kannada, language issue
-- govt_service: Government service delay, file stuck, application pending
+- traffic_accident: Vehicle accidents, crashes, collisions, hit and run, someone hit me, bike fell, car crashed
+- traffic_wrong_side: Wrong-side driving, wrong direction, coming from opposite side
+- traffic_pothole: Potholes, road damage, road cracks, bad road, manhole open, road broken
+- civic_garbage: Garbage, waste, trash, littering, dumping, dustbin, kachra, safai
+- traffic_parking: Illegal parking, no-parking zone, blocking road, vehicle blocking
+- civic_streetlight: Streetlight not working, dark road, no light, andhera, batti
+- civic_footpath: Broken footpath, sidewalk blocked, encroachment, footpath occupied
+- civic_drainage: Drainage blocked, water logging, flooding, sewage overflow, nala, nali
+- civic_parks: Park maintenance, garden issues, broken benches, park dirty
+- civic_water_supply: No water, low pressure, water tank, paani nahi, neeru
+- civic_stray_animals: Stray dogs, aggressive dog, dog bite, cow on road, kutta
+- traffic_interaction: Police bribery, traffic cop issue, challan, fine
+- bribes: Government bribe, asking money for work, corruption, rishwat, paise
+- safety_harassment: Eve teasing, harassment, safety concern, stalking, chain snatching
+- cybercrime: Online fraud, scam, hacking, phishing, OTP fraud, UPI fraud
+- housing_tenant: Landlord issue, tenant problem, deposit not returned, rent issue
+- env_noise: Noise pollution, loud music, construction noise, shor, DJ
+- util_power: Power cut, electricity outage, transformer issue, light gayi, bijli
+- access_language: Language barrier, no Kannada, language issue, kannada baralla
+- govt_service: Government service delay, file stuck, application pending, office issue
 
-Match based on keywords and context. If unsure, use confidence below 50 and suggest the closest match.`;
+Match based on keywords and context. For casual/butler English and Hinglish (like "paani nahi aa raha", "light chali gayi", "kachra nahi uthaya"), recognize the intent and match to the correct scenario. If unsure, use confidence below 50.`;

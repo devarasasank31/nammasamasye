@@ -666,19 +666,28 @@ export function matchTrainedScenario(userInput: string): {
   let highestScore = 0;
 
   for (const scenario of trainedScenarios) {
-    let matchCount = 0;
+    let matched = false;
+    let matchQuality = 0;
+
     for (const keyword of scenario.keywords) {
-      if (input.includes(keyword.toLowerCase())) {
-        matchCount++;
+      const kw = keyword.toLowerCase();
+      // Exact match or contained in input
+      if (input.includes(kw)) {
+        matched = true;
+        // Longer keyword matches are more valuable
+        matchQuality = Math.max(matchQuality, kw.length / input.length);
       }
     }
-    if (matchCount > 0) {
-      const score = (matchCount / scenario.keywords.length) * scenario.confidence;
+
+    if (matched) {
+      // Score: scenario confidence × how well it matched (minimum 50% if any keyword matched)
+      const qualityBonus = Math.max(matchQuality, 0.5);
+      const score = scenario.confidence * qualityBonus;
       if (score > highestScore) {
         highestScore = score;
         bestMatch = {
           scenario_id: scenario.scenario_id,
-          confidence: Math.min(Math.round(score), 99),
+          confidence: Math.min(Math.round(scenario.confidence * qualityBonus), 99),
           reason: scenario.reason,
         };
       }

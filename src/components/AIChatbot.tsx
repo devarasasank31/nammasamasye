@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageCircle, X, Send, Bot, User, ChevronRight, Sparkles } from 'lucide-react';
-import { analyzeUserInput, AIResponse } from '@/lib/ai-chatbot';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
@@ -13,7 +12,12 @@ interface ChatMessage {
   id: string;
   role: 'bot' | 'user';
   text: string;
-  aiResponse?: AIResponse;
+  aiResponse?: {
+    scenario_id: string;
+    confidence: number;
+    reason: string;
+    source: string;
+  };
 }
 
 export default function AIChatbot() {
@@ -35,10 +39,10 @@ export default function AIChatbot() {
       setMessages([{
         id: 'welcome',
         role: 'bot',
-        text: lang === 'kn' ? 'ನಮಸ್ಕಾರ! ನಾನು Namma Samasye AI. ನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ವಿವರಿಸಿ, ನಾನು ಸರಿಯಾದ ವಿಭಾಗವನ್ನು ಸೂಚಿಸುತ್ತೇನೆ.' :
-              lang === 'hi' ? 'नमस्ते! मैं Namma Samasye AI हूँ। अपनी समस्या बताएं, मैं सही श्रेणी बताऊँगा।' :
-              lang === 'te' ? 'నమస్కారం! నేను Namma Samasye AI. మీ సమస్యను వివరించండి, నేను సరైన విభాగాన్ని సూచిస్తాను.' :
-              'Hello! I\'m Namma Samasye AI. Describe your problem in simple words, and I\'ll suggest the right category.',
+        text: lang === 'kn' ? 'ನಮಸ್ಕಾರ! ನಾನು Namma Samasye AI.\n\nನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ಸರಳವಾಗಿ ವಿವರಿಸಿ — ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ.\n\nಉದಾಹರಣೆ: "ಪಾಣಿ ಬರ್ತಿಲ್ಲ", "ರಸ್ತೆಯಲ್ಲಿ ಗುಂಡಿ ಇದೆ", "ಕಚ್ಚಾ ನಾಯಿ ಕಚ್ಚಿದೆ"' :
+              lang === 'hi' ? 'नमस्ते! मैं Namma Samasye AI हूँ।\n\nअपनी समस्या सरल शब्दों में बताएं — किसी भी भाषा में।\n\nउदाहरण: "पानी नहीं आ रहा", "सड़क में गड्ढा है", "कुत्ता काट रहा है", "बिजली चली गई"' :
+              lang === 'te' ? 'నమస్కారం! నేను Namma Samasye AI.\n\nమీ సమస్యను సరళంగా వివరించండి — ఏ భాషలోనైనా.\n\nఉదాహరణ: "నీరు రావట్లేదు", "రోడ్డు దెబ్బతింది", "కుక్క కరిచింది"' :
+              'Hello! I\'m Namma Samasye AI.\n\nDescribe your problem in simple words — in any language.\n\nExamples:\n• "paani nahi aa raha" (no water)\n• "road mein hole hai" (pothole)\n• "kutta kaat raha hai" (dog biting)\n• "light chali gayi" (power cut)\n• "kachra nahi uthaya" (garbage not collected)\n• "police paise maang raha" (police asking bribe)',
       }]);
     }
   }, [isOpen, lang]);
@@ -66,7 +70,14 @@ export default function AIChatbot() {
     setIsAnalyzing(true);
 
     try {
-      const result = await analyzeUserInput(input.trim(), lang);
+      // Call server-side API (API key stays private)
+      const res = await fetch('/api/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userInput: input.trim(), lang }),
+      });
+
+      const result = await res.json();
       const scenario = getScenarioById(result.scenario_id);
       const scenarioName = scenario ? getScenarioName(scenario, lang) : result.scenario_id;
 
@@ -82,10 +93,10 @@ export default function AIChatbot() {
                   lang === 'te' ? `🤔 ఇది **${scenarioName}** కావచ్చు. (${result.confidence}% confidence)\n\n${result.reason}\n\nమరింత వివరాలు చెప్పగలరా?` :
                   `🤔 This might be a **${scenarioName}** issue. (${result.confidence}% confidence)\n\n${result.reason}\n\nCan you describe more?`;
       } else {
-        botText = lang === 'kn' ? `❓ ನನಗೆ ಖಚಿತವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಹೆಚ್ಚು ವಿವರವಾಗಿ ವಿವರಿಸಿ.` :
-                  lang === 'hi' ? `❓ मुझे पक्का नहीं है। कृपया और विस्तार से बताएं।` :
-                  lang === 'te' ? `❓ నాకు ఖచ్చితంగా తెలియదు. దయచేసి మరింత వివరంగా చెప్పండి.` :
-                  `❓ I'm not sure. Please describe in more detail.`;
+        botText = lang === 'kn' ? `❓ ನನಗೆ ಖಚಿತವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಹೆಚ್ಚು ವಿವರವಾಗಿ ವಿವರಿಸಿ.\n\nಉದಾಹರಣೆ: "ಪಾಣಿ ಬರ್ತಿಲ್ಲ", "ರಸ್ತೆಯಲ್ಲಿ ಗುಂಡಿ ಇದೆ", "ಕಚ್ಚಾ ನಾಯಿ ಕಚ್ಚಿದೆ"` :
+                  lang === 'hi' ? `❓ मुझे पक्का नहीं है। कृपया और विस्तार से बताएं।\n\nउदाहरण: "पानी नहीं आ रहा", "सड़क में गड्ढा है", "बिजली चली गई"` :
+                  lang === 'te' ? `❓ నాకు ఖచ్చితంగా తెలియదు. దయచేసి మరింత వివరంగా చెప్పండి.\n\nఉదాహరణ: "నీరు రావట్లేదు", "రోడ్డు దెబ్బతింది", "కుక్క కరిచింది"` :
+                  `❓ I'm not sure. Please describe in more detail.\n\nExamples:\n• "paani nahi aa raha" (no water)\n• "road mein hole hai" (pothole)\n• "kutta kaat raha hai" (dog biting)\n• "light chali gayi" (power cut)`;
       }
 
       if (result.follow_up) {
@@ -112,7 +123,7 @@ export default function AIChatbot() {
   };
 
   const handleReportWithAI = (scenarioId: string) => {
-    setStoredLanguage(lang);
+    localStorage.setItem('ns_language', lang);
     router.push(`/report?scenario=${scenarioId}`);
     setIsOpen(false);
   };
@@ -233,17 +244,11 @@ export default function AIChatbot() {
               </button>
             </div>
             <p className="text-[10px] text-gray-400 mt-1.5 text-center">
-              Powered by AI + 500+ trained scenarios
+              Powered by AI + 1000+ trained scenarios
             </p>
           </div>
         </div>
       )}
     </>
   );
-}
-
-function setStoredLanguage(lang: Language) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('ns_language', lang);
-  }
 }
