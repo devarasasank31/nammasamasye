@@ -2,39 +2,39 @@ import { NextRequest, NextResponse } from 'next/server';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { getScenarioById } from '@/data/scenarios';
 
-// Server-side only — API key never exposed to frontend
+// Server-side only
 const AI_API_KEY = process.env.AI_API_KEY || '';
 const AI_PROVIDER = process.env.AI_PROVIDER || 'openai';
 const AI_MODEL = process.env.AI_MODEL || 'gpt-3.5-turbo';
 
-const SYSTEM_PROMPT = `You are Namma Samasye AI for Bengaluru civic issues. 
+const SYSTEM_PROMPT = `You are Namma Samasye AI for Bengaluru civic issues. You help classify citizen complaints.
+
 Given a user description, respond with ONLY a JSON object:
-{"scenario_id":"id","confidence":85,"reason":"brief reason","follow_up":"optional question"}
+{"scenario_id":"id","confidence":85,"reason":"brief reason"}
 
-Scenario IDs and when to use them:
-- traffic_accident: vehicle crash, accident, hit and run, someone hit me, bike fell, car damaged
-- traffic_wrong_side: wrong side driving, opposite direction, wrong way
-- traffic_pothole: pothole, road hole, road broken, bad road, road damage, manhole open
-- civic_garbage: garbage, trash, waste, litter, dustbin, dump, kachra, safai nahi hui
-- traffic_parking: illegal parking, vehicle blocking, parked in no parking, footpath parking
-- civic_streetlight: streetlight not working, dark road, no light, andhera, light nahi hai
-- civic_footpath: footpath broken, sidewalk blocked, encroachment, vendor on footpath
-- civic_drainage: drain blocked, water logging, flooding, sewage, nala, nali bhar gayi
-- civic_parks: park dirty, park maintenance, broken bench, garden issue
-- civic_water_supply: no water, water not coming, low pressure, paani nahi aa raha, tank khali
-- civic_stray_animals: stray dog, dog bite, cow on road, animal problem, kutta, saand
-- traffic_interaction: police bribe, challan, traffic fine, cop asking money
-- bribes: government bribe, official asking money, corruption, rishwat, paise maang raha
-- safety_harassment: harassment, eve teasing, stalking, chain snatching, robbery, safety concern
-- cybercrime: online fraud, OTP scam, UPI fraud, hacking, phishing, fake call
-- housing_tenant: landlord issue, deposit not returned, rent problem, tenant issue
-- env_noise: noise pollution, loud music, DJ, construction noise, shor
-- util_power: power cut, electricity gone, light chali gayi, transformer, bijli nahi
-- access_language: language barrier, no kannada, signboard issue
-- govt_service: government service delay, file stuck, application pending, certificate issue, portal problem
+Available scenario IDs:
+- traffic_accident: vehicle crash, accident, hit and run, someone hit me, bike fell, car crashed, broken leg from accident
+- traffic_wrong_side: wrong side driving, opposite direction, wrong way, came from wrong side
+- traffic_pothole: pothole, road hole, road broken, bad road, manhole open
+- civic_garbage: garbage, trash, waste, litter, dustbin, kachra
+- traffic_parking: illegal parking, vehicle blocking, footpath parking
+- civic_streetlight: streetlight not working, dark road, no light, andhera
+- civic_footpath: footpath broken, sidewalk blocked, encroachment
+- civic_drainage: drain blocked, water logging, flooding, sewage, nala
+- civic_parks: park dirty, park maintenance, broken bench
+- civic_water_supply: no water, water not coming, paani nahi aa raha
+- civic_stray_animals: stray dog, dog bite, cow on road, kutta
+- traffic_interaction: police bribe, challan, traffic fine
+- bribes: government bribe, official asking money, corruption, rishwat
+- safety_harassment: harassment, eve teasing, stalking, chain snatching, robbery
+- cybercrime: online fraud, OTP scam, UPI fraud, hacking
+- housing_tenant: landlord issue, deposit not returned, rent problem
+- env_noise: noise pollution, loud music, DJ, shor
+- util_power: power cut, electricity gone, light chali gayi, bijli
+- access_language: language barrier, no kannada
+- govt_service: government service delay, file stuck, certificate issue
 
-For Hinglish/Kanglish (paani nahi aa raha, light chali gayi, kachra nahi uthaya, etc), match the intent correctly.
-Confidence: 80-95 for clear matches, 50-79 for partial, below 50 for uncertain.`;
+Analyze the full context. If user mentions wrong side driving + red signal + accident + broken leg, that's traffic_accident with high confidence. Match the BEST scenario based on the complete description.`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,11 +44,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No input provided' }, { status: 400 });
     }
 
-    // Step 1: ALWAYS try trained scenarios first
+    // Step 1: Try trained scenarios
     const trainedMatch = matchTrainedScenario(userInput);
 
-    // Step 2: If trained confidence is high enough, use it directly
-    if (trainedMatch && trainedMatch.confidence >= 60) {
+    // Step 2: If trained confidence is high, use it
+    if (trainedMatch && trainedMatch.confidence >= 70) {
       return NextResponse.json({
         scenario_id: trainedMatch.scenario_id,
         confidence: trainedMatch.confidence,
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Step 3: If API key exists, call AI
+    // Step 3: Call AI API
     if (AI_API_KEY) {
       try {
         let aiResult = null;
@@ -75,13 +75,16 @@ export async function POST(request: NextRequest) {
                 { role: 'system', content: SYSTEM_PROMPT },
                 { role: 'user', content: userInput },
               ],
-              max_tokens: 150,
+              max_tokens: 200,
               temperature: 0.3,
             }),
           });
 
-          if (response.ok) {
-            const data = await response.json();
+          const data = await response.json();
+
+          if (!response.ok) {
+            console.log('OpenAI API error:', data.error?.message || response.statusText);
+          } else {
             const content = data.choices?.[0]?.message?.content;
             if (content) {
               const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -96,7 +99,9 @@ export async function POST(request: NextRequest) {
                       reason: parsed.reason || 'AI determined this category',
                     };
                   }
-                } catch {}
+                } catch (e) {
+                  console.log('JSON parse error:', e);
+                }
               }
             }
           }
@@ -108,13 +113,16 @@ export async function POST(request: NextRequest) {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nUser: ${userInput}` }] }],
-                generationConfig: { maxOutputTokens: 150, temperature: 0.3 },
+                generationConfig: { maxOutputTokens: 200, temperature: 0.3 },
               }),
             }
           );
 
-          if (response.ok) {
-            const data = await response.json();
+          const data = await response.json();
+
+          if (!response.ok) {
+            console.log('Gemini API error:', data.error?.message);
+          } else {
             const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
             if (content) {
               const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -129,14 +137,16 @@ export async function POST(request: NextRequest) {
                       reason: parsed.reason || 'AI determined this category',
                     };
                   }
-                } catch {}
+                } catch (e) {
+                  console.log('JSON parse error:', e);
+                }
               }
             }
           }
         }
 
-        // If AI result is better than trained, use it
-        if (aiResult && aiResult.confidence >= 60) {
+        // Use AI result if better than trained
+        if (aiResult && aiResult.confidence >= 50) {
           if (trainedMatch && trainedMatch.confidence >= aiResult.confidence) {
             return NextResponse.json({ ...trainedMatch, source: 'trained' });
           }
@@ -145,14 +155,16 @@ export async function POST(request: NextRequest) {
       } catch (err) {
         console.log('AI API error:', err);
       }
+    } else {
+      console.log('No AI_API_KEY set in .env.local');
     }
 
-    // Step 4: Use trained match even with lower confidence
+    // Step 4: Use trained match
     if (trainedMatch) {
       return NextResponse.json({ ...trainedMatch, source: 'trained' });
     }
 
-    // Step 5: Final fallback
+    // Step 5: Fallback
     return NextResponse.json({
       scenario_id: 'something_else',
       confidence: 30,
@@ -160,6 +172,7 @@ export async function POST(request: NextRequest) {
       source: 'fallback',
     });
   } catch (error) {
+    console.error('Chatbot API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
