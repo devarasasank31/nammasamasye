@@ -2,10 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { MessageCircle, X, Send, Bot, User, ChevronRight, Sparkles } from 'lucide-react';
+import { X, Send, Bot, ChevronRight, Sparkles } from 'lucide-react';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { getStoredLanguage } from '@/services/session';
-import { t } from '@/lib/translations';
 import { Language } from '@/types';
 
 interface ChatMessage {
@@ -39,10 +38,10 @@ export default function AIChatbot() {
       setMessages([{
         id: 'welcome',
         role: 'bot',
-        text: lang === 'kn' ? 'ನಮಸ್ಕಾರ! ನಾನು Namma Samasye AI.\n\nನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ಸರಳವಾಗಿ ವಿವರಿಸಿ — ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ.\n\nಉದಾಹರಣೆ: "ಪಾಣಿ ಬರ್ತಿಲ್ಲ", "ರಸ್ತೆಯಲ್ಲಿ ಗುಂಡಿ ಇದೆ", "ಕಚ್ಚಾ ನಾಯಿ ಕಚ್ಚಿದೆ"' :
-              lang === 'hi' ? 'नमस्ते! मैं Namma Samasye AI हूँ।\n\nअपनी समस्या सरल शब्दों में बताएं — किसी भी भाषा में।\n\nउदाहरण: "पानी नहीं आ रहा", "सड़क में गड्ढा है", "कुत्ता काट रहा है", "बिजली चली गई"' :
-              lang === 'te' ? 'నమస్కారం! నేను Namma Samasye AI.\n\nమీ సమస్యను సరళంగా వివరించండి — ఏ భాషలోనైనా.\n\nఉదాహరణ: "నీరు రావట్లేదు", "రోడ్డు దెబ్బతింది", "కుక్క కరిచింది"' :
-              'Hello! I\'m Namma Samasye AI.\n\nDescribe your problem in simple words — in any language.\n\nExamples:\n• "paani nahi aa raha" (no water)\n• "road mein hole hai" (pothole)\n• "kutta kaat raha hai" (dog biting)\n• "light chali gayi" (power cut)\n• "kachra nahi uthaya" (garbage not collected)\n• "police paise maang raha" (police asking bribe)',
+        text: lang === 'kn' ? 'ನಮಸ್ಕಾರ! ನಾನು Namma Samasye AI.\n\nನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ಸರಳವಾಗಿ ವಿವರಿಸಿ.' :
+              lang === 'hi' ? 'नमस्ते! मैं Namma Samasye AI हूँ।\n\nअपनी समस्या सरल शब्दों में बताएं।' :
+              lang === 'te' ? 'నమస్కారం! నేను Namma Samasye AI.\n\nమీ సమస్యను సరళంగా వివరించండి.' :
+              'Hello! I\'m Namma Samasye AI.\n\nDescribe your problem in simple words.',
       }]);
     }
   }, [isOpen, lang]);
@@ -70,7 +69,6 @@ export default function AIChatbot() {
     setIsAnalyzing(true);
 
     try {
-      // Call server-side API (API key stays private)
       const res = await fetch('/api/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,24 +81,20 @@ export default function AIChatbot() {
 
       let botText = '';
       if (result.confidence >= 70) {
-        botText = lang === 'kn' ? `✅ ನಾನು ಭಾವಿಸುತ್ತೇನೆ ಇದು **${scenarioName}** ಸಮಸ್ಯೆ. (${result.confidence}% ವಿಶ್ವಾಸ)\n\n${result.reason}` :
-                  lang === 'hi' ? `✅ मुझे लगता है यह **${scenarioName}** की समस्या है। (${result.confidence}% confidence)\n\n${result.reason}` :
-                  lang === 'te' ? `✅ ఇది **${scenarioName}** సమస్య అని నాకు అనిపిస్తుంది. (${result.confidence}% confidence)\n\n${result.reason}` :
-                  `✅ I think this is a **${scenarioName}** issue. (${result.confidence}% confidence)\n\n${result.reason}`;
+        botText = lang === 'kn' ? `✅ ಇದು **${scenarioName}** ಸಮಸ್ಯೆ. (${result.confidence}% confidence)\n\n${result.reason}` :
+                  lang === 'hi' ? `✅ यह **${scenarioName}** की समस्या है। (${result.confidence}% confidence)\n\n${result.reason}` :
+                  lang === 'te' ? `✅ ఇది **${scenarioName}** సమస్య. (${result.confidence}% confidence)\n\n${result.reason}` :
+                  `✅ This is a **${scenarioName}** issue. (${result.confidence}% confidence)\n\n${result.reason}`;
       } else if (result.confidence >= 40) {
-        botText = lang === 'kn' ? `🤔 ಇದು **${scenarioName}** ಆಗಿರಬಹುದು. (${result.confidence}% ವಿಶ್ವಾಸ)\n\n${result.reason}\n\nನೀವು ಹೆಚ್ಚು ವಿವರ ಹಂಚಿಕೊಳ್ಳಬಹುದೇ?` :
-                  lang === 'hi' ? `🤔 यह **${scenarioName}** हो सकता है। (${result.confidence}% confidence)\n\n${result.reason}\n\nक्या आप और बता सकते हैं?` :
-                  lang === 'te' ? `🤔 ఇది **${scenarioName}** కావచ్చు. (${result.confidence}% confidence)\n\n${result.reason}\n\nమరింత వివరాలు చెప్పగలరా?` :
-                  `🤔 This might be a **${scenarioName}** issue. (${result.confidence}% confidence)\n\n${result.reason}\n\nCan you describe more?`;
+        botText = lang === 'kn' ? `🤔 ಇದು **${scenarioName}** ಆಗಿರಬಹುದು. (${result.confidence}% confidence)\n\n${result.reason}` :
+                  lang === 'hi' ? `🤔 यह **${scenarioName}** हो सकता है। (${result.confidence}% confidence)\n\n${result.reason}` :
+                  lang === 'te' ? `🤔 ఇది **${scenarioName}** కావచ్చు. (${result.confidence}% confidence)\n\n${result.reason}` :
+                  `🤔 This might be **${scenarioName}**. (${result.confidence}% confidence)\n\n${result.reason}`;
       } else {
-        botText = lang === 'kn' ? `❓ ನನಗೆ ಖಚಿತವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಹೆಚ್ಚು ವಿವರವಾಗಿ ವಿವರಿಸಿ.\n\nಉದಾಹರಣೆ: "ಪಾಣಿ ಬರ್ತಿಲ್ಲ", "ರಸ್ತೆಯಲ್ಲಿ ಗುಂಡಿ ಇದೆ", "ಕಚ್ಚಾ ನಾಯಿ ಕಚ್ಚಿದೆ"` :
-                  lang === 'hi' ? `❓ मुझे पक्का नहीं है। कृपया और विस्तार से बताएं।\n\nउदाहरण: "पानी नहीं आ रहा", "सड़क में गड्ढा है", "बिजली चली गई"` :
-                  lang === 'te' ? `❓ నాకు ఖచ్చితంగా తెలియదు. దయచేసి మరింత వివరంగా చెప్పండి.\n\nఉదాహరణ: "నీరు రావట్లేదు", "రోడ్డు దెబ్బతింది", "కుక్క కరిచింది"` :
-                  `❓ I'm not sure. Please describe in more detail.\n\nExamples:\n• "paani nahi aa raha" (no water)\n• "road mein hole hai" (pothole)\n• "kutta kaat raha hai" (dog biting)\n• "light chali gayi" (power cut)`;
-      }
-
-      if (result.follow_up) {
-        botText += `\n\n💬 ${result.follow_up}`;
+        botText = lang === 'kn' ? `❓ ನನಗೆ ಖಚಿತವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಹೆಚ್ಚು ವಿವರವಾಗಿ ವಿವರಿಸಿ.` :
+                  lang === 'hi' ? `❓ मुझे पक्का नहीं है। कृपया और विस्तार से बताएं।` :
+                  lang === 'te' ? `❓ నాకు ఖచ్చితంగా తెలియదు. దయచేసి మరింత వివరంగా చెప్పండి.` :
+                  `❓ I'm not sure. Please describe in more detail.`;
       }
 
       const botMsg: ChatMessage = {
@@ -114,7 +108,7 @@ export default function AIChatbot() {
       const errorMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'bot',
-        text: '❌ Sorry, something went wrong. Please try again.',
+        text: '❌ Something went wrong. Please try again.',
       };
       setMessages(prev => [...prev, errorMsg]);
     }
@@ -243,9 +237,6 @@ export default function AIChatbot() {
                 <Send size={18} />
               </button>
             </div>
-            <p className="text-[10px] text-gray-400 mt-1.5 text-center">
-              Powered by AI + 1000+ trained scenarios
-            </p>
           </div>
         </div>
       )}
