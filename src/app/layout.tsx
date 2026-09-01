@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import ClientLayout from "@/components/ClientLayout";
 
 export const metadata: Metadata = {
   title: "Namma Samasye - ನಮ್ಮ ಸಮಸ್ಯೆ",
@@ -18,7 +19,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="mobile-full">{children}</body>
+      <body className="mobile-full">
+        <ClientLayout>{children}</ClientLayout>
+      </body>
     </html>
   );
 }
