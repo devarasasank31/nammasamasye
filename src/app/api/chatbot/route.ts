@@ -3,7 +3,7 @@ import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { getScenarioById } from '@/data/scenarios';
 
 // Server-side only
-const AI_API_KEY = process.env.AI_API_KEY || '';
+const AI_API_KEY = process.env.AI_API_KEY || process.env.GROQ_API_KEY || '';
 const AI_PROVIDER = process.env.AI_PROVIDER || 'openai';
 const AI_MODEL = process.env.AI_MODEL || 'gpt-3.5-turbo';
 
@@ -36,6 +36,51 @@ Available scenario IDs:
 
 Analyze the full context. If user mentions wrong side driving + red signal + accident + broken leg, that's traffic_accident with high confidence. Match the BEST scenario based on the complete description.`;
 
+async function callOpenAICompatible(userInput: string, apiKey: string, model: string, baseUrl: string): Promise<{ scenario_id: string; confidence: number; reason: string } | null> {
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userInput },
+      ],
+      max_tokens: 200,
+      temperature: 0.3,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.log('API error:', data.error?.message || response.statusText);
+    return null;
+  }
+
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) return null;
+
+  const jsonMatch = content.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return null;
+
+  try {
+    const parsed = JSON.parse(jsonMatch[0]);
+    const scenario = getScenarioById(parsed.scenario_id);
+    if (!scenario) return null;
+    return {
+      scenario_id: parsed.scenario_id,
+      confidence: Math.min(Math.max(parsed.confidence || 50, 10), 99),
+      reason: parsed.reason || 'AI determined this category',
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { userInput, lang } = await request.json();
@@ -44,11 +89,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No input provided' }, { status: 400 });
     }
 
+    console.log('Chatbot request:', { userInput, provider: AI_PROVIDER, hasKey: !!AI_API_KEY });
+
     // Step 1: Try trained scenarios
     const trainedMatch = matchTrainedScenario(userInput);
 
     // Step 2: If trained confidence is high, use it
     if (trainedMatch && trainedMatch.confidence >= 70) {
+      console.log('Using trained result:', trainedMatch);
       return NextResponse.json({
         scenario_id: trainedMatch.scenario_id,
         confidence: trainedMatch.confidence,
@@ -62,49 +110,11 @@ export async function POST(request: NextRequest) {
       try {
         let aiResult = null;
 
-        if (AI_PROVIDER === 'openai') {
-          const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${AI_API_KEY}`,
-            },
-            body: JSON.stringify({
-              model: AI_MODEL,
-              messages: [
-                { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: userInput },
-              ],
-              max_tokens: 200,
-              temperature: 0.3,
-            }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            console.log('OpenAI API error:', data.error?.message || response.statusText);
-          } else {
-            const content = data.choices?.[0]?.message?.content;
-            if (content) {
-              const jsonMatch = content.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                try {
-                  const parsed = JSON.parse(jsonMatch[0]);
-                  const scenario = getScenarioById(parsed.scenario_id);
-                  if (scenario) {
-                    aiResult = {
-                      scenario_id: parsed.scenario_id,
-                      confidence: Math.min(Math.max(parsed.confidence || 50, 10), 99),
-                      reason: parsed.reason || 'AI determined this category',
-                    };
-                  }
-                } catch (e) {
-                  console.log('JSON parse error:', e);
-                }
-              }
-            }
-          }
+        if (AI_PROVIDER === 'groq') {
+          // Groq uses OpenAI-compatible API
+          aiResult = await callOpenAICompatible(userInput, AI_API_KEY, AI_MODEL || 'llama-3.3-70b-versatile', 'https://api.groq.com/openai/v1');
+        } else if (AI_PROVIDER === 'openai') {
+          aiResult = await callOpenAICompatible(userInput, AI_API_KEY, AI_MODEL || 'gpt-3.5-turbo', 'https://api.openai.com/v1');
         } else if (AI_PROVIDER === 'gemini') {
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${AI_API_KEY}`,
@@ -119,10 +129,7 @@ export async function POST(request: NextRequest) {
           );
 
           const data = await response.json();
-
-          if (!response.ok) {
-            console.log('Gemini API error:', data.error?.message);
-          } else {
+          if (response.ok) {
             const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
             if (content) {
               const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -137,16 +144,14 @@ export async function POST(request: NextRequest) {
                       reason: parsed.reason || 'AI determined this category',
                     };
                   }
-                } catch (e) {
-                  console.log('JSON parse error:', e);
-                }
+                } catch {}
               }
             }
           }
         }
 
-        // Use AI result if better than trained
         if (aiResult && aiResult.confidence >= 50) {
+          console.log('Using AI result:', aiResult);
           if (trainedMatch && trainedMatch.confidence >= aiResult.confidence) {
             return NextResponse.json({ ...trainedMatch, source: 'trained' });
           }
@@ -156,7 +161,7 @@ export async function POST(request: NextRequest) {
         console.log('AI API error:', err);
       }
     } else {
-      console.log('No AI_API_KEY set in .env.local');
+      console.log('No API key configured');
     }
 
     // Step 4: Use trained match
