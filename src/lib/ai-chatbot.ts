@@ -10,34 +10,38 @@ export interface AIResponse {
   source: 'trained' | 'ai' | 'fallback';
 }
 
-// Analyze user input using trained scenarios + AI API
+// Analyze user input — ALWAYS trained first, then AI as backup
 export async function analyzeUserInput(userInput: string, lang: string = 'en'): Promise<AIResponse> {
-  // Step 1: Try trained scenarios first
+  // Step 1: ALWAYS try trained scenarios first
   const trainedMatch = matchTrainedScenario(userInput);
 
-  // Step 2: If confident enough, use trained result
-  if (trainedMatch && trainedMatch.confidence >= 70) {
+  // Step 2: If trained confidence is high enough, use it directly
+  if (trainedMatch && trainedMatch.confidence >= 60) {
     return { ...trainedMatch, source: 'trained' };
   }
 
-  // Step 3: If API key exists, try AI
+  // Step 3: If API key exists, try AI to improve accuracy
   if (AI_CONFIG.API_KEY) {
     try {
       const aiResult = await callAI(userInput, lang);
-      if (aiResult && aiResult.confidence >= 50) {
+      if (aiResult && aiResult.confidence >= 60) {
+        // If trained also had a result, prefer the higher confidence one
+        if (trainedMatch && trainedMatch.confidence >= aiResult.confidence) {
+          return { ...trainedMatch, source: 'trained' };
+        }
         return { ...aiResult, source: 'ai' };
       }
     } catch (err) {
-      console.log('AI API error, falling back to trained:', err);
+      console.log('AI API error, using trained result:', err);
     }
   }
 
-  // Step 4: Fall back to trained match even if low confidence
+  // Step 4: Use trained match even with lower confidence
   if (trainedMatch) {
     return { ...trainedMatch, source: 'trained' };
   }
 
-  // Step 5: Fallback
+  // Step 5: Final fallback
   return {
     scenario_id: 'something_else',
     confidence: 30,
@@ -91,7 +95,6 @@ async function callOpenAI(userInput: string, lang: string): Promise<Omit<AIRespo
     if (!jsonMatch) return null;
     const parsed = JSON.parse(jsonMatch[0]);
 
-    // Validate scenario exists
     const scenario = getScenarioById(parsed.scenario_id);
     if (!scenario) return null;
 

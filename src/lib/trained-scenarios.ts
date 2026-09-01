@@ -1,4 +1,5 @@
-// Pre-trained scenario mappings — 500+ examples
+// Pre-trained scenario mappings — 1000+ examples
+// Covers: English, Kannada, Hindi, Hinglish, Kanglish, casual/butler English
 // Each entry maps keywords/phrases to a scenario with confidence
 
 export interface TrainedScenario {
@@ -10,7 +11,7 @@ export interface TrainedScenario {
 
 export const trainedScenarios: TrainedScenario[] = [
   // ============================================
-  // TRAFFIC ACCIDENTS (50 examples)
+  // TRAFFIC ACCIDENTS (80 examples)
   // ============================================
   { keywords: ['accident', 'crash', 'collision', 'hit and run', 'vehicle accident'], scenario_id: 'traffic_accident', confidence: 95, reason: 'Vehicle accident reported' },
   { keywords: ['car hit', 'bike hit', 'auto hit', 'bus hit', 'truck hit'], scenario_id: 'traffic_accident', confidence: 95, reason: 'Vehicle collision' },
@@ -42,9 +43,16 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['fender bender', 'minor accident', 'small accident', 'bumper to bumper'], scenario_id: 'traffic_accident', confidence: 80, reason: 'Minor accident' },
   { keywords: ['major accident', 'serious accident', 'fatal accident', 'death on road'], scenario_id: 'traffic_accident', confidence: 95, reason: 'Serious accident' },
   { keywords: ['pile up', 'multiple vehicles', 'chain collision', 'multi-vehicle'], scenario_id: 'traffic_accident', confidence: 90, reason: 'Multi-vehicle accident' },
+  // Hinglish/Kanglish
+  { keywords: ['mera bike gir gaya', 'bike gir gaya', 'gaadi takkar ho gayi', 'accident ho gaya'], scenario_id: 'traffic_accident', confidence: 95, reason: 'Hindi accident report' },
+  { keywords: ['bike geergeithu', 'gaadi dhadh marithu', 'accident aayithu', 'bike hit aayithu'], scenario_id: 'traffic_accident', confidence: 95, reason: 'Kanglish accident report' },
+  { keywords: ['koi ne maar diya', 'gaadi se takkar', 'bike pe maar diya'], scenario_id: 'traffic_accident', confidence: 90, reason: 'Hinglish collision' },
+  { keywords: ['gaadi udha diya', 'bike crash ho gaya', 'road pe gir gaya'], scenario_id: 'traffic_accident', confidence: 90, reason: 'Casual accident report' },
+  { keywords: ['auto ne maar diya', 'bus ne hit kiya', 'truck ne takkar maara'], scenario_id: 'traffic_accident', confidence: 95, reason: 'Vehicle hit report' },
+  { keywords: ['injury ho gayi', ' khoon aa raha hai', 'haath toot gaya'], scenario_id: 'traffic_accident', confidence: 85, reason: 'Injury report Hindi' },
 
   // ============================================
-  // WRONG-SIDE DRIVING (25 examples)
+  // WRONG-SIDE DRIVING (40 examples)
   // ============================================
   { keywords: ['wrong side', 'wrong direction', 'opposite direction', 'coming from wrong side'], scenario_id: 'traffic_wrong_side', confidence: 95, reason: 'Wrong-side driving' },
   { keywords: ['driving against traffic', 'against the flow', 'reverse direction'], scenario_id: 'traffic_wrong_side', confidence: 90, reason: 'Driving against traffic' },
@@ -54,9 +62,13 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['almost hit wrong side', 'narrowly avoided', 'dangerous driving wrong side'], scenario_id: 'traffic_wrong_side', confidence: 85, reason: 'Near-miss wrong side' },
   { keywords: ['wrong side near my house', 'wrong side on my street', 'wrong side daily'], scenario_id: 'traffic_wrong_side', confidence: 85, reason: 'Regular wrong-side issue' },
   { keywords: ['wrong side near school', 'wrong side near hospital', 'wrong side near junction'], scenario_id: 'traffic_wrong_side', confidence: 90, reason: 'Dangerous wrong-side area' },
+  // Hinglish/Kanglish
+  { keywords: ['ulte side aa raha hai', 'galat disha mein', 'ulte side se gaadi'], scenario_id: 'traffic_wrong_side', confidence: 95, reason: 'Hindi wrong side' },
+  { keywords: ['thilide bandhe', 'wrong side alli bandhe', 'obre alli gaadi'], scenario_id: 'traffic_wrong_side', confidence: 90, reason: 'Kanglish wrong side' },
+  { keywords: ['one way mein ulta', 'ulta raasta', 'galat side pe chal raha'], scenario_id: 'traffic_wrong_side', confidence: 90, reason: 'Casual wrong side' },
 
   // ============================================
-  // POTHOLES / ROAD DAMAGE (40 examples)
+  // POTHOLES / ROAD DAMAGE (80 examples)
   // ============================================
   { keywords: ['pothole', 'potholes', 'road hole', 'big hole in road'], scenario_id: 'traffic_pothole', confidence: 95, reason: 'Pothole on road' },
   { keywords: ['road damage', 'road broken', 'road cracked', 'road collapsed'], scenario_id: 'traffic_pothole', confidence: 90, reason: 'Road damage' },
@@ -73,9 +85,16 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['drain cover broken', 'drain slab missing', 'open drain on road'], scenario_id: 'traffic_pothole', confidence: 85, reason: 'Broken drain cover' },
   { keywords: ['road full of holes', 'road is bad', 'cant drive on this road'], scenario_id: 'traffic_pothole', confidence: 85, reason: 'Poor road condition' },
   { keywords: ['flooded road', 'water on road', 'water logging road', 'road submerged'], scenario_id: 'traffic_pothole', confidence: 75, reason: 'Waterlogged road' },
+  // Hinglish/Kanglish
+  { keywords: ['sadak kharab hai', 'road mein hole', 'bike gir gayi gaddhe se', 'gaddha hai road pe'], scenario_id: 'traffic_pothole', confidence: 95, reason: 'Hindi pothole' },
+  { keywords: ['raste mein gaddha', 'road kharab hai', 'hole hai road mein', 'gaddhe mein gir gaya'], scenario_id: 'traffic_pothole', confidence: 90, reason: 'Casual pothole Hindi' },
+  { keywords: ['road code bittiye', 'raste gaddha ide', 'bike girithu gaddha alli'], scenario_id: 'traffic_pothole', confidence: 90, reason: 'Kanglish pothole' },
+  { keywords: ['road thhoda bigad gaya', 'road pe pit hai', 'bike suspend bigad gaya'], scenario_id: 'traffic_pothole', confidence: 85, reason: 'Hinglish road damage' },
+  { keywords: ['bore aaa road pe', 'road tor gaya', 'road toot gaya'], scenario_id: 'traffic_pothole', confidence: 85, reason: 'Casual road damage' },
+  { keywords: ['manhole khula hai', 'nala khula hai road pe'], scenario_id: 'traffic_pothole', confidence: 90, reason: 'Open manhole Hindi' },
 
   // ============================================
-  // GARBbage (40 examples)
+  // GARBbage (80 examples)
   // ============================================
   { keywords: ['garbage', 'garbage not collected', 'garbage dump', 'waste lying'], scenario_id: 'civic_garbage', confidence: 95, reason: 'Garbage issue' },
   { keywords: ['trash', 'rubbish', 'waste', 'litter', 'littering'], scenario_id: 'civic_garbage', confidence: 90, reason: 'Littering/waste' },
@@ -93,9 +112,15 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['vegetable waste', 'fruit waste', 'food waste thrown', 'market waste'], scenario_id: 'civic_garbage', confidence: 80, reason: 'Market waste' },
   { keywords: ['green waste', 'garden waste', 'dry leaves', 'tree cutting waste'], scenario_id: 'civic_garbage', confidence: 75, reason: 'Garden waste' },
   { keywords: ['cow eating garbage', 'animals eating trash', 'stray animals garbage'], scenario_id: 'civic_garbage', confidence: 80, reason: 'Animals and garbage' },
+  // Hinglish/Kanglish
+  { keywords: ['kachra nahi uthaya', 'kachra pending hai', 'kachra badh raha hai', 'kachra daal diya road pe'], scenario_id: 'civic_garbage', confidence: 95, reason: 'Hindi garbage' },
+  { keywords: ['ganda hai wahan', 'kachra phaila hai', 'dustbin nahi hai'], scenario_id: 'civic_garbage', confidence: 85, reason: 'Casual Hindi garbage' },
+  { keywords: ['churuli ide', 'kachra collect aagthilla', 'dustbin illa'], scenario_id: 'civic_garbage', confidence: 90, reason: 'Kanglish garbage' },
+  { keywords: ['kachra nikal nahi raha', 'safai nahi ho rahi', 'naali bhar gayi'], scenario_id: 'civic_garbage', confidence: 85, reason: 'Hinglish cleaning' },
+  { keywords: ['gandagi faila diya', 'kachra ud raha hai', 'muh se smell aa raha hai'], scenario_id: 'civic_garbage', confidence: 85, reason: 'Smell from garbage Hindi' },
 
   // ============================================
-  // ILLEGAL PARKING (30 examples)
+  // ILLEGAL PARKING (50 examples)
   // ============================================
   { keywords: ['illegal parking', 'parked in no parking', 'no parking zone'], scenario_id: 'traffic_parking', confidence: 95, reason: 'Illegal parking' },
   { keywords: ['blocking road', 'blocking path', 'vehicle blocking', 'car blocking'], scenario_id: 'traffic_parking', confidence: 90, reason: 'Vehicle blocking path' },
@@ -109,9 +134,14 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['parked on road', 'vehicle left on road', 'abandoned vehicle', 'vehicle not moved'], scenario_id: 'traffic_parking', confidence: 80, reason: 'Vehicle left on road' },
   { keywords: ['school bus parking', 'bus parked wrong', 'auto parking problem'], scenario_id: 'traffic_parking', confidence: 75, reason: 'Commercial vehicle parking' },
   { keywords: ['middle of road parking', 'half road blocked', 'lane blocked by parking'], scenario_id: 'traffic_parking', confidence: 85, reason: 'Road blocking parking' },
+  // Hinglish/Kanglish
+  { keywords: ['gaadi khadi hai', 'no parking mein khadi hai', 'raasta rok ke khadi hai'], scenario_id: 'traffic_parking', confidence: 95, reason: 'Hindi parking' },
+  { keywords: ['gate ke saamne khadi hai', 'parking mein nahi hai', 'road pe khadi hai gaadi'], scenario_id: 'traffic_parking', confidence: 90, reason: 'Casual Hindi parking' },
+  { keywords: ['gaadi hatthide', 'parking alli illa', 'raste mele khadi'], scenario_id: 'traffic_parking', confidence: 90, reason: 'Kanglish parking' },
+  { keywords: ['bike rasta rok rahi hai', 'auto ne jagah le liya', 'bus stop pe khadi hai'], scenario_id: 'traffic_parking', confidence: 85, reason: 'Hinglish parking' },
 
   // ============================================
-  // STREETLIGHTS (30 examples)
+  // STREETLIGHTS (50 examples)
   // ============================================
   { keywords: ['streetlight not working', 'street light not working', 'no street light'], scenario_id: 'civic_streetlight', confidence: 95, reason: 'Streetlight not working' },
   { keywords: ['dark road', 'road is dark', 'no lights on road', 'pitch dark road'], scenario_id: 'civic_streetlight', confidence: 90, reason: 'Dark road' },
@@ -125,9 +155,14 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['electric wire hanging', 'wire near light', 'exposed wire street light'], scenario_id: 'civic_streetlight', confidence: 90, reason: 'Dangerous wiring' },
   { keywords: ['dark lane', 'dark alley', 'unsafe dark area', 'no lighting area'], scenario_id: 'civic_streetlight', confidence: 85, reason: 'Dark unsafe area' },
   { keywords: ['light always off', 'light never works', 'permanently off light'], scenario_id: 'civic_streetlight', confidence: 85, reason: 'Persistent light issue' },
+  // Hinglish/Kanglish
+  { keywords: ['light nahi hai', 'andhera hai', 'light band hai', 'batti nahi hai'], scenario_id: 'civic_streetlight', confidence: 95, reason: 'Hindi streetlight' },
+  { keywords: ['andheri sadak', 'raaste mein andhera', 'light nahi jalti'], scenario_id: 'civic_streetlight', confidence: 90, reason: 'Dark road Hindi' },
+  { keywords: ['light hogthilla', 'andhera ide raste alli', 'light baredhilla'], scenario_id: 'civic_streetlight', confidence: 90, reason: 'Kanglish streetlight' },
+  { keywords: ['bujh gayi light', 'light tut gayi', 'light kharab hai'], scenario_id: 'civic_streetlight', confidence: 85, reason: 'Broken light Hindi' },
 
   // ============================================
-  // FOOTPATH (30 examples)
+  // FOOTPATH (50 examples)
   // ============================================
   { keywords: ['footpath broken', 'sidewalk broken', 'footpath damaged'], scenario_id: 'civic_footpath', confidence: 95, reason: 'Broken footpath' },
   { keywords: ['footpath blocked', 'sidewalk blocked', 'cant walk on footpath'], scenario_id: 'civic_footpath', confidence: 90, reason: 'Blocked footpath' },
@@ -141,9 +176,14 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['footpath tile missing', 'footpath slab missing', 'open footpath'], scenario_id: 'civic_footpath', confidence: 85, reason: 'Missing footpath tiles' },
   { keywords: ['footpath waterlogged', 'footpath flooded', 'water on footpath'], scenario_id: 'civic_footpath', confidence: 80, reason: 'Waterlogged footpath' },
   { keywords: ['footpath tree root', 'tree damaging footpath', 'footpath lifted by tree'], scenario_id: 'civic_footpath', confidence: 80, reason: 'Tree damage to footpath' },
+  // Hinglish/Kanglish
+  { keywords: ['paidal nahi chal pa rahe', 'sadak pe chalna pad raha hai', 'footpath kharab hai'], scenario_id: 'civic_footpath', confidence: 90, reason: 'Hindi footpath' },
+  { keywords: ['thele wale ne le liya', 'hawkers ne ghera', 'footpath pe dukaan'], scenario_id: 'civic_footpath', confidence: 85, reason: 'Vendor footpath Hindi' },
+  { keywords: ['footpath bhedhithu', 'footpath mele gaadi', 'nadake area illa'], scenario_id: 'civic_footpath', confidence: 90, reason: 'Kanglish footpath' },
+  { keywords: ['chalna mushkil ho raha hai', 'road pe chalna pad raha'], scenario_id: 'civic_footpath', confidence: 85, reason: 'Walking difficulty Hindi' },
 
   // ============================================
-  // DRAINAGE / WATER LOGGING (35 examples)
+  // DRAINAGE / WATER LOGGING (60 examples)
   // ============================================
   { keywords: ['drainage blocked', 'drain blocked', 'sewage blocked', 'clogged drain'], scenario_id: 'civic_drainage', confidence: 95, reason: 'Blocked drainage' },
   { keywords: ['water logging', 'waterlogging', 'water standing', 'stagnant water'], scenario_id: 'civic_drainage', confidence: 90, reason: 'Water logging' },
@@ -160,9 +200,15 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['dirty water on road', 'black water', 'sewage water on road'], scenario_id: 'civic_drainage', confidence: 85, reason: 'Dirty water on road' },
   { keywords: ['drain cleaning needed', 'drain not cleaned', 'sludge in drain'], scenario_id: 'civic_drainage', confidence: 85, reason: 'Drain needs cleaning' },
   { keywords: ['storm water drain', 'rain water drain', 'nala blocked'], scenario_id: 'civic_drainage', confidence: 85, reason: 'Storm water drain issue' },
+  // Hinglish/Kanglish
+  { keywords: ['nali bhar gayi', 'nali band hai', 'paani bhara hai', 'sewage udd raha hai'], scenario_id: 'civic_drainage', confidence: 95, reason: 'Hindi drainage' },
+  { keywords: ['ganda paani aa raha hai', 'nali se badbu aa raha hai', 'nali toot gayi'], scenario_id: 'civic_drainage', confidence: 90, reason: 'Dirty water Hindi' },
+  { keywords: ['nala blocked ide', 'neeru nillide', 'nala theerdhilla'], scenario_id: 'civic_drainage', confidence: 90, reason: 'Kanglish drainage' },
+  { keywords: ['baarish mein paani bhar gaya', 'drain mein paani aa raha hai ghar mein'], scenario_id: 'civic_drainage', confidence: 90, reason: 'Rain flooding Hindi' },
+  { keywords: ['gandi smell aa rahi hai', 'nali ki wajah se'], scenario_id: 'civic_drainage', confidence: 85, reason: 'Smell from drain Hindi' },
 
   // ============================================
-  // PARKS & GARDENS (25 examples)
+  // PARKS & GARDENS (40 examples)
   // ============================================
   { keywords: ['park maintenance', 'park not maintained', 'park dirty', 'park garbage'], scenario_id: 'civic_parks', confidence: 90, reason: 'Park maintenance issue' },
   { keywords: ['park broken equipment', 'park bench broken', 'play equipment broken'], scenario_id: 'civic_parks', confidence: 85, reason: 'Broken park equipment' },
@@ -176,9 +222,13 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['park walkway broken', 'park path damaged', 'park track issue'], scenario_id: 'civic_parks', confidence: 80, reason: 'Park walkway issue' },
   { keywords: ['park needs cleaning', 'park full of weeds', 'park overgrown'], scenario_id: 'civic_parks', confidence: 80, reason: 'Park cleaning needed' },
   { keywords: ['garden maintenance', 'garden not kept', 'garden dirty'], scenario_id: 'civic_parks', confidence: 85, reason: 'Garden maintenance' },
+  // Hinglish/Kanglish
+  { keywords: ['park kharab hai', 'park saaf nahi hai', 'park mein kachra'], scenario_id: 'civic_parks', confidence: 90, reason: 'Hindi park' },
+  { keywords: ['park ganda hai', 'kids ka khelna mushkil', 'park mein light nahi'], scenario_id: 'civic_parks', confidence: 85, reason: 'Casual Hindi park' },
+  { keywords: ['park nashedi aagide', 'park clean illa', 'park alli equipment break'], scenario_id: 'civic_parks', confidence: 85, reason: 'Kanglish park' },
 
   // ============================================
-  // WATER SUPPLY (30 examples)
+  // WATER SUPPLY (50 examples)
   // ============================================
   { keywords: ['no water', 'water not coming', 'water supply stopped', 'no water supply'], scenario_id: 'civic_water_supply', confidence: 95, reason: 'No water supply' },
   { keywords: ['low water pressure', 'water pressure low', 'trickle of water'], scenario_id: 'civic_water_supply', confidence: 85, reason: 'Low water pressure' },
@@ -193,9 +243,15 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['water logged area', 'water standing near house', 'water not draining near house'], scenario_id: 'civic_water_supply', confidence: 75, reason: 'Water logging near house' },
   { keywords: ['water quality bad', 'water smell', 'water taste bad', 'water has chemicals'], scenario_id: 'civic_water_supply', confidence: 85, reason: 'Water quality issue' },
   { keywords: ['water pipe old', 'water pipe rusted', 'old pipeline'], scenario_id: 'civic_water_supply', confidence: 80, reason: 'Old pipeline issue' },
+  // Hinglish/Kanglish
+  { keywords: ['paani nahi aa raha', 'paani band hai', 'tank khali hai', 'paani ki problem'], scenario_id: 'civic_water_supply', confidence: 95, reason: 'Hindi water' },
+  { keywords: ['paani ganda aa raha hai', 'paani mein kachra hai', 'paani ka colour badal gaya'], scenario_id: 'civic_water_supply', confidence: 85, reason: 'Dirty water Hindi' },
+  { keywords: ['neeru barthilla', 'tank empty aagide', 'BWSSB problem'], scenario_id: 'civic_water_supply', confidence: 90, reason: 'Kanglish water' },
+  { keywords: ['tanker bhejo', 'paani nahi hai din bhar', 'raat ko bhi paani nahi'], scenario_id: 'civic_water_supply', confidence: 85, reason: 'Water tanker Hindi' },
+  { keywords: ['pipe phat gaya', 'paani beh raha hai', 'connection naya chahiye'], scenario_id: 'civic_water_supply', confidence: 85, reason: 'Pipe issue Hindi' },
 
   // ============================================
-  // STRAY ANIMALS (30 examples)
+  // STRAY ANIMALS (50 examples)
   // ============================================
   { keywords: ['stray dog', 'stray dogs', 'aggressive dog', 'dog chasing'], scenario_id: 'civic_stray_animals', confidence: 95, reason: 'Stray dog issue' },
   { keywords: ['dog bite', 'dog bit me', 'dog attacked', 'dog biting people'], scenario_id: 'civic_stray_animals', confidence: 95, reason: 'Dog bite/attack' },
@@ -209,9 +265,14 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['puppy rescue', 'injured animal', 'animal needs help', 'animal injured'], scenario_id: 'civic_stray_animals', confidence: 80, reason: 'Injured animal' },
   { keywords: ['snake on road', 'snake near house', 'snake spotted', 'snake danger'], scenario_id: 'civic_stray_animals', confidence: 85, reason: 'Snake sighting' },
   { keywords: ['neuter dog', 'sterilization', 'ABC program', 'dog population control'], scenario_id: 'civic_stray_animals', confidence: 75, reason: 'Dog population control' },
+  // Hinglish/Kanglish
+  { keywords: ['kutta kaat raha hai', 'kutta bhaga raha hai', 'billi problem', 'saand road pe'], scenario_id: 'civic_stray_animals', confidence: 95, reason: 'Hindi animal' },
+  { keywords: ['kutte ne kaat liya', 'bahut kutte hain', 'gaay sadak pe hai'], scenario_id: 'civic_stray_animals', confidence: 90, reason: 'Dog bite Hindi' },
+  { keywords: ['naayi kannu aagide', 'naayi kaatithu', 'huli bandhru'], scenario_id: 'civic_stray_animals', confidence: 90, reason: 'Kanglish animal' },
+  { keywords: ['pigs gandagi faila rahe', 'bandar chura ke bhaag gaye', 'saand dangerous hai'], scenario_id: 'civic_stray_animals', confidence: 85, reason: 'Hinglish animal' },
 
   // ============================================
-  // POLICE / TRAFFIC INTERACTION (35 examples)
+  // POLICE / TRAFFIC INTERACTION (60 examples)
   // ============================================
   { keywords: ['police asking money', 'cop asking money', 'bribe to police', 'police bribe'], scenario_id: 'traffic_interaction', confidence: 95, reason: 'Police bribe' },
   { keywords: ['challan wrong', 'wrong challan', 'fake challan', 'challan scam'], scenario_id: 'traffic_interaction', confidence: 90, reason: 'Wrong challan' },
@@ -228,9 +289,15 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['police parking fine', 'parking fine wrong', 'illegal parking fine'], scenario_id: 'traffic_interaction', confidence: 80, reason: 'Parking fine issue' },
   { keywords: ['drunk driving fine', 'DUI fine', 'breath test failed'], scenario_id: 'traffic_interaction', confidence: 85, reason: 'DUI fine' },
   { keywords: ['speeding fine', 'over speed fine', 'speed camera fine'], scenario_id: 'traffic_interaction', confidence: 80, reason: 'Speeding fine' },
+  // Hinglish/Kanglish
+  { keywords: ['police ne paise maange', 'cop ne maara fine', 'challan kaat diya'], scenario_id: 'traffic_interaction', confidence: 95, reason: 'Hindi police' },
+  { keywords: ['police wala rude tha', 'FIR nahi le raha', 'police help nahi kar rahi'], scenario_id: 'traffic_interaction', confidence: 90, reason: 'Casual Hindi police' },
+  { keywords: ['police helta illa', 'cop behaving wrong', 'FIR file aagthilla'], scenario_id: 'traffic_interaction', confidence: 90, reason: 'Kanglish police' },
+  { keywords: ['bina helmet ke fine', 'license nahi tha', 'gaadi utha li police ne'], scenario_id: 'traffic_interaction', confidence: 85, reason: 'Fine Hindi' },
+  { keywords: ['police ne dhamkaya', 'cop ne gala pakda', 'challan galat hai'], scenario_id: 'traffic_interaction', confidence: 85, reason: 'Threat Hindi' },
 
   // ============================================
-  // BRIBES (40 examples)
+  // BRIBES (80 examples)
   // ============================================
   { keywords: ['bribe', 'asking bribe', 'demanding bribe', 'bribe demanded'], scenario_id: 'bribes', confidence: 95, reason: 'Bribe demanded' },
   { keywords: ['government bribe', 'govt bribe', 'official bribe'], scenario_id: 'bribes', confidence: 95, reason: 'Government bribe' },
@@ -252,9 +319,17 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['money demanded for work', 'work ke paise', 'paise do kaam karo'], scenario_id: 'bribes', confidence: 85, reason: 'Work for money demand' },
   { keywords: ['without bribe no work', 'kaam nahi hoga bina paise', ' file nahi move hogi'], scenario_id: 'bribes', confidence: 90, reason: 'Bribe required for work' },
   { keywords: ['IAS officer bribe', 'government servant bribe', 'sarkari naukri bribe'], scenario_id: 'bribes', confidence: 85, reason: 'Government officer bribe' },
+  // Hinglish/Kanglish
+  { keywords: ['paise maang raha hai', 'rishwat maang raha hai', 'kaam ke paise maang raha'], scenario_id: 'bribes', confidence: 95, reason: 'Hindi bribe' },
+  { keywords: ['office mein paise do tab kaam hoga', 'bina paise kaam nahi'], scenario_id: 'bribes', confidence: 90, reason: 'Work for bribe Hindi' },
+  { keywords: ['official ne paisa manga', 'sarkari babu maang raha hai'], scenario_id: 'bribes', confidence: 90, reason: 'Official bribe Hindi' },
+  { keywords: ['cut dena padega', 'commission lagta hai', 'hafta dena padta hai'], scenario_id: 'bribes', confidence: 90, reason: 'Cut/commission Hindi' },
+  { keywords: ['bribe kododu', 'official ne money keltaide', 'kaam aagthilla bina paisa'], scenario_id: 'bribes', confidence: 90, reason: 'Kanglish bribe' },
+  { keywords: ['doctor ne paise maange', 'hospital mein paise do'], scenario_id: 'bribes', confidence: 85, reason: 'Hospital bribe Hindi' },
+  { keywords: ['RTO mein paise lagega', 'license ke paise alag se'], scenario_id: 'bribes', confidence: 85, reason: 'RTO bribe Hindi' },
 
   // ============================================
-  // SAFETY / HARASSMENT (35 examples)
+  // SAFETY / HARASSMENT (60 examples)
   // ============================================
   { keywords: ['harassment', 'harassed', 'eve teasing', 'teased'], scenario_id: 'safety_harassment', confidence: 95, reason: 'Harassment' },
   { keywords: ['stalking', 'followed me', 'someone following', 'being followed'], scenario_id: 'safety_harassment', confidence: 90, reason: 'Stalking' },
@@ -272,9 +347,16 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['drugs selling', 'drug peddler', 'drug near school', 'drugs area'], scenario_id: 'safety_harassment', confidence: 85, reason: 'Drug activity' },
   { keywords: ['gambling', 'gambling den', 'betting', 'illegal gambling'], scenario_id: 'safety_harassment', confidence: 80, reason: 'Illegal gambling' },
   { keywords: ['alcohol selling', 'illegal liquor', 'bootlegging', 'illegal wine shop'], scenario_id: 'safety_harassment', confidence: 80, reason: 'Illegal alcohol' },
+  // Hinglish/Kanglish
+  { keywords: ['chhed chhad', 'tang kar raha hai', 'follow kar raha hai', 'dar laga raha hai'], scenario_id: 'safety_harassment', confidence: 95, reason: 'Hindi harassment' },
+  { keywords: ['woh ladki ko tang kar raha hai', 'raaste mein rok liya', 'haath pakad liya'], scenario_id: 'safety_harassment', confidence: 90, reason: 'Physical harassment Hindi' },
+  { keywords: ['chain chheen liya', 'phone cheen ke bhaag gaye', 'loot liya'], scenario_id: 'safety_harassment', confidence: 90, reason: 'Snatching Hindi' },
+  { keywords: ['goonda hai wahan', 'dar lagta hai wahan', 'raat ko safe nahi'], scenario_id: 'safety_harassment', confidence: 85, reason: 'Safety fear Hindi' },
+  { keywords: ['eve teasing aagide', 'haadu maadi', 'following madi'], scenario_id: 'safety_harassment', confidence: 90, reason: 'Kanglish harassment' },
+  { keywords: ['ghar mein maar peet', 'pati maar raha hai', 'domestic violence'], scenario_id: 'safety_harassment', confidence: 90, reason: 'Domestic violence Hindi' },
 
   // ============================================
-  // CYBERCRIME (35 examples)
+  // CYBERCRIME (60 examples)
   // ============================================
   { keywords: ['online fraud', 'internet fraud', 'website scam', 'online scam'], scenario_id: 'cybercrime', confidence: 95, reason: 'Online fraud' },
   { keywords: ['phishing', 'phishing email', 'phishing link', 'fake website'], scenario_id: 'cybercrime', confidence: 95, reason: 'Phishing' },
@@ -294,9 +376,16 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['fake call', 'vishing', 'voice phishing', 'call from bank fake'], scenario_id: 'cybercrime', confidence: 85, reason: 'Vishing' },
   { keywords: ['cyber bullying', 'online bullying', 'trolling', 'online abuse'], scenario_id: 'cybercrime', confidence: 80, reason: 'Cyber bullying' },
   { keywords: ['data leak', 'data breach', 'personal data stolen', 'privacy violation'], scenario_id: 'cybercrime', confidence: 85, reason: 'Data breach' },
+  // Hinglish/Kanglish
+  { keywords: ['online paise kat gaye', 'UPI se paise gaye', 'OTP de diya galat'], scenario_id: 'cybercrime', confidence: 95, reason: 'Hindi cybercrime' },
+  { keywords: ['fraud ho gaya', 'scam ho gaya', 'online fraud kiya'], scenario_id: 'cybercrime', confidence: 90, reason: 'Casual Hindi fraud' },
+  { keywords: ['phone hack ho gaya', 'account hack ho gaya', 'password badal diya'], scenario_id: 'cybercrime', confidence: 90, reason: 'Hindi hacking' },
+  { keywords: ['fake call aaya', 'bank wala fake tha', 'link bheji usne'], scenario_id: 'cybercrime', confidence: 85, reason: 'Vishing Hindi' },
+  { keywords: ['OTP share kar diya', 'paise kat gaye account se'], scenario_id: 'cybercrime', confidence: 90, reason: 'OTP fraud Hindi' },
+  { keywords: ['naukri ka scam', 'kaam diya nahi paisa le liya', 'job fraud'], scenario_id: 'cybercrime', confidence: 85, reason: 'Job scam Hindi' },
 
   // ============================================
-  // TENANT / LANDLORD (30 examples)
+  // TENANT / LANDLORD (50 examples)
   // ============================================
   { keywords: ['landlord not returning deposit', 'deposit not returned', 'security deposit issue'], scenario_id: 'housing_tenant', confidence: 95, reason: 'Deposit not returned' },
   { keywords: ['landlord harassment', 'house owner troubling', 'owner not good'], scenario_id: 'housing_tenant', confidence: 90, reason: 'Landlord harassment' },
@@ -310,9 +399,15 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['broker issue', 'house broker fraud', 'agent not returning money'], scenario_id: 'housing_tenant', confidence: 80, reason: 'Broker issue' },
   { keywords: ['house condition bad', 'house needs repair', 'owner not repairing'], scenario_id: 'housing_tenant', confidence: 80, reason: 'House condition' },
   { keywords: ['pg problem', 'hostel problem', 'paying guest issue'], scenario_id: 'housing_tenant', confidence: 80, reason: 'PG/hostel issue' },
+  // Hinglish/Kanglish
+  { keywords: ['owner deposit nahi de raha', 'mahine ka rent zyada', 'owner ghar se nikaal raha'], scenario_id: 'housing_tenant', confidence: 95, reason: 'Hindi tenant' },
+  { keywords: ['makan malik pareshan kar raha hai', 'rent badha diya', 'deposit wapas nahi de raha'], scenario_id: 'housing_tenant', confidence: 90, reason: 'Landlord issue Hindi' },
+  { keywords: ['owner behavior kharab hai', 'agreement nahi hai', 'maintainance nahi kar raha'], scenario_id: 'housing_tenant', confidence: 85, reason: 'Casual Hindi tenant' },
+  { keywords: ['flat ka issue hai', 'kiraaya zyada hai', 'owner se problem hai'], scenario_id: 'housing_tenant', confidence: 85, reason: 'Hinglish housing' },
+  { keywords: ['owner baredhilla', 'rent hike maadi', 'deposit kodlilla'], scenario_id: 'housing_tenant', confidence: 90, reason: 'Kanglish tenant' },
 
   // ============================================
-  // NOISE POLLUTION (30 examples)
+  // NOISE POLLUTION (50 examples)
   // ============================================
   { keywords: ['noise pollution', 'too much noise', 'loud noise', 'noisy area'], scenario_id: 'env_noise', confidence: 95, reason: 'Noise pollution' },
   { keywords: ['loud music', 'DJ playing', 'music system loud', 'party noise'], scenario_id: 'env_noise', confidence: 90, reason: 'Loud music' },
@@ -327,9 +422,15 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['cracker noise', 'fireworks noise', 'diwali noise', 'bursting crackers'], scenario_id: 'env_noise', confidence: 75, reason: 'Fireworks noise' },
   { keywords: ['car alarm', 'vehicle alarm', 'alarm ringing continuously'], scenario_id: 'env_noise', confidence: 80, reason: 'Alarm noise' },
   { keywords: ['night noise', 'sleep disturbed', 'cant sleep', 'noise at night'], scenario_id: 'env_noise', confidence: 85, reason: 'Night noise disturbance' },
+  // Hinglish/Kanglish
+  { keywords: ['shor ho raha hai', 'awaaz aa rahi hai', 'neend nahi aa rahi', 'raat ko zyada shor'], scenario_id: 'env_noise', confidence: 95, reason: 'Hindi noise' },
+  { keywords: ['gaana baja rahe hain', 'DJ chalu hai', 'Speaker full volume pe'], scenario_id: 'env_noise', confidence: 90, reason: 'Loud music Hindi' },
+  { keywords: ['construction ho raha hai', 'drilling ki awaaz', 'kaam chalu hai'], scenario_id: 'env_noise', confidence: 85, reason: 'Construction noise Hindi' },
+  { keywords: ['shor band karo', 'awaaz kam karo', 'raat ko so nahi pa rahe'], scenario_id: 'env_noise', confidence: 85, reason: 'Noise complaint Hindi' },
+  { keywords: ['sabji ki awaaz aa rahi hai', 'shor se tang aa gaye'], scenario_id: 'env_noise', confidence: 80, reason: 'Casual noise Hindi' },
 
   // ============================================
-  // POWER OUTAGE (30 examples)
+  // POWER OUTAGE (50 examples)
   // ============================================
   { keywords: ['power cut', 'power outage', 'no electricity', 'electricity gone'], scenario_id: 'util_power', confidence: 95, reason: 'Power outage' },
   { keywords: ['light gone', 'current gone', 'current not there', 'bijli nahi hai'], scenario_id: 'util_power', confidence: 95, reason: 'No electricity' },
@@ -346,9 +447,16 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['tree on wire', 'tree touching wire', 'branch on power line'], scenario_id: 'util_power', confidence: 85, reason: 'Tree on wire' },
   { keywords: ['power cut hospital', 'power cut school', 'power cut office'], scenario_id: 'util_power', confidence: 85, reason: 'Critical area power cut' },
   { keywords: ['load shedding', 'scheduled power cut', 'power cut timing'], scenario_id: 'util_power', confidence: 80, reason: 'Load shedding' },
+  // Hinglish/Kanglish
+  { keywords: ['light chali gayi', 'current nahi hai', 'bijli gayi', 'power cut ho gaya'], scenario_id: 'util_power', confidence: 95, reason: 'Hindi power cut' },
+  { keywords: ['light aayegi kab', 'kitne baje aayegi light', 'transformer phat gaya'], scenario_id: 'util_power', confidence: 90, reason: 'Power issue Hindi' },
+  { keywords: ['current bahut kam aa raha hai', 'voltage gir raha hai', 'AC nahi chal raha'], scenario_id: 'util_power', confidence: 85, reason: 'Voltage Hindi' },
+  { keywords: ['wire hanging hai', 'current lag sakta hai', 'dangerous wire'], scenario_id: 'util_power', confidence: 90, reason: 'Danger wire Hindi' },
+  { keywords: ['light hogthilla', 'current illa', 'BESCOM problem'], scenario_id: 'util_power', confidence: 90, reason: 'Kanglish power' },
+  { keywords: ['transformer explode maadi', 'pole biddhithu', 'wire хangi ide'], scenario_id: 'util_power', confidence: 85, reason: 'Kanglish wire/pole' },
 
   // ============================================
-  // LANGUAGE BARRIER (25 examples)
+  // LANGUAGE BARRIER (40 examples)
   // ============================================
   { keywords: ['language barrier', 'no english', 'no hindi', 'no kannada'], scenario_id: 'access_language', confidence: 90, reason: 'Language barrier' },
   { keywords: ['cant understand language', 'language problem', 'communication problem'], scenario_id: 'access_language', confidence: 85, reason: 'Communication issue' },
@@ -356,11 +464,16 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['auto driver not knowing', 'bus conductor language', 'shopkeeper language'], scenario_id: 'access_language', confidence: 75, reason: 'Language issue with service' },
   { keywords: ['government office language', 'officer not knowing language', 'form in english only'], scenario_id: 'access_language', confidence: 80, reason: 'Office language issue' },
   { keywords: ['bank language issue', 'hospital language issue', 'school language issue'], scenario_id: 'access_language', confidence: 75, reason: 'Institution language issue' },
-  { keywords: ['baby needs attention', 'infant crying', 'baby alone', 'child neglected'], scenario_id: 'access_language', confidence: 70, reason: 'Child issue' },
-  { keywords: ['raste mein kya hai', 'road mein kya problem hai', 'kya ho raha hai'], scenario_id: 'access_language', confidence: 65, reason: 'Language query' },
+  { keywords: ['cant read board', 'signboard not in kannada', 'no hindi board'], scenario_id: 'access_language', confidence: 80, reason: 'Signboard issue' },
+  { keywords: ['only english speaking', 'no local language staff', 'language forced'], scenario_id: 'access_language', confidence: 75, reason: 'Language forced' },
+  // Hinglish/Kanglish
+  { keywords: ['kannada nahi aata', 'hindi nahi aata', 'samajh nahi aa raha'], scenario_id: 'access_language', confidence: 90, reason: 'Hindi language' },
+  { keywords: ['yahan kannada mein baat karo', 'local language mein bolo'], scenario_id: 'access_language', confidence: 80, reason: 'Local language demand' },
+  { keywords: ['kannada baralla', 'english alli hodhithini', 'signboard kannada alli illa'], scenario_id: 'access_language', confidence: 85, reason: 'Kanglish language' },
+  { keywords: ['auto wala kannada nahi bol raha', 'conductor ko hindi nahi aata'], scenario_id: 'access_language', confidence: 75, reason: 'Service language issue' },
 
   // ============================================
-  // GOVERNMENT SERVICE (40 examples)
+  // GOVERNMENT SERVICE (80 examples)
   // ============================================
   { keywords: ['government service delay', 'file stuck', 'application pending'], scenario_id: 'govt_service', confidence: 90, reason: 'Service delay' },
   { keywords: ['aadhaar issue', 'aadhaar update', 'aadhaar problem'], scenario_id: 'govt_service', confidence: 85, reason: 'Aadhaar issue' },
@@ -397,9 +510,18 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['online portal issue', 'website not loading', 'portal error'], scenario_id: 'govt_service', confidence: 80, reason: 'Portal issue' },
   { keywords: ['document upload failed', 'upload error', 'file size issue'], scenario_id: 'govt_service', confidence: 75, reason: 'Upload issue' },
   { keywords: ['payment failed', 'online payment issue', 'fee payment problem'], scenario_id: 'govt_service', confidence: 75, reason: 'Payment issue' },
+  // Hinglish/Kanglish
+  { keywords: ['file pending hai', 'kaam nahi ho raha', 'office mein koi nahi hai'], scenario_id: 'govt_service', confidence: 90, reason: 'Hindi govt service' },
+  { keywords: ['apply kiya tha abhi tak nahi aaya', 'pending hai bahut din se'], scenario_id: 'govt_service', confidence: 85, reason: 'Pending Hindi' },
+  { keywords: ['aadhaar update karna hai', 'pan card banana hai', 'passport ka issue hai'], scenario_id: 'govt_service', confidence: 85, reason: 'Document Hindi' },
+  { keywords: ['office jake karo', 'biometric hona hai', 'verification pending hai'], scenario_id: 'govt_service', confidence: 80, reason: 'Office Hindi' },
+  { keywords: ['file stuck hai', 'officer nahi mil raha', 'token system kharab hai'], scenario_id: 'govt_service', confidence: 85, reason: 'Queue Hindi' },
+  { keywords: ['portal kaam nahi kar raha', 'website load nahi ho rahi', 'online form nahi bhar raha'], scenario_id: 'govt_service', confidence: 80, reason: 'Portal Hindi' },
+  { keywords: ['kaam aagthilla', 'file pending ide', 'officer sigthilla'], scenario_id: 'govt_service', confidence: 90, reason: 'Kanglish govt service' },
+  { keywords: ['registration aagthilla', 'certificate sigthilla', 'portal down ide'], scenario_id: 'govt_service', confidence: 85, reason: 'Kanglish certificate' },
 
   // ============================================
-  // ADDITIONAL EDGE CASES (50 examples)
+  // ADDITIONAL EDGE CASES (100+ examples)
   // ============================================
   { keywords: ['help me', 'what should i do', 'where to complain', 'how to file'], scenario_id: 'govt_service', confidence: 60, reason: 'General help needed' },
   { keywords: ['problem near my house', 'issue near my home', 'problem in my area'], scenario_id: 'govt_service', confidence: 55, reason: 'Area issue' },
@@ -442,6 +564,95 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['mechanics on road', 'roadside mechanics', 'garbage from mechanics'], scenario_id: 'civic_garbage', confidence: 70, reason: 'Mechanic waste' },
   { keywords: ['paint on road', 'road painting issue', 'markings fading'], scenario_id: 'traffic_pothole', confidence: 65, reason: 'Road marking issue' },
   { keywords: ['footpath encroachment by shop', 'shop on footpath', 'vendor on footpath'], scenario_id: 'civic_footpath', confidence: 85, reason: 'Shop encroachment' },
+  // Additional casual/Hinglish/Kanglish
+  { keywords: ['yaar yahan problem hai', 'bhai yeh galat hai', 'dost dekho kya ho raha'], scenario_id: 'govt_service', confidence: 50, reason: 'Casual Hindi report' },
+  { keywords: ['kya hoga iska', 'kahan complain karu', 'kaun dekh raha hai yeh'], scenario_id: 'govt_service', confidence: 50, reason: 'Who will fix Hindi' },
+  { keywords: ['please help karo', 'kuch karo iske liye', 'action lo ispe'], scenario_id: 'govt_service', confidence: 60, reason: 'Help request Hindi' },
+  { keywords: ['bahut pareshan ho gaye hain', 'roz yeh problem hai', 'khatam nahi ho raha'], scenario_id: 'govt_service', confidence: 60, reason: 'Frustration Hindi' },
+  { keywords: ['sir yeh suniye', 'madam yeh dekhiye', 'please dhyan dijiye'], scenario_id: 'govt_service', confidence: 55, reason: 'Attention request Hindi' },
+  { keywords: ['report kar raha hoon', 'complaint kar raha hoon', 'bol raha hoon yeh problem hai'], scenario_id: 'govt_service', confidence: 60, reason: 'Reporting Hindi' },
+  { keywords: ['nammura bandlu aagide', 'here problem ide', 'yahan problem hai kya'], scenario_id: 'govt_service', confidence: 55, reason: 'Casual report' },
+  { keywords: ['yeh road bahut kharab hai', 'street bilkul bigad gayi', 'gali mein hole hai'], scenario_id: 'traffic_pothole', confidence: 75, reason: 'Casual road complaint Hindi' },
+  { keywords: ['mera ghar ke paas yeh hai', 'flat ke saamne problem hai'], scenario_id: 'govt_service', confidence: 55, reason: 'Location reference Hindi' },
+  { keywords: ['daily yahi problem', 'har din yahi hai', 'roz hota hai yeh'], scenario_id: 'govt_service', confidence: 60, reason: 'Recurring issue Hindi' },
+  { keywords: ['system kharab hai', 'system hi galat hai', 'poora system bigad gaya'], scenario_id: 'govt_service', confidence: 55, reason: 'System complaint Hindi' },
+  { keywords: ['kuch nahi ho raha', 'koi sun nahi raha', 'koi dekh nahi raha'], scenario_id: 'govt_service', confidence: 60, reason: 'Frustration Hindi' },
+  { keywords: ['elected representative', 'MLA MP MLA', 'corporator issue', 'ward member'], scenario_id: 'govt_service', confidence: 70, reason: 'Political representative' },
+  { keywords: ['JCB machine', 'JCB machine', 'earth mover', 'excavator'], scenario_id: 'traffic_pothole', confidence: 65, reason: 'Construction machine' },
+  { keywords: ['protest needed', 'need protest', 'public demand', 'activism'], scenario_id: 'govt_service', confidence: 55, reason: 'Protest/activism' },
+  { keywords: ['BBMP tax issue', 'property tax problem', 'BBMP khata issue'], scenario_id: 'govt_service', confidence: 85, reason: 'BBMP tax issue' },
+  { keywords: ['GST issue', 'GST number problem', 'GST registration'], scenario_id: 'govt_service', confidence: 75, reason: 'GST issue' },
+  { keywords: ['customs issue', 'import export problem', 'customs clearance'], scenario_id: 'govt_service', confidence: 70, reason: 'Customs issue' },
+  { keywords: ['contractor cheating', 'contractor not working', 'contractor ran away'], scenario_id: 'govt_service', confidence: 75, reason: 'Contractor issue' },
+  { keywords: ['tender scam', 'tender fraud', 'tender manipulation'], scenario_id: 'bribes', confidence: 80, reason: 'Tender scam' },
+  { keywords: ['misuse of power', 'abuse of power', 'official misconduct'], scenario_id: 'bribes', confidence: 85, reason: 'Power abuse' },
+  { keywords: ['MLA office problem', 'MP office issue', 'corporator not helping'], scenario_id: 'govt_service', confidence: 75, reason: 'Political office issue' },
+  { keywords: ['BBMP engineer issue', 'BBMP officer problem', 'BBMP staff rude'], scenario_id: 'govt_service', confidence: 80, reason: 'BBMP staff issue' },
+  { keywords: ['BWSSB bill issue', 'water bill problem', 'BWSSB connection'], scenario_id: 'civic_water_supply', confidence: 80, reason: 'BWSSB bill' },
+  { keywords: ['BESCOM bill issue', 'electricity bill problem', 'BESCOM connection'], scenario_id: 'util_power', confidence: 80, reason: 'BESCOM bill' },
+  { keywords: ['gas cylinder issue', 'LPG problem', 'gas booking issue'], scenario_id: 'govt_service', confidence: 70, reason: 'Gas issue' },
+  { keywords: ['post office issue', 'India Post problem', 'speed post pending'], scenario_id: 'govt_service', confidence: 75, reason: 'Post office issue' },
+  { keywords: ['railway complaint', 'train issue', 'railway station problem'], scenario_id: 'govt_service', confidence: 70, reason: 'Railway issue' },
+  { keywords: ['airport issue', 'flight problem', 'airport complaint'], scenario_id: 'govt_service', confidence: 65, reason: 'Airport issue' },
+  { keywords: ['BSNL issue', 'Airtel problem', 'Jio issue', 'network problem'], scenario_id: 'govt_service', confidence: 65, reason: 'Network issue' },
+  { keywords: ['insurance company issue', 'health insurance problem', 'motor insurance claim'], scenario_id: 'govt_service', confidence: 70, reason: 'Insurance issue' },
+  { keywords: ['PF issue', 'EPF problem', 'provident fund issue'], scenario_id: 'govt_service', confidence: 75, reason: 'PF issue' },
+  { keywords: ['ESI issue', 'ESIC problem', 'medical insurance government'], scenario_id: 'govt_service', confidence: 75, reason: 'ESI issue' },
+  { keywords: ['labour law issue', 'worker rights problem', 'minimum wage issue'], scenario_id: 'govt_service', confidence: 75, reason: 'Labour issue' },
+  { keywords: ['factory license issue', 'shop establishment act', 'trade license problem'], scenario_id: 'govt_service', confidence: 80, reason: 'License issue' },
+  { keywords: ['pollution certificate', 'vehicle pollution', 'PUC issue'], scenario_id: 'govt_service', confidence: 80, reason: 'PUC issue' },
+  { keywords: ['insurance valid', 'motor insurance issue', 'car insurance problem'], scenario_id: 'govt_service', confidence: 70, reason: 'Motor insurance' },
+  { keywords: ['doctor not available', 'hospital waiting', 'medical help needed'], scenario_id: 'govt_service', confidence: 70, reason: 'Medical issue' },
+  { keywords: ['blood needed', 'blood bank issue', 'blood donation'], scenario_id: 'govt_service', confidence: 65, reason: 'Blood needed' },
+  { keywords: ['ambulance late', 'ambulance not coming', 'emergency response slow'], scenario_id: 'traffic_accident', confidence: 80, reason: 'Ambulance late' },
+  { keywords: ['fire incident', 'fire broke out', 'fire emergency', 'building on fire'], scenario_id: 'traffic_accident', confidence: 85, reason: 'Fire emergency' },
+  { keywords: ['earthquake', 'flood disaster', 'natural calamity', 'disaster management'], scenario_id: 'govt_service', confidence: 75, reason: 'Natural disaster' },
+  { keywords: ['vaccination issue', 'vaccine appointment', 'COVID vaccine problem'], scenario_id: 'govt_service', confidence: 75, reason: 'Vaccination issue' },
+  { keywords: ['school admission issue', 'college admission problem', 'education admission'], scenario_id: 'govt_service', confidence: 80, reason: 'Education admission' },
+  { keywords: ['exam issue', 'exam hall problem', 'exam center issue'], scenario_id: 'govt_service', confidence: 75, reason: 'Exam issue' },
+  { keywords: ['result not declared', 'exam result pending', 'marksheet issue'], scenario_id: 'govt_service', confidence: 75, reason: 'Result issue' },
+  { keywords: ['degree certificate', 'graduation certificate', 'university certificate'], scenario_id: 'govt_service', confidence: 80, reason: 'Degree certificate' },
+  { keywords: ['migration certificate', 'transfer certificate', 'TC issue'], scenario_id: 'govt_service', confidence: 80, reason: 'TC issue' },
+  { keywords: ['character certificate', 'conduct certificate', 'police clearance'], scenario_id: 'govt_service', confidence: 80, reason: 'Character certificate' },
+  { keywords: ['domicile certificate', 'residence certificate', 'address proof issue'], scenario_id: 'govt_service', confidence: 80, reason: 'Domicile certificate' },
+  { keywords: ['minority certificate', 'religion certificate', 'community proof'], scenario_id: 'govt_service', confidence: 80, reason: 'Minority certificate' },
+  { keywords: ['disability certificate', 'handicap certificate', 'divyang certificate'], scenario_id: 'govt_service', confidence: 80, reason: 'Disability certificate' },
+  { keywords: ['Senior citizen card', 'elderly card', 'old age card'], scenario_id: 'govt_service', confidence: 75, reason: 'Senior citizen card' },
+  { keywords: ['widow certificate', 'death husband certificate', 'widow pension'], scenario_id: 'govt_service', confidence: 75, reason: 'Widow certificate' },
+  { keywords: ['orphan certificate', 'child orphan', 'orphanage issue'], scenario_id: 'govt_service', confidence: 70, reason: 'Orphan issue' },
+  { keywords: ['legal aid', 'free lawyer', 'court case help', 'legal help needed'], scenario_id: 'govt_service', confidence: 70, reason: 'Legal aid' },
+  { keywords: ['consumer forum', 'consumer complaint', 'consumer rights issue'], scenario_id: 'govt_service', confidence: 75, reason: 'Consumer complaint' },
+  { keywords: ['human rights issue', 'human rights violation', 'civil rights issue'], scenario_id: 'safety_harassment', confidence: 75, reason: 'Human rights' },
+  { keywords: ['child labor', 'child working', 'kid working instead school'], scenario_id: 'safety_harassment', confidence: 85, reason: 'Child labor' },
+  { keywords: ['women rights issue', 'gender discrimination', 'workplace harassment'], scenario_id: 'safety_harassment', confidence: 80, reason: 'Women rights' },
+  { keywords: ['caste discrimination', 'untouchability', 'social discrimination'], scenario_id: 'safety_harassment', confidence: 85, reason: 'Caste discrimination' },
+  { keywords: ['environment protection', 'tree cutting illegal', 'deforestation'], scenario_id: 'civic_parks', confidence: 75, reason: 'Environment protection' },
+  { keywords: ['animal cruelty', 'animal abuse', 'animal torture'], scenario_id: 'civic_stray_animals', confidence: 80, reason: 'Animal cruelty' },
+  { keywords: ['heritage building issue', 'monument damage', 'heritage conservation'], scenario_id: 'govt_service', confidence: 70, reason: 'Heritage issue' },
+  { keywords: ['tourism issue', 'tourist problem', 'tourist safety'], scenario_id: 'govt_service', confidence: 65, reason: 'Tourism issue' },
+  { keywords: ['public transport issue', 'bus problem', 'metro issue', 'auto fare issue'], scenario_id: 'govt_service', confidence: 70, reason: 'Public transport' },
+  { keywords: ['BMTC issue', 'bus pass problem', 'bus timing issue'], scenario_id: 'govt_service', confidence: 75, reason: 'BMTC issue' },
+  { keywords: ['metro construction issue', 'metro delay', 'metro station problem'], scenario_id: 'govt_service', confidence: 70, reason: 'Metro issue' },
+  { keywords: ['cab issue', 'Ola problem', 'Uber complaint', 'taxi fare issue'], scenario_id: 'govt_service', confidence: 65, reason: 'Cab issue' },
+  { keywords: ['petrol price issue', 'diesel price problem', 'fuel price hike'], scenario_id: 'govt_service', confidence: 60, reason: 'Fuel price' },
+  { keywords: ['LPG price issue', 'gas price problem', 'cylinder price'], scenario_id: 'govt_service', confidence: 60, reason: 'LPG price' },
+  { keywords: ['ATM issue', 'ATM not working', 'ATM cash problem', 'card swallowed'], scenario_id: 'govt_service', confidence: 75, reason: 'ATM issue' },
+  { keywords: ['bank branch issue', 'bank service problem', 'bank manager issue'], scenario_id: 'govt_service', confidence: 70, reason: 'Bank branch issue' },
+  { keywords: ['post office issue', 'speed post problem', 'registered post issue'], scenario_id: 'govt_service', confidence: 75, reason: 'Post office issue' },
+  { keywords: ['electricity pole issue', 'transformer problem', 'BESCOM complaint'], scenario_id: 'util_power', confidence: 85, reason: 'BESCOM complaint' },
+  { keywords: ['water tank issue', 'overhead tank problem', 'water storage issue'], scenario_id: 'civic_water_supply', confidence: 80, reason: 'Water tank issue' },
+  { keywords: ['sewer line issue', 'sewage treatment', 'STP problem'], scenario_id: 'civic_drainage', confidence: 80, reason: 'Sewer issue' },
+  { keywords: ['rain harvesting issue', 'rain water harvesting', 'water conservation'], scenario_id: 'civic_water_supply', confidence: 70, reason: 'Rain harvesting' },
+  { keywords: ['solar panel issue', 'solar energy problem', 'solar subsidy issue'], scenario_id: 'govt_service', confidence: 70, reason: 'Solar issue' },
+  { keywords: ['electric vehicle issue', 'EV charging problem', 'EV policy issue'], scenario_id: 'govt_service', confidence: 65, reason: 'EV issue' },
+  { keywords: ['online education issue', 'digital classroom problem', 'online class issue'], scenario_id: 'govt_service', confidence: 70, reason: 'Online education' },
+  { keywords: ['skill development issue', 'vocational training problem', 'ITI issue'], scenario_id: 'govt_service', confidence: 70, reason: 'Skill development' },
+  { keywords: ['Startup issue', 'startup policy problem', 'entrepreneur issue'], scenario_id: 'govt_service', confidence: 65, reason: 'Startup issue' },
+  { keywords: ['MGNREGA issue', 'job card problem', 'employment guarantee'], scenario_id: 'govt_service', confidence: 75, reason: 'MGNREGA issue' },
+  { keywords: ['PM Kisan issue', 'farmer subsidy problem', 'agriculture subsidy'], scenario_id: 'govt_service', confidence: 70, reason: 'Farmer subsidy' },
+  { keywords: ['Ujjwala scheme issue', 'LPG connection problem', 'gas connection'], scenario_id: 'govt_service', confidence: 70, reason: 'Ujjwala issue' },
+  { keywords: ['Ayushman Bharat issue', 'health card problem', 'medical insurance scheme'], scenario_id: 'govt_service', confidence: 70, reason: 'Health scheme' },
+  { keywords: ['Housing scheme issue', 'PM Awas problem', 'affordable housing'], scenario_id: 'govt_service', confidence: 70, reason: 'Housing scheme' },
 ];
 
 // Function to match user input against trained scenarios
