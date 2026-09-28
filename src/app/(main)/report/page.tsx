@@ -6,6 +6,7 @@ import { Language, IncidentCategory, AttachmentMeta } from '@/types';
 import { getStoredLanguage, setStoredLanguage, getOrCreateSession } from '@/services/session';
 import { getScenarioById } from '@/data/scenarios';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
+import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { t } from '@/lib/translations';
 import { createIncident } from '@/services/incident';
 import FileUploader from '@/components/FileUploader';
@@ -184,7 +185,7 @@ export default function ReportPage() {
           setTimeout(() => setShowEvidenceForm(true), 300);
         }
         if (nextQ.type === 'location') {
-          addBotMessage('📍 Search for the exact spot, use your current location, or tap the map to drop a pin.');
+          addBotMessage(t('bot.map_hint', lang));
           setTimeout(() => setShowLocationPicker(true), 300);
         }
       }, 300);
@@ -216,8 +217,13 @@ export default function ReportPage() {
   };
 
   const isYesAnswer = (answer: string) => {
-    const lower = answer.toLowerCase().trim();
-    return lower === 'yes' || lower === 'ಹೌದು' || lower === 'हाँ' || lower === 'हूँ' || lower === 'అవును';
+    const lower = answer.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+    return [
+      'yes', 'yeah', 'yep', 'yup', 'sure', 'ok', 'okay',
+      'haan', 'ha', 'han', 'haan ji', 'ha ji', 'ji haan', 'haanji',
+      'houdu', 'avunu', 'geniga',
+        'ಹೌದು', 'हाँ', 'हां', 'हूँ', 'हूं', 'जी हाँ', 'అవును', 'ఔను',
+    ].includes(lower);
   };
 
   // Starts a scenario's workflow at its first question
@@ -231,7 +237,7 @@ export default function ReportPage() {
       setCurrentQuestionIdx(0);
       if (firstQ.type === 'evidence') setTimeout(() => setShowEvidenceForm(true), 300);
       if (firstQ.type === 'location') {
-        addBotMessage('📍 Search for the exact spot, use your current location, or tap the map to drop a pin.');
+        addBotMessage(t('bot.map_hint', lang));
         setTimeout(() => setShowLocationPicker(true), 300);
       }
     }
@@ -239,8 +245,8 @@ export default function ReportPage() {
 
   const handleCategorySelect = (scenarioId: string) => {
     if (scenarioId === 'something_else') {
-      addUserMessage("Something Else");
-      addBotMessage("Please describe your issue in detail.");
+      addUserMessage(t('bot.something_else', lang));
+      addBotMessage(t('bot.describe_detail', lang));
       setStep('free_text');
       return;
     }
@@ -248,7 +254,7 @@ export default function ReportPage() {
     if (scenario) {
       startScenario(scenario, scenario.name);
     } else {
-      addBotMessage("Please describe your issue in detail.");
+      addBotMessage(t('bot.describe_detail', lang));
       setStep('free_text');
     }
   };
@@ -265,13 +271,26 @@ export default function ReportPage() {
     if (matches.length > 0 && matches[0].confidence > 50) {
       let response = `${t('bot.scenario_match', lang)}:\n\n`;
       matches.forEach((m, i) => { response += `${i + 1}. ${m.scenarioName} — ${m.confidence}%\n   ${m.reason}\n\n`; });
-      response += `\n${t('bot.disclaimer', lang)}\n\nPlease select the most relevant scenario.`;
+      response += `\n${t('bot.disclaimer', lang)}\n\n${t('bot.select_scenario', lang)}`;
       addBotMessage(response);
       setStep('scenario_match');
-    } else {
-      addBotMessage("Please select the most relevant category below.");
-      setStep('category_select');
+      return;
     }
+
+    // Keyword match was too weak — the trained matcher also understands
+    // transliterated Hindi/Kannada and mixed-language phrasing, so give it a
+    // shot before dropping the citizen back onto the raw category grid.
+    const trained = matchTrainedScenario(text);
+    const scenario = trained && trained.confidence >= 70
+      ? getScenarioById(trained.scenario_id)
+      : null;
+    if (scenario) {
+      startScenario(scenario, scenario.name);
+      return;
+    }
+
+    addBotMessage(t('bot.select_category', lang));
+    setStep('category_select');
   };
 
   const handleScenarioConfirm = (scenarioId: string) => {
@@ -293,7 +312,7 @@ export default function ReportPage() {
       const evKeywords = ['photo', 'video', 'evidence', 'witness', 'screenshots', 'communication', 'documents', 'notices'];
       if (evKeywords.some(kw => question.id.toLowerCase().includes(kw))) {
         setTimeout(() => {
-          addBotMessage("📎 Paste your evidence links below. You can add multiple links.");
+          addBotMessage(t('bot.evidence_links', lang));
           setShowEvidenceForm(true);
         }, 300);
         return;
@@ -303,7 +322,7 @@ export default function ReportPage() {
     // Evidence type question
     if (question.type === 'evidence') {
       setTimeout(() => {
-        addBotMessage("📎 Paste your evidence links below. You can add multiple links.");
+        addBotMessage(t('bot.evidence_links', lang));
         setShowEvidenceForm(true);
       }, 300);
       return;
@@ -322,16 +341,16 @@ export default function ReportPage() {
     if (!evidenceInput.trim()) return;
     const link = evidenceInput.trim();
     if (!link.startsWith('http')) {
-      addBotMessage('❌ Please paste a link starting with http:// or https://');
+      addBotMessage(t('bot.link_prompt', lang));
       return;
     }
     if (!isValidEvidenceLink(link)) {
-      addBotMessage('❌ Invalid link. Use: Google Drive, YouTube, Imgur, Dropbox, OneDrive, or MediaFire.');
+      addBotMessage(t('bot.link_invalid', lang));
       return;
     }
     setEvidenceLinks(prev => [...prev, link]);
     setEvidenceInput('');
-    addBotMessage(`✅ Link added (${evidenceLinks.length + 1} total)`);
+    addBotMessage(`${t('bot.link_added', lang)} (${evidenceLinks.length + 1})`);
   };
 
   const handleRemoveEvidence = (idx: number) => {
@@ -381,7 +400,7 @@ export default function ReportPage() {
       return;
     }
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      addBotMessage('Voice input not supported. Please type.');
+      addBotMessage(t('bot.voice_unsupported', lang));
       return;
     }
     const w = window as unknown as {
@@ -390,7 +409,7 @@ export default function ReportPage() {
     };
     const SR = w.webkitSpeechRecognition || w.SpeechRecognition;
     if (!SR) {
-      addBotMessage('Voice input not supported. Please type.');
+      addBotMessage(t('bot.voice_unsupported', lang));
       return;
     }
     const recognition = new SR();
@@ -415,7 +434,7 @@ export default function ReportPage() {
     recognition.onerror = (e: { error: string }) => {
       if (e.error === 'not-allowed') {
         setIsRecording(false);
-        addBotMessage('Microphone access denied.');
+        addBotMessage(t('bot.mic_denied', lang));
       } else if (e.error === 'no-speech') {
         // Auto-restart on no-speech (silence timeout)
         if (recognitionRef.current) {
@@ -547,7 +566,7 @@ export default function ReportPage() {
               const evKeywords = ['photo', 'video', 'evidence', 'witness', 'screenshots', 'communication', 'documents', 'notices'];
               if (evKeywords.some(kw => q.id.toLowerCase().includes(kw))) {
                 setTimeout(() => {
-                  addBotMessage("📎 Paste your evidence links below.");
+                  addBotMessage(t('bot.evidence_links_short', lang));
                   setShowEvidenceForm(true);
                 }, 300);
                 return;
@@ -726,7 +745,7 @@ export default function ReportPage() {
             <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800">{t('evidence.warning', lang)}</div>
             <button
               onClick={() => {
-                addBotMessage('🛡️ Final step — please complete the Safety Review.');
+                addBotMessage(t('bot.final_step', lang));
                 setStep('safety_review');
               }}
               className="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"

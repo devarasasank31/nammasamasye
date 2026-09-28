@@ -1,5 +1,6 @@
 import { Language } from '@/types';
 import { scenarios } from '@/data/scenarios';
+import { normalizeForMatch, guessLanguage } from '@/lib/ai/language';
 
 export interface ScenarioMatch {
   scenarioId: string;
@@ -8,24 +9,34 @@ export interface ScenarioMatch {
   reason: string;
 }
 
+// Latin-script entries are transliterated Hindi/Kannada/Telugu, because people
+// routinely type "kuch nahi", "bijli gayi" or "gundi road" in plain English
+// letters. Each word is chosen to be unambiguous in English text.
 const KEYWORD_MAP: Record<string, string[]> = {
-  accident: ['accident', 'hit', 'collision', 'crash', 'crashed', 'bike hit', 'car hit', 'vehicle hit', 'ಅಪಘात', 'ಢಿಕ್ಕಿ', 'ದುರ್ಘಟನೆ', 'ప్రమాదం', 'ఢీకొనడం', 'दुर्घटना', 'टक्कर'],
-  parking: ['parking', 'parked', 'illegal parking', 'blocking', 'ಪಾರ್ಕಿಂಗ್', 'పార్కింగ్', 'पार्किंग'],
-  pothole: ['pothole', 'road damage', 'broken road', 'road condition', 'ಗುಂಡಿ', 'ರಸ್ತೆ', 'గుంత', 'रोड', 'गड्ढा'],
-  garbage: ['garbage', 'trash', 'waste', 'dumping', 'कचरा', 'ಕಸ', 'చెత్త'],
-  streetlight: ['streetlight', 'light', 'lamp', 'no light', 'street light', 'ದೀಪ', 'ಲೈಟ್', 'దీపం', 'స్ట్రీట్ లైట్'],
-  traffic_stop: ['police stopped', 'traffic police', 'challan', 'receipt', 'fine', 'receipt', 'ಚಲಾನ್', 'ಪೊಲೀಸ್', 'ట్రాఫిక్', 'పోలీసు', 'चालान', 'पुलिस'],
-  unofficial_payment: ['bribe', 'unofficial payment', 'asked for money', '250', '500', 'asked money', 'requested money', 'ಬ್ರೈಬ್', 'ಅನಧಿಕೃತ', 'అనధికార', 'लंगोट', 'घूस', 'पैसे मांगे'],
-  harassment: ['harassment', 'following', 'attacking', 'threat', 'safe', 'danger', 'ಕಿರುಕುಳ', 'ಅಪಾಯ', 'వేధింపు', 'ప్రమాదం', 'उत्पीड़न', 'खतरा'],
-  cybercrime: ['scam', 'fraud', 'online', 'cyber', 'suspicious link', 'transaction', 'ಸೈಬರ್', 'ಮೋಸ', 'సైబర్', 'మోసం', 'साइबर', 'धोखाधड़ी'],
-  tenant: ['tenant', 'landlord', 'rent', 'deposit', 'agreement', 'ಬಾಡಿಗೆ', 'ಮಾಲೀక', 'కిరాయి', 'యజమాని', 'किरायेदार', 'मकान मालिक'],
-  noise: ['noise', 'loud', 'music', 'sound', 'ಶಬ್ದ', 'ನಾಯ್ಸ್', 'ధ్వని', 'శబ్దం', 'शोर', 'ध्वनि'],
-  power: ['power', 'electricity', 'outage', 'power cut', 'ವಿದ್ಯುತ್', 'ಪವರ್', 'విద్యుత్', 'బిజలీ', 'बिजली', 'पावर'],
-  language: ['language', 'communicate', 'understand', 'Hindi', 'Kannada', 'ಭಾಷೆ', 'భాష', 'भाषा'],
-  government: ['government', 'office', 'service', 'delay', 'document', 'ಸರ್ಕಾರ', 'ಕಛೇರಿ', 'ప్రభుత్వ', 'సర్కార్', 'सरकार', 'दफ्तर'],
-  footpath: ['footpath', 'sidewalk', 'pedestrian', 'walking', 'ಫುಟ್‌ಪಾತ್', 'ನಡಿಗೆ', 'ఫుట్‌పాత్', 'పాదచారి', 'फुटपाथ'],
-  drainage: ['drain', 'drainage', 'blocked', 'water logging', 'ಚರಂಡಿ', 'ಡ್ರೈನ್', 'డ్రైనేజీ', 'నాలు', 'नाली'],
-  wrong_side: ['wrong side', 'opposite', 'oncoming', 'ತಪ್ಪು ಬದಿ', 'తప్పు వైపు', 'गलत दिशा'],
+  accident: ['accident', 'hit', 'collision', 'crash', 'crashed', 'bike hit', 'car hit', 'vehicle hit', 'takkar', 'ಅಪಘಾತ', 'ಢಿಕ್ಕಿ', 'ದುರ್ಘಟನೆ', 'ప్రమాదం', 'ఢీకొనడం', 'दुर्घटना', 'टक्कर'],
+  parking: ['parking', 'parked', 'illegal parking', 'blocking', 'ಗಾಡಿ', 'ಪಾರ್ಕಿಂಗ್', 'పార్కింగ్', 'पार्किंग'],
+  pothole: ['pothole', 'road damage', 'broken road', 'road condition', 'gaddha', 'gadda', 'gundi', 'gundhi', 'ಗುಂಡಿ', 'ರಸ್ತೆ', 'గుంత', 'रोड', 'गड्ढा'],
+  garbage: ['garbage', 'trash', 'waste', 'dumping', 'kachra', 'kachre', 'kuda', 'kasa', 'chetta', 'ಕಸ', 'चेत्त', 'कचरा', 'చెత్త'],
+  streetlight: ['streetlight', 'light', 'lamp', 'no light', 'street light', 'light band', 'deepam', 'ದೀಪ', 'ಲೈಟ್', 'ದీపం', 'స్ట్రీట్ లైట్'],
+  traffic_stop: ['police stopped', 'traffic police', 'challan', 'chalan', 'receipt', 'fine', 'ಚಲಾನ್', 'ಪೊಲೀಸ್', 'ట్రాఫిక్', 'పోలీసు', 'चालान', 'पुलिस'],
+  unofficial_payment: ['bribe', 'unofficial payment', 'asked for money', '250', '500', 'asked money', 'requested money', 'rishwat', 'rishwet', 'ghoos', 'lancha', 'paisa mange', 'ಬ್ರೈಬ್', 'ಅನಧಿಕೃತ', 'ಲಂಚ', 'అనధికార', 'लंगोट', 'घूस', 'रिश्वत', 'पैसे मांगे'],
+  harassment: ['harassment', 'following', 'attacking', 'threat', 'safe', 'danger', 'pareshan', 'ದಾಳಿ', 'ಕಿರುಕುಳ', 'ಅಪಾಯ', 'ವేధింపు', 'ప్రమాదం', 'उत्पीड़न', 'परेशान', 'खतरा'],
+  cybercrime: ['scam', 'fraud', 'online', 'cyber', 'suspicious link', 'transaction', 'otp', 'phishing', 'vishing', 'fake link', 'ಸೈಬರ್', 'ಮೋಸ', 'సైబర్', 'మోసం', 'साइबर', 'धोखाधड़ी'],
+  tenant: ['tenant', 'landlord', 'rent', 'deposit', 'agreement', 'ಕಿರಾಯಿ', 'ಬಾಡಿಗೆ', 'ಮಾಲೀಕ', 'కిరాయి', 'యజమాని', 'किरायेदार', 'मकान मालिक'],
+  noise: ['noise', 'loud', 'music', 'sound', 'shor', 'sharaba', 'awaaz', 'awaaj', 'ಶಬ್ದ', 'నಾಯ್ಸ್', 'ధ్వని', 'శబ్దం', 'शोर', 'आवाज़', 'ध्वनि'],
+  power: ['power', 'electricity', 'outage', 'power cut', 'bijli', 'current gaya', 'light gaya', 'ವಿದ್ಯುತ್', 'ಪವರ್', 'ವిద్యుత్', 'బిజలీ', 'बिजली', 'पावर'],
+  language: ['language', 'communicate', 'understand', 'Hindi', 'Kannada', 'Telugu', 'ಭಾಷೆ', 'భాష', 'भाषा'],
+  government: ['government', 'office', 'service', 'delay', 'document', 'sarkar', 'daftar', 'ಸರ್ಕಾರ', 'ಕಛೇರಿ', 'ప్రభుత్వ', 'సర్కార్', 'सरकार', 'दफ्तर'],
+  footpath: ['footpath', 'sidewalk', 'pedestrian', 'walking', 'pavement', 'ಫುಟ್‌ಪಾತ್', 'ನಡಿಗೆ', 'ఫుట్‌పాత్', 'పాదచారి', 'फुटपाथ'],
+  drainage: ['drain', 'drainage', 'blocked', 'water logging', 'pani bhar', 'paani bhar', 'ಚರಂಡಿ', 'ಡ್ರೈನ್', 'డ్రైనేజీ', 'నాలు', 'नाली', 'पानी भर'],
+  wrong_side: ['wrong side', 'opposite', 'oncoming', 'ulta', 'ತಪ್ಪು ಬದಿ', 'తప్పు వైపు', 'गलत दिशा', 'उल्टा'],
+};
+
+const FALLBACK_REASON: Record<Language, string> = {
+  en: 'Could not match a scenario. Please pick the closest category below.',
+  kn: 'ಯಾವ ಸನ್ನಿವೇಶಕ್ಕೂ ಹೊಂದಿಕೆಯಾಗಿಲ್ಲ. ಕೆಳಗಿನಿಂದ ಹತ್ತಿರದ ವರ್ಗವನ್ನು ಆಯ್ಕೆಮಾಡಿ.',
+  hi: 'किसी परिदृश्य से मेल नहीं खाया। नीचे सबसे करीबी श्रेणी चुनें।',
+  te: 'ఏ సన్నివేశంతో సరిపోలలేదు. కింది నుండి దగ్గరి వర్గాన్ని ఎంచుకోండి.',
 };
 
 function calculateMatch(text: string, keywords: string[]): { confidence: number; matched: string[] } {
@@ -35,9 +46,10 @@ function calculateMatch(text: string, keywords: string[]): { confidence: number;
   return { confidence, matched };
 }
 
-export function classifyIncident(text: string, _language: Language): ScenarioMatch[] {
+export function classifyIncident(text: string, language: Language): ScenarioMatch[] {
   const results: ScenarioMatch[] = [];
-  const lowerText = text.toLowerCase();
+  const lowerText = normalizeForMatch(text);
+  const effectiveLanguage = guessLanguage(text, language);
 
   const scenarioKeywordMap: Record<string, string[]> = {
     traffic_accident: [...KEYWORD_MAP.accident],
@@ -79,7 +91,7 @@ export function classifyIncident(text: string, _language: Language): ScenarioMat
       scenarioId: 'traffic_accident',
       scenarioName: 'General Incident',
       confidence: 30,
-      reason: 'Unable to determine a specific scenario. Please select the most relevant category.',
+      reason: FALLBACK_REASON[effectiveLanguage] || FALLBACK_REASON.en,
     });
   }
 
@@ -100,9 +112,9 @@ export function isEmergencyMessage(text: string): boolean {
   const emergencyKeywords = [
     'attacking me', 'being followed', 'serious accident', 'emergency',
     'in danger', 'help me', 'dangerous', 'right now',
-    'ದಾಳಿ', 'ಅಪಾಯ', 'ಸಹಾಯ', 'तुरंत', 'खतरा', 'मदद',
-    'దాడి', 'ప్రమాదం', 'సహాయం',
+    'bachao', 'bachao', 'madad', 'help karo', 'meri jaan',
+    'ದಾಳಿ', 'ಅಪಾಯ', 'ಸಹಾಯ', 'ಕಾಪಾಡಿ', 'तुरंत', 'खतरा', 'मदद', 'बचाओ',
+    'దాడి', 'ప్రమాదం', 'సహాయం', 'కాపాడండి',
   ];
-  const lower = text.toLowerCase();
-  return emergencyKeywords.some(kw => lower.includes(kw));
+  return emergencyKeywords.some(kw => normalizeForMatch(text).includes(kw));
 }

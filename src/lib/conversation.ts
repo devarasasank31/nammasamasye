@@ -39,8 +39,15 @@ export function detectIntent(text: string): ChatIntent | null {
     'instructions', 'how it works', 'enu madutte',
   ];
 
-  const YES = ['yes', 'yeah', 'yep', 'yup', 'ok', 'okay', 'sure', 'fine', 'haan', 'ha'];
-  const NO = ['no', 'nope', 'nah', 'noo', 'illa'];
+  const YES = [
+    'yes', 'yeah', 'yep', 'yup', 'ok', 'okay', 'sure', 'fine',
+    'haan', 'ha', 'han', 'haan ji', 'ha ji', 'ji haan', 'houdu', 'avunu',
+    'ಹೌದು', 'हाँ', 'हूँ', 'అవును', 'ఔను',
+  ];
+  const NO = [
+    'no', 'nope', 'nah', 'noo', 'nahi', 'nahin', 'na', 'illa', 'ledu', 'kadu',
+    'ನಾ', 'नहीं', 'కాదు',
+  ];
 
   const BYE_EXACT = ['bye', 'goodbye', 'tata'];
   const BYE_PHRASE = ['see you', 'see u', 'bye bye'];

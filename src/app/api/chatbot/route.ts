@@ -50,16 +50,39 @@ Rules:
 - confidence 1-99.
 - If still unclear after the history, use confidence below 50.`;
 
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  kn: 'Kannada (ಕನ್ನಡ)',
+  hi: 'Hindi (हिन्दी)',
+  te: 'Telugu (తెలుగు)',
+};
+
+function buildSystemPrompt(lang: string): string {
+  const name = LANGUAGE_NAMES[lang] || LANGUAGE_NAMES.en;
+  return `${SYSTEM_PROMPT}
+
+LANGUAGE
+- The conversation language is ${name}. ALWAYS reply in ${name}, even when the user writes in English or in Latin-script transliteration (for example "kuch nahi ho raha", "gundi road", "bijli gayi").
+- The user may mix ${name}, English and transliterated Hindi/Kannada/Telugu inside a single message, and may answer your ${name} question in English. Understand the whole message, keep replying in ${name}, and never ask them to switch language.
+- When you return a classification, write "reason" in ${name} in one short sentence.`;
+}
+
 interface Turn {
   role: 'user' | 'bot';
   text: string;
 }
 
 export async function POST(request: NextRequest) {
+  let body: Record<string, unknown>;
   try {
-    const body = await request.json();
-    const userInput: string = body.userInput || '';
-    const lang: string = body.lang || 'en';
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  try {
+    const userInput: string = typeof body.userInput === 'string' ? body.userInput : '';
+    const lang: string = typeof body.lang === 'string' ? body.lang : 'en';
     const history: Turn[] = Array.isArray(body.history)
       ? body.history.slice(-MAX_TURNS)
       : [];
@@ -95,7 +118,7 @@ export async function POST(request: NextRequest) {
     // ---- Call AI with full history ----
     if (AI_API_KEY) {
       try {
-        const aiResult = await callAI(transcript);
+        const aiResult = await callAI(transcript, lang);
         if (aiResult) {
           if (aiResult.type === 'chat') {
             return NextResponse.json({ ...aiResult, source: 'ai' });
@@ -142,17 +165,17 @@ type AIResult =
   | { type: 'chat'; reply: string }
   | { type: 'classify'; scenario_id: string; confidence: number; reason: string };
 
-async function callAI(transcript: string): Promise<AIResult | null> {
+async function callAI(transcript: string, lang: string): Promise<AIResult | null> {
   if (AI_PROVIDER === 'groq' || AI_PROVIDER === 'openai') {
-    return callOpenAICompatible(transcript);
+    return callOpenAICompatible(transcript, lang);
   }
   if (AI_PROVIDER === 'gemini') {
-    return callGemini(transcript);
+    return callGemini(transcript, lang);
   }
   return null;
 }
 
-async function callOpenAICompatible(transcript: string): Promise<AIResult | null> {
+async function callOpenAICompatible(transcript: string, lang: string): Promise<AIResult | null> {
   const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -162,7 +185,7 @@ async function callOpenAICompatible(transcript: string): Promise<AIResult | null
     body: JSON.stringify({
       model: AI_MODEL,
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: buildSystemPrompt(lang) },
         { role: 'user', content: transcript },
       ],
       max_tokens: 700,
@@ -178,14 +201,14 @@ async function callOpenAICompatible(transcript: string): Promise<AIResult | null
   return normalise(data.choices?.[0]?.message?.content);
 }
 
-async function callGemini(transcript: string): Promise<AIResult | null> {
+async function callGemini(transcript: string, lang: string): Promise<AIResult | null> {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${AI_API_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        systemInstruction: { parts: [{ text: buildSystemPrompt(lang) }] },
         contents: [{ role: 'user', parts: [{ text: transcript }] }],
         generationConfig: { maxOutputTokens: 700, temperature: 0.4 },
       }),
