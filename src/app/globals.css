@@ -133,3 +133,49 @@ body {
   transform: translateY(-4px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
+
+/* ── Karnataka theme ──────────────────────────────────────────────
+   Landing page only. Flag red + flag yellow, scoped by .landing-ka
+   so the rest of the app keeps the original palette. */
+.landing-ka {
+  --ka-red: #e41e20;
+  --ka-yellow: #ffce00;
+}
+
+.ka-gradient-bg {
+  background: linear-gradient(135deg, #e41e20 0%, #ffce00 100%);
+}
+
+.ka-text-gradient {
+  background: linear-gradient(100deg, #e41e20 0%, #ffce00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.ka-text-gradient-reverse {
+  background: linear-gradient(100deg, #ffce00 0%, #e41e20 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.ka-cta-bg {
+  background: linear-gradient(135deg, rgba(228, 30, 32, 0.16) 0%, rgba(255, 206, 0, 0.12) 100%);
+}
+
+.ka-timeline-rail {
+  background: linear-gradient(180deg, #e41e20 0%, #ffce00 100%);
+}
+
+.ka-timeline-dot {
+  background: #ffce00;
+  box-shadow: 0 0 0 4px rgba(228, 30, 32, 0.3);
+}
+
+.ka-watermark {
+  color: #e41e20;
+  opacity: 0.07;
+}

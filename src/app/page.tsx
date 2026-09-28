@@ -15,13 +15,48 @@ const languages: { code: Language; label: string; native: string }[] = [
 ];
 
 const features = [
-  { icon: Globe, title: 'Speak Your Language', desc: 'Kannada, English, Hindi, Telugu', color: '#e94560' },
-  { icon: Shield, title: '100% Anonymous', desc: 'No login, no phone, no tracking', color: '#0f3460' },
-  { icon: Mic, title: 'Voice + Text', desc: 'Talk or type naturally', color: '#1a936f' },
-  { icon: Sparkles, title: 'AI-Powered', desc: 'Smart bot identifies your problem', color: '#f59e0b' },
-  { icon: Paperclip, title: 'Evidence Support', desc: 'Attach photos, videos, docs', color: '#8b5cf6' },
-  { icon: TrendingUp, title: 'Track Progress', desc: 'Real-time status updates', color: '#06b6d4' },
+  { icon: Globe, title: 'Speak Your Language', desc: 'Kannada, English, Hindi, Telugu', color: '#e41e20', dark: false },
+  { icon: Shield, title: '100% Anonymous', desc: 'No login, no phone, no tracking', color: '#ffce00', dark: true },
+  { icon: Mic, title: 'Voice + Text', desc: 'Talk or type naturally', color: '#1a936f', dark: false },
+  { icon: Sparkles, title: 'AI-Powered', desc: 'Smart bot identifies your problem', color: '#e41e20', dark: false },
+  { icon: Paperclip, title: 'Evidence Support', desc: 'Attach photos, videos, docs', color: '#8b5cf6', dark: false },
+  { icon: TrendingUp, title: 'Track Progress', desc: 'Real-time status updates', color: '#ffce00', dark: true },
 ];
+
+const heritage = [
+  { era: '6th century', title: 'Badami', native: 'ಬಾದಾಮಿ', desc: 'Chalukyan rock-cut caves above the Agastya lake.' },
+  { era: '14th century', title: 'Hampi', native: 'ಹಂಪೆ', desc: 'The ruined capital of the Vijayanagara empire.' },
+  { era: '1912', title: 'Mysore Palace', native: 'ಮೈಸೂರು ಅರಮನೆ', desc: 'The Wadiyar seat, still the state\'s best-known landmark.' },
+  { era: '1780s', title: 'Tipu Sultan', native: 'ಟಿಪ್ಪು ಸುಲ್ತಾನ್', desc: 'The Tiger of Mysore and his war against the Company.' },
+  { era: '1956', title: 'Karnataka formation', native: 'ಕರ್ನಾಟಕ ರಚನೆ', desc: 'Mysore State renamed Karnataka on 1 November.' },
+  { era: '2011', title: 'Namma Metro', native: 'ನಮ್ಮ ಮೆಟ್ರೊ', desc: 'Bengaluru gets its own rapid transit line.' },
+  { era: 'Today', title: 'Bengaluru', native: 'ಬೆಂಗಳೂರು', desc: 'A tech capital where every street still has a story.' },
+];
+
+function Gandaberunda({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 200 200" className={className} aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="ka-berunda" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#e41e20" />
+          <stop offset="100%" stopColor="#ffce00" />
+        </linearGradient>
+      </defs>
+      <g fill="url(#ka-berunda)">
+        <circle cx="100" cy="104" r="26" />
+        <path d="M100 128c-9 0-16 6-20 14-5 10-6 22-4 34 6-8 14-13 24-13s18 5 24 13c2-12 1-24-4-34-4-8-11-14-20-14z" />
+        <path d="M74 96c-14-6-28-4-40 6-9 7-15 17-17 29 12-6 24-7 35-3 9 3 17 9 24 16l8-4-10-44z" />
+        <path d="M126 96c14-6 28-4 40 6 9 7 15 17 17 29-12-6-24-7-35-3-9 3-17 9-24 16l-8-4 10-44z" />
+        <path d="M84 74c-6-9-6-20 0-30 4-7 11-12 20-14-4 8-5 16-3 24 2 7 7 13 13 17l-14 14-16-11z" />
+        <path d="M116 74c6-9 6-20 0-30-4-7-11-12-20-14 4 8 5 16 3 24-2 7-7 13-13 17l14 14 16-11z" />
+        <path d="M78 62c-8-4-17-3-24 3 5 4 11 6 18 6l6-9z" />
+        <path d="M122 62c8-4 17-3 24 3-5 4-11 6-18 6l-6-9z" />
+      </g>
+      <circle cx="90" cy="62" r="4" fill="#1a1a1a" />
+      <circle cx="110" cy="62" r="4" fill="#1a1a1a" />
+    </svg>
+  );
+}
 
 const categories = [
   { icon: '🚗', label: 'Traffic' },
@@ -77,20 +112,20 @@ export default function LandingPage() {
   const navBg = darkMode ? 'bg-gray-950/80 border-white/10' : 'bg-white/80 border-gray-200';
 
   return (
-    <div className={`min-h-screen ${bg} ${text} transition-colors duration-300`}>
+    <div className={`landing-ka min-h-screen ${bg} ${text} transition-colors duration-300`}>
       {/* Animated Background */}
       <div className="fixed inset-0 z-0 overflow-hidden">
         <div className={`absolute inset-0 ${darkMode ? 'bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950' : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'}`} />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#e41e20]/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#ffce00]/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#e41e20]/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
       </div>
 
       {/* Navbar */}
       <nav className={`sticky top-0 z-50 backdrop-blur-xl ${navBg} border-b transition-colors`}>
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-primary/30">NS</div>
+            <div className="w-10 h-10 rounded-xl ka-gradient-bg flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-[#e41e20]/30">NS</div>
             <div className="flex flex-col">
               <span className="font-bold text-lg leading-tight">ನಮ್ಮ ಸಮಸ್ಯೆ</span>
               <span className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-60 leading-tight">Namma Samasye</span>
@@ -127,13 +162,14 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative z-10">
+      <section className="relative z-10 overflow-hidden">
+        <Gandaberunda className="pointer-events-none absolute -right-24 -top-10 w-[420px] h-[420px] ka-watermark hidden md:block" />
         <div className="max-w-7xl mx-auto px-4 pt-16 pb-24 md:pt-24 md:pb-32">
           <div className="max-w-3xl">
             <h1 className={`text-5xl md:text-7xl font-extrabold leading-tight transition-all duration-700 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <span className="bg-gradient-to-r from-primary via-pink-500 to-purple-500 bg-clip-text text-transparent">Namma</span>
+              <span className="ka-text-gradient bg-clip-text text-transparent">Namma</span>
               <br />
-              <span className="bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 bg-clip-text text-transparent">Samasye</span>
+              <span className="ka-text-gradient-reverse bg-clip-text text-transparent">Samasye</span>
             </h1>
 
             <p className={`mt-4 text-xl md:text-2xl font-medium transition-all duration-700 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${textSecondary}`}>
@@ -147,7 +183,7 @@ export default function LandingPage() {
             <div className={`mt-8 flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-400 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               <button
                 onClick={() => { setStoredLanguage(lang); router.push('/report'); }}
-                className="group gradient-bg text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:opacity-90 transition-all shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 flex items-center justify-center gap-2"
+                className="group ka-gradient-bg text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:opacity-90 transition-all shadow-lg shadow-[#e41e20]/30 hover:shadow-xl hover:shadow-[#e41e20]/40 flex items-center justify-center gap-2"
               >
                 {t('home.report_now', lang)}
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -167,7 +203,7 @@ export default function LandingPage() {
                   onClick={() => handleLanguageChange(l.code)}
                   className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
                     lang === l.code
-                      ? 'gradient-bg text-white shadow-lg shadow-primary/30'
+                      ? 'ka-gradient-bg text-white shadow-lg shadow-[#e41e20]/30'
                       : `${darkMode ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-gray-100 border-gray-200 hover:bg-gray-200'} border`
                   }`}
                 >
@@ -191,7 +227,7 @@ export default function LandingPage() {
             ].map((stat, i) => (
               <div key={i} className="text-center">
                 <div className="text-3xl mb-2">{stat.icon}</div>
-                <div className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">{stat.value}</div>
+                <div className="text-3xl md:text-4xl font-extrabold ka-text-gradient">{stat.value}</div>
                 <div className={`text-sm mt-1 ${textSecondary}`}>{stat.label}</div>
               </div>
             ))}
@@ -210,7 +246,7 @@ export default function LandingPage() {
             {features.map((f, i) => (
               <div key={i} className={`group p-6 rounded-2xl ${cardBg} backdrop-blur-sm transition-all hover:scale-105 hover-lift`}>
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-lg" style={{ background: `linear-gradient(135deg, ${f.color}, ${f.color}88)` }}>
-                  <f.icon size={24} className="text-white" />
+                  <f.icon size={24} className={f.dark ? 'text-gray-900' : 'text-white'} />
                 </div>
                 <h3 className="font-bold text-lg mb-2">{f.title}</h3>
                 <p className={`text-sm ${textSecondary}`}>{f.desc}</p>
@@ -239,17 +275,48 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Heritage */}
+      <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-3">From Badami to Bengaluru</h2>
+            <p className="text-lg font-semibold text-[#e41e20]">ಬಾದಾಮಿಯಿಂದ ಬೆಂಗಳೂರಿನವರೆಗೆ</p>
+            <p className={`mt-2 ${textSecondary}`}>Seven stops that made the state this city stands in.</p>
+          </div>
+          <ol className="relative">
+            <span className="ka-timeline-rail absolute left-[11px] top-3 bottom-3 w-0.5 rounded-full" aria-hidden="true" />
+            {heritage.map((h, i) => (
+              <li
+                key={h.title}
+                className={`relative pl-10 pb-8 last:pb-0 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                style={{ transitionDelay: `${i * 70}ms` }}
+              >
+                <span className="ka-timeline-dot absolute left-0 top-1.5 w-6 h-6 rounded-full" aria-hidden="true" />
+                <div className={`p-5 rounded-2xl ${cardBg} backdrop-blur-sm transition-all hover:scale-[1.02]`}>
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#e41e20] text-white text-[11px] font-bold uppercase tracking-wider">{h.era}</span>
+                    <h3 className="font-bold text-lg">{h.title}</h3>
+                    <span className={`text-sm ${textSecondary}`}>{h.native}</span>
+                  </div>
+                  <p className={`text-sm mt-2 ${textSecondary}`}>{h.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="relative z-10 py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <div className={`p-8 md:p-12 rounded-3xl ${darkMode ? 'bg-gradient-to-br from-primary/20 via-purple-500/20 to-pink-500/20 border border-white/10' : 'bg-gradient-to-br from-primary/10 via-purple-500/10 to-pink-500/10 border border-gray-200'}`}>
+          <div className={`p-8 md:p-12 rounded-3xl ka-cta-bg ${darkMode ? 'border border-white/10' : 'border border-gray-200'}`}>
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Ready to make a change?</h2>
             <p className={`mb-8 max-w-xl mx-auto ${textSecondary}`}>
               Your voice matters. Report an issue, track its progress, and help build a better Bengaluru.
             </p>
             <button
               onClick={() => { setStoredLanguage(lang); router.push('/report'); }}
-              className="gradient-bg text-white px-10 py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 inline-flex items-center gap-2"
+              className="ka-gradient-bg text-white px-10 py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-lg shadow-[#e41e20]/30 hover:shadow-xl hover:shadow-[#e41e20]/40 inline-flex items-center gap-2"
             >
               Start Reporting <ArrowRight size={20} />
             </button>
@@ -261,7 +328,7 @@ export default function LandingPage() {
       <footer className={`relative z-10 py-8 ${darkMode ? 'border-white/10' : 'border-gray-200'} border-t`}>
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg gradient-bg flex items-center justify-center text-white font-bold text-xs">NS</div>
+            <div className="w-7 h-7 rounded-lg ka-gradient-bg flex items-center justify-center text-white font-bold text-xs">NS</div>
             <div className="flex flex-col">
               <span className={`font-bold leading-tight ${textSecondary}`}>ನಮ್ಮ ಸಮಸ್ಯೆ</span>
               <span className="text-[9px] font-semibold uppercase tracking-[0.18em] opacity-60 leading-tight">Namma Samasye</span>
@@ -280,7 +347,7 @@ export default function LandingPage() {
               {languages.map(l => (
                 <button key={l.code} onClick={() => { handleLanguageChange(l.code); setShowLangModal(false); }}
                   className={`w-full p-3 rounded-xl text-left transition flex items-center justify-between ${
-                    lang === l.code ? 'gradient-bg text-white' : `${darkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200'}`
+                    lang === l.code ? 'ka-gradient-bg text-white' : `${darkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200'}`
                   }`}>
                   <span className="font-medium">{l.native}</span>
                   <span className="text-sm opacity-70">{l.label}</span>
