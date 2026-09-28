@@ -35,7 +35,7 @@ function calculateMatch(text: string, keywords: string[]): { confidence: number;
   return { confidence, matched };
 }
 
-export function classifyIncident(text: string, language: Language): ScenarioMatch[] {
+export function classifyIncident(text: string, _language: Language): ScenarioMatch[] {
   const results: ScenarioMatch[] = [];
   const lowerText = text.toLowerCase();
 

@@ -1,4 +1,4 @@
-import { Language, Incident, IncidentStatus, Session, Evidence, StatusHistory, AdminNote, AttachmentMeta } from '@/types';
+﻿import { Language, Incident, IncidentStatus, Session, Evidence, StatusHistory, AdminNote, AttachmentMeta } from '@/types';
 
 // ============================================================
 // PERSISTENT DEMO STORE — uses localStorage to survive restarts
@@ -21,7 +21,7 @@ function loadFromStorage<T>(key: string, fallback: T): T {
   }
 }
 
-function saveToStorage(key: string, value: any): void {
+function saveToStorage(key: string, value: unknown): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(key, JSON.stringify(value));

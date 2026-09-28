@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Phone, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Phone } from 'lucide-react';
 
 const emergencyResources = [
   { name: 'Police / Fire / Ambulance', number: '112', description: 'Immediate emergency response' },

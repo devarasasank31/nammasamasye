@@ -183,3 +183,10 @@ export interface DashboardStats {
   reports_per_category: { category: string; count: number }[];
   reports_per_area: { area: string; count: number }[];
 }
+
+export interface IncidentStats {
+  total: number;
+  byCategory: Record<string, number>;
+  byArea: Record<string, number>;
+  byLang: Record<string, number>;
+}

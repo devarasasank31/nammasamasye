@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Incident, StatusHistory, Evidence, AdminNote } from '@/types';
+import { Incident, IncidentStatus, StatusHistory, Evidence, AdminNote } from '@/types';
 import { getIncidentInternal, getIncidentEvidence, getStatusHistory, getAdminNotes, addAdminNote, updateIncidentStatus } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
 import { ArrowLeft, CheckCircle, ExternalLink, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
@@ -11,26 +11,34 @@ import AttachmentGallery from '@/components/AttachmentGallery';
 import dynamic from 'next/dynamic';
 const StaticMap = dynamic(() => import('@/components/StaticMap'), { ssr: false, loading: () => <div className="h-[200px] rounded-xl bg-gray-100 animate-pulse" /> });
 
+interface IncidentAnswerRow { question_id: string; answer: string }
+
+async function getIncidentAnswers(incidentId: string): Promise<IncidentAnswerRow[]> {
+  const { isDemoMode } = await import('@/lib/supabase');
+  if (isDemoMode) {
+    const { demoStore } = await import('@/lib/demo-store');
+    return demoStore.getIncidentAnswers(incidentId);
+  }
+  const { supabase } = await import('@/lib/supabase');
+  const { data } = await supabase.from('incident_answers').select('*').eq('incident_id', incidentId);
+  return data || [];
+}
+
 export default function AdminIncidentDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const [incident, setIncident] = useState<any>(null);
+  const [incident, setIncident] = useState<Incident | null>(null);
   const [statusHistory, setStatusHistory] = useState<StatusHistory[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
   const [notes, setNotes] = useState<AdminNote[]>([]);
-  const [answers, setAnswers] = useState<any[]>([]);
+  const [answers, setAnswers] = useState<IncidentAnswerRow[]>([]);
   const [newNote, setNewNote] = useState('');
   const [noteIsPublic, setNoteIsPublic] = useState(false);
   const [requestInfoText, setRequestInfoText] = useState('');
   const [showRequestInfo, setShowRequestInfo] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    seedDemoData();
-    loadIncident();
-  }, [params.id]);
-
-  const loadIncident = async () => {
+  const loadIncident = useCallback(async () => {
     setLoading(true);
     const inc = await getIncidentInternal(params.id as string);
     setIncident(inc);
@@ -49,22 +57,19 @@ export default function AdminIncidentDetailPage() {
       setAnswers(an);
     }
     setLoading(false);
-  };
+  }, [params.id]);
 
-  const getIncidentAnswers = async (incidentId: string) => {
-    const { isDemoMode } = await import('@/lib/supabase');
-    if (isDemoMode) {
-      const { demoStore } = await import('@/lib/demo-store');
-      return demoStore.getIncidentAnswers(incidentId);
-    }
-    const { supabase } = await import('@/lib/supabase');
-    const { data } = await supabase.from('incident_answers').select('*').eq('incident_id', incidentId);
-    return data || [];
-  };
+  useEffect(() => {
+    const init = async () => {
+      seedDemoData();
+      await loadIncident();
+    };
+    void init();
+  }, [loadIncident]);
 
   const handleStatusChange = async (newStatus: string, note?: string) => {
     if (!incident) return;
-    await updateIncidentStatus(incident.id, newStatus as any, 'admin', note);
+    await updateIncidentStatus(incident.id, newStatus as IncidentStatus, 'admin', note);
     loadIncident();
   };
 
@@ -96,16 +101,6 @@ export default function AdminIncidentDetailPage() {
     await updateIncidentStatus(incident.id, 'MISSING_INFORMATION', 'admin', `Requested: ${requestInfoText.trim()}`);
     setRequestInfoText('');
     setShowRequestInfo(false);
-    loadIncident();
-  };
-
-  const handleUserReply = async (replyText: string) => {
-    if (!incident || !replyText.trim()) return;
-    const { isDemoMode } = await import('@/lib/supabase');
-    if (isDemoMode) {
-      const { demoStore } = await import('@/lib/demo-store');
-      demoStore.addAdminNotePublic(incident.id, 'user', `📩 USER REPLY: ${replyText.trim()}`, false);
-    }
     loadIncident();
   };
 
@@ -165,7 +160,7 @@ export default function AdminIncidentDetailPage() {
                 {incident.status.replace(/_/g, ' ')}
               </span>
               <div className="flex gap-2 flex-wrap">
-                {[
+                {([
                   { status: 'UNDER_REVIEW', label: 'Review' },
                   { status: 'MISSING_INFORMATION', label: 'Request Info', isRequestInfo: true },
                   { status: 'ON_HOLD', label: 'Hold' },
@@ -173,8 +168,8 @@ export default function AdminIncidentDetailPage() {
                   { status: 'INVALID', label: 'Invalid' },
                   { status: 'CLOSED', label: 'Close' },
                   { status: 'RESOLVED', label: 'Resolved' },
-                ].map(btn => {
-                  const colors = getStatusColor(btn.status as any);
+                ] as { status: IncidentStatus; label: string; isRequestInfo?: boolean }[]).map(btn => {
+                  const colors = getStatusColor(btn.status);
                   return (
                     <button key={btn.status}
                       onClick={() => {
@@ -265,7 +260,7 @@ export default function AdminIncidentDetailPage() {
             <div className="bg-white rounded-2xl border border-gray-200 p-5">
               <h2 className="font-bold text-gray-900 mb-4">Q&A</h2>
               <div className="space-y-3">
-                {answers.map((a: any) => (
+                {answers.map((a) => (
                   <div key={a.question_id} className="bg-gray-50 p-3 rounded-lg">
                     <div className="text-xs font-medium text-gray-500 capitalize">{a.question_id.replace(/_/g, ' ')}</div>
                     <div className="text-sm text-gray-800 mt-1">{a.answer}</div>

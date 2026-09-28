@@ -39,13 +39,20 @@ export default function AIChatbot() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setLang(getStoredLanguage());
+    const init = async () => {
+      await Promise.resolve();
+      setLang(getStoredLanguage());
+    };
+    void init();
   }, []);
 
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
+    if (!isOpen || messages.length > 0) return;
+    const init = async () => {
+      await Promise.resolve();
       setMessages([{ id: 'welcome', role: 'bot', text: WELCOME[getStoredLanguage()] || WELCOME.en }]);
-    }
+    };
+    void init();
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {

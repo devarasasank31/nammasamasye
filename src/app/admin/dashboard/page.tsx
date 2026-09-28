@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { BarChart3, FileText, AlertCircle, Clock, CheckCircle, XCircle, TrendingUp, Eye, Shield, Users, LogOut } from 'lucide-react';
 import { getAllIncidents } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
+import { DashboardStats } from '@/types';
 
 interface UserSession {
   id: string;
@@ -14,16 +15,16 @@ interface UserSession {
   incident_count: number;
 }
 
+interface AdminStats extends DashboardStats {
+  byLang: Record<string, number>;
+  totalUsers: number;
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<UserSession[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    seedDemoData();
-    loadStats();
-  }, []);
 
   const loadStats = async () => {
     setLoading(true);
@@ -35,7 +36,7 @@ export default function AdminDashboard() {
     const byLang: Record<string, number> = {};
     const sessionMap: Record<string, UserSession> = {};
 
-    incidents.forEach((inc: any) => {
+    incidents.forEach((inc) => {
       const day = new Date(inc.created_at).toISOString().split('T')[0];
       byDay[day] = (byDay[day] || 0) + 1;
       byCategory[inc.category_id] = (byCategory[inc.category_id] || 0) + 1;
@@ -60,14 +61,14 @@ export default function AdminDashboard() {
 
     setStats({
       total: incidents.length,
-      new_count: incidents.filter((i: any) => i.status === 'NEW').length,
-      under_review: incidents.filter((i: any) => i.status === 'UNDER_REVIEW').length,
-      missing_info: incidents.filter((i: any) => i.status === 'MISSING_INFORMATION').length,
-      on_hold: incidents.filter((i: any) => i.status === 'ON_HOLD').length,
-      proceeding: incidents.filter((i: any) => i.status === 'PROCEEDING').length,
-      invalid: incidents.filter((i: any) => i.status === 'INVALID').length,
-      closed: incidents.filter((i: any) => i.status === 'CLOSED').length,
-      resolved: incidents.filter((i: any) => i.status === 'RESOLVED').length,
+      new_count: incidents.filter((i) => i.status === 'NEW').length,
+      under_review: incidents.filter((i) => i.status === 'UNDER_REVIEW').length,
+      missing_info: incidents.filter((i) => i.status === 'MISSING_INFORMATION').length,
+      on_hold: incidents.filter((i) => i.status === 'ON_HOLD').length,
+      proceeding: incidents.filter((i) => i.status === 'PROCEEDING').length,
+      invalid: incidents.filter((i) => i.status === 'INVALID').length,
+      closed: incidents.filter((i) => i.status === 'CLOSED').length,
+      resolved: incidents.filter((i) => i.status === 'RESOLVED').length,
       reports_per_day: Object.entries(byDay).sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count })),
       reports_per_category: Object.entries(byCategory).map(([category, count]) => ({ category, count })),
       reports_per_area: Object.entries(byArea).map(([area, count]) => ({ area, count })),
@@ -78,6 +79,14 @@ export default function AdminDashboard() {
     setUsers(Object.values(sessionMap).sort((a, b) => b.incident_count - a.incident_count));
     setLoading(false);
   };
+
+  useEffect(() => {
+    const init = async () => {
+      seedDemoData();
+      await loadStats();
+    };
+    void init();
+  }, []);
 
   const handleLogout = async () => {
     await fetch('/api/admin/logout', { method: 'POST' });
@@ -190,9 +199,9 @@ export default function AdminDashboard() {
                   <h3 className="font-bold text-gray-900 mb-4">By Category</h3>
                   <div className="space-y-3">
                     {stats.reports_per_category
-                      .sort((a: any, b: any) => b.count - a.count)
+                      .sort((a, b) => b.count - a.count)
                       .slice(0, 8)
-                      .map((cat: any) => (
+                      .map((cat) => (
                         <div key={cat.category} className="flex items-center gap-3">
                           <div className="flex-1">
                             <div className="flex justify-between text-sm mb-1">
@@ -213,9 +222,9 @@ export default function AdminDashboard() {
                   <h3 className="font-bold text-gray-900 mb-4">By Area</h3>
                   <div className="space-y-3">
                     {stats.reports_per_area
-                      .sort((a: any, b: any) => b.count - a.count)
+                      .sort((a, b) => b.count - a.count)
                       .slice(0, 8)
-                      .map((area: any) => (
+                      .map((area) => (
                         <div key={area.area} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                           <span className="text-sm text-gray-700">{area.area || 'Unknown'}</span>
                           <span className="font-bold text-gray-900 text-sm">{area.count}</span>
@@ -229,10 +238,10 @@ export default function AdminDashboard() {
               <div className="bg-white rounded-2xl border border-gray-200 p-5">
                 <h3 className="font-bold text-gray-900 mb-4">Reports per Day</h3>
                 <div className="flex items-end gap-1 h-40">
-                  {stats.reports_per_day.slice(-30).map((d: any) => (
+                  {stats.reports_per_day.slice(-30).map((d) => (
                     <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
                       <div className="w-full bg-gradient-to-t from-red-500 to-blue-900 rounded-t"
-                        style={{ height: `${(d.count / Math.max(...stats.reports_per_day.map((x: any) => x.count), 1)) * 120}px` }} />
+                        style={{ height: `${(d.count / Math.max(...stats.reports_per_day.map((x) => x.count), 1)) * 120}px` }} />
                       <span className="text-[10px] text-gray-400">{d.date.slice(5)}</span>
                     </div>
                   ))}

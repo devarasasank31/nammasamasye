@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const from = searchParams.get('from') || '/admin/dashboard';
   const [password, setPassword] = useState('');
@@ -74,9 +74,9 @@ function LoginForm() {
           </button>
 
           <div className="text-center">
-            <a href="/" className="text-gray-500 text-xs hover:text-gray-300 transition">
+            <Link href="/" className="text-gray-500 text-xs hover:text-gray-300 transition">
               ← Back to Namma Samasye
-            </a>
+            </Link>
           </div>
         </form>
 

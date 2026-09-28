@@ -9,7 +9,7 @@ export async function getOrCreateSession(): Promise<Session> {
     return { id: '', language: 'en', created_at: '', last_active: '' };
   }
 
-  let sessionId = localStorage.getItem(SESSION_KEY);
+  const sessionId = localStorage.getItem(SESSION_KEY);
 
   if (isDemoMode) {
     if (!sessionId) {

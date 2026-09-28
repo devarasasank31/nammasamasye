@@ -4,15 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAllIncidents } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
-import { Users, FileText, Clock, Globe, LogOut, BarChart3, Shield } from 'lucide-react';
+import { Users, FileText, Globe, LogOut, BarChart3, Shield } from 'lucide-react';
 import { getStatusBadgeClass } from '@/lib/status-colors';
+import { IncidentStatus } from '@/types';
 
 interface UserData {
   session_id: string;
   language: string;
   first_report: string;
   last_report: string;
-  incidents: { id: string; incident_id: string; subcategory: string; status: string; created_at: string }[];
+  incidents: { id: string; incident_id: string; subcategory: string; status: IncidentStatus; created_at: string }[];
 }
 
 export default function AdminUsersPage() {
@@ -21,17 +22,12 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
-  useEffect(() => {
-    seedDemoData();
-    loadUsers();
-  }, []);
-
   const loadUsers = async () => {
     setLoading(true);
     const incidents = await getAllIncidents();
     const userMap: Record<string, UserData> = {};
 
-    incidents.forEach((inc: any) => {
+    incidents.forEach((inc) => {
       if (!userMap[inc.session_id]) {
         userMap[inc.session_id] = {
           session_id: inc.session_id,
@@ -59,6 +55,14 @@ export default function AdminUsersPage() {
     setUsers(Object.values(userMap).sort((a, b) => b.incidents.length - a.incidents.length));
     setLoading(false);
   };
+
+  useEffect(() => {
+    const init = async () => {
+      seedDemoData();
+      await loadUsers();
+    };
+    void init();
+  }, []);
 
   const handleLogout = async () => {
     await fetch('/api/admin/logout', { method: 'POST' });
@@ -111,7 +115,7 @@ export default function AdminUsersPage() {
           ) : selectedUser ? (
             <div className="space-y-6">
               <button onClick={() => setSelectedUser(null)} className="text-primary text-sm hover:underline">
-                ← Back to all users
+                ? Back to all users
               </button>
 
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
@@ -136,7 +140,7 @@ export default function AdminUsersPage() {
                         <div className="text-xs text-gray-500 capitalize">{inc.subcategory.replace(/_/g, ' ')}</div>
                       </div>
                       <div className="text-right">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(inc.status as any)}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(inc.status)}`}>
                           {inc.status.replace(/_/g, ' ')}
                         </span>
                         <div className="text-xs text-gray-400 mt-1">{new Date(inc.created_at).toLocaleDateString()}</div>

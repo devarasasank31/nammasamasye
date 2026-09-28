@@ -1,18 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { getDashboardStats } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
+import { IncidentStats } from '@/types';
 import { Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
 
 export default function AdminAnalyticsPage() {
-  const [stats, setStats] = useState<any>(null);
+  const router = useRouter();
+  const [stats, setStats] = useState<IncidentStats | null>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    seedDemoData();
-    loadStats();
-  }, []);
 
   const loadStats = async () => {
     setLoading(true);
@@ -21,9 +19,17 @@ export default function AdminAnalyticsPage() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    const init = async () => {
+      seedDemoData();
+      await loadStats();
+    };
+    void init();
+  }, []);
+
   const handleLogout = async () => {
     await fetch('/api/admin/logout', { method: 'POST' });
-    window.location.href = '/admin/login';
+    router.push('/admin/login');
   };
 
   return (

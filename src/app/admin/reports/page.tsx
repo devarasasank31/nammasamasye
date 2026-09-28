@@ -16,17 +16,20 @@ export default function AdminReportsPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
 
-  useEffect(() => {
-    seedDemoData();
-    loadIncidents();
-  }, []);
-
   const loadIncidents = async () => {
     setLoading(true);
     const data = await getAllIncidents();
     setIncidents(data);
     setLoading(false);
   };
+
+  useEffect(() => {
+    const init = async () => {
+      seedDemoData();
+      await loadIncidents();
+    };
+    void init();
+  }, []);
 
   const filtered = incidents.filter(inc => {
     if (search && !inc.incident_id.toLowerCase().includes(search.toLowerCase())) return false;

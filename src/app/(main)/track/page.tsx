@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
-import { Language, Incident, AdminNote } from '@/types';
+import { Language, Incident } from '@/types';
 import { getAllIncidents } from '@/services/incident';
 import { ArrowLeft, MessageSquare, Search } from 'lucide-react';
 import { getStatusBadgeClass } from '@/lib/status-colors';
@@ -16,17 +16,21 @@ export default function TrackPage() {
   const [searchId, setSearchId] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLang(getStoredLanguage());
-    loadIncidents();
-  }, []);
-
   const loadIncidents = async () => {
     setLoading(true);
     const allInc = await getAllIncidents();
     setIncidents(allInc);
     setLoading(false);
   };
+
+  useEffect(() => {
+    const init = async () => {
+      await Promise.resolve();
+      setLang(getStoredLanguage());
+      await loadIncidents();
+    };
+    void init();
+  }, []);
 
   const handleSearch = () => {
     if (!searchId.trim()) return;

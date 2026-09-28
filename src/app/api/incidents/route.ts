@@ -122,8 +122,9 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ incident });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'Failed to create incident' }, { status: 500 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to create incident';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -147,7 +148,8 @@ export async function GET(req: NextRequest) {
     const { data, error } = await query.limit(100);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ incidents: data });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'Failed to load incidents' }, { status: 500 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to load incidents';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

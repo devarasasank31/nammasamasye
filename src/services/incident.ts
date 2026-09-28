@@ -1,4 +1,4 @@
-import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta } from '@/types';
+﻿import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta, IncidentStats } from '@/types';
 import { isDemoMode } from '@/lib/supabase';
 import { demoStore } from '@/lib/demo-store';
 
@@ -256,7 +256,7 @@ export async function addAdminNote(incidentId: string, adminId: string, content:
   await supabase.from('admin_notes').insert({ incident_id: incidentId, admin_id: adminId, content, is_private: true });
 }
 
-export async function getDashboardStats() {
+export async function getDashboardStats(): Promise<IncidentStats> {
   if (isDemoMode) {
     return demoStore.getStats();
   }
@@ -269,7 +269,7 @@ export async function getDashboardStats() {
   const byArea: Record<string, number> = {};
   const byLang: Record<string, number> = {};
 
-  incidents.forEach((inc: any) => {
+  incidents.forEach((inc) => {
     byCategory[inc.category_id] = (byCategory[inc.category_id] || 0) + 1;
     if (inc.location_area) byArea[inc.location_area] = (byArea[inc.location_area] || 0) + 1;
     byLang[inc.language] = (byLang[inc.language] || 0) + 1;

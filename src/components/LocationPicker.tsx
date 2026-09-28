@@ -50,18 +50,58 @@ interface GeoResult {
   display_name: string;
 }
 
+interface PhotonFeature {
+  geometry?: { coordinates?: number[] };
+  properties?: {
+    name?: string;
+    street?: string;
+    district?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+  };
+}
+interface PhotonResponse { features?: PhotonFeature[] }
+interface NominatimResult {
+  place_id?: number | string;
+  lat: string;
+  lon: string;
+  name?: string;
+  display_name: string;
+}
+
+interface PhotonFeature {
+  geometry?: { coordinates?: number[] };
+  properties?: {
+    name?: string;
+    street?: string;
+    district?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+  };
+}
+interface PhotonResponse { features?: PhotonFeature[] }
+interface NominatimResult {
+  place_id?: number | string;
+  lat: string;
+  lon: string;
+  name?: string;
+  display_name: string;
+}
+
 async function searchPlaces(q: string, lang: string, signal?: AbortSignal): Promise<GeoResult[]> {
   if (q.trim().length < 3) return [];
   try {
     const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=${lang === 'kn' ? 'en' : lang}`;
     const res = await fetch(url, { signal });
     if (res.ok) {
-      const data = await res.json();
-      return (data.features || []).map((f: any, i: number) => ({
-        place_id: `${i}-${f.geometry.coordinates[0]}`,
-        lat: f.geometry.coordinates[1],
-        lon: f.geometry.coordinates[0],
-        name: [f.properties?.name, f.properties?.street].filter(Boolean).join(', ') || f.properties?.name,
+      const data = (await res.json()) as PhotonResponse;
+      return (data.features || []).map((f, i) => ({
+          place_id: `${i}-${f.geometry?.coordinates?.[0] ?? ''}`,
+          lat: f.geometry?.coordinates?.[1] ?? 0,
+          lon: f.geometry?.coordinates?.[0] ?? 0,
+        name: [f.properties?.name, f.properties?.street].filter(Boolean).join(', ') || f.properties?.name || '',
         display_name: [
           f.properties?.name,
           f.properties?.street,
@@ -81,12 +121,12 @@ async function searchPlaces(q: string, lang: string, signal?: AbortSignal): Prom
     const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&q=${encodeURIComponent(q)}`;
     const res = await fetch(url, { signal, headers: { 'Accept-Language': lang } });
     if (!res.ok) return [];
-    const data = await res.json();
-    return (data || []).map((r: any) => ({
-      place_id: r.place_id,
+      const data = (await res.json()) as NominatimResult[];
+    return (data || []).map((r) => ({
+        place_id: String(r.place_id ?? ''),
       lat: parseFloat(r.lat),
       lon: parseFloat(r.lon),
-      name: r.name || r.display_name.split(',')[0],
+        name: r.name || r.display_name.split(',')[0] || '',
       display_name: r.display_name,
     }));
   } catch (e) {
@@ -137,7 +177,7 @@ export default function LocationPicker({ onPick, onCancel, lang = 'en', initial 
 
   const acRef = useRef<AbortController | null>(null);
 
-  const placePin = useCallback((lat: number, lng: number, resolve: boolean) => {
+  const placePin = useCallback(function placePinImpl(lat: number, lng: number, resolve: boolean) {
     const map = mapRef.current;
     if (!map) return;
 
@@ -147,7 +187,7 @@ export default function LocationPicker({ onPick, onCancel, lang = 'en', initial 
       markerRef.current = L.marker([lat, lng], { icon: pinIcon, draggable: true }).addTo(map);
       markerRef.current.on('dragend', () => {
         const p = markerRef.current!.getLatLng();
-        placePin(p.lat, p.lng, true);
+        placePinImpl(p.lat, p.lng, true);
       });
     }
 
@@ -170,7 +210,7 @@ export default function LocationPicker({ onPick, onCancel, lang = 'en', initial 
   useEffect(() => {
     if (!mapEl.current || mapRef.current) return;
 
-    let map: L.Map;
+    let map: L.Map | null = null;
     try {
       map = L.map(mapEl.current, {
         center: initial ? [initial.lat, initial.lng] : BLR,
@@ -179,6 +219,10 @@ export default function LocationPicker({ onPick, onCancel, lang = 'en', initial 
         maxZoom: 20,
       });
     } catch {
+      map = null;
+    }
+
+    if (!map) {
       setMapError('Could not load the map. Check your connection.');
       return;
     }
@@ -212,9 +256,13 @@ export default function LocationPicker({ onPick, onCancel, lang = 'en', initial 
   // Debounced search
   useEffect(() => {
     if (query.trim().length < 3) {
-      setResults([]);
-      setShowResults(false);
-      setSearching(false);
+      const clear = async () => {
+        await Promise.resolve();
+        setResults([]);
+        setShowResults(false);
+        setSearching(false);
+      };
+      void clear();
       return;
     }
     setSearching(true);

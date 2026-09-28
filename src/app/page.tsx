@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Language } from '@/types';
 import { getStoredLanguage, setStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
-import { Globe, ChevronRight, Menu, X, FileSearch, Sparkles, ArrowRight, Shield, Mic, Paperclip, TrendingUp, Sun, Moon } from 'lucide-react';
+import { Globe, Menu, X, FileSearch, Sparkles, ArrowRight, Shield, Mic, Paperclip, TrendingUp, Sun, Moon } from 'lucide-react';
 
 const languages: { code: Language; label: string; native: string }[] = [
   { code: 'kn', label: 'Kannada', native: 'ಕನ್ನಡ' },
@@ -47,11 +47,16 @@ export default function LandingPage() {
   const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-    const stored = getStoredLanguage();
-    setLang(stored);
-    const savedTheme = localStorage.getItem('ns_theme');
-    setDarkMode(savedTheme ? savedTheme === 'dark' : true);
+    const init = async () => {
+      // Defer hydration-dependent state to a microtask so React finishes
+      // its initial effect flush before we read localStorage.
+      await Promise.resolve();
+      setMounted(true);
+      setLang(getStoredLanguage());
+      const savedTheme = localStorage.getItem('ns_theme');
+      setDarkMode(savedTheme ? savedTheme === 'dark' : true);
+    };
+    void init();
   }, []);
 
   const toggleTheme = () => {

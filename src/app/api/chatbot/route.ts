@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { getScenarioById } from '@/data/scenarios';
 import { detectIntent, intentReply, askMore } from '@/lib/conversation';
@@ -226,7 +226,7 @@ function normalise(content: unknown): AIResult | null {
   return null;
 }
 
-function parseJsonLoose(content: string): Record<string, any> | null {
+function parseJsonLoose(content: string): Record<string, unknown> | null {
   const cleaned = content
     .replace(/<analysis>[\s\S]*?<\/analysis>/gi, '')
     .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '')

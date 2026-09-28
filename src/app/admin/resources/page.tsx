@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { isDemoMode } from '@/lib/supabase';
-import { Plus, Trash2, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
+import { Trash2, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
 
 interface Resource {
   id: string;
@@ -27,10 +28,9 @@ const demoResources: Resource[] = [
 ];
 
 export default function AdminResourcesPage() {
+  const router = useRouter();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => { loadResources(); }, []);
 
   const loadResources = async () => {
     setLoading(true);
@@ -44,6 +44,13 @@ export default function AdminResourcesPage() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    const init = async () => {
+      await loadResources();
+    };
+    void init();
+  }, []);
+
   const handleDelete = async (id: string) => {
     if (isDemoMode) {
       setResources(prev => prev.filter(r => r.id !== id));
@@ -54,10 +61,10 @@ export default function AdminResourcesPage() {
     }
   };
 
-  const handleLogout = async () => {
-    await fetch('/api/admin/logout', { method: 'POST' });
-    window.location.href = '/admin/login';
-  };
+    const handleLogout = async () => {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      router.push('/admin/login');
+    };
 
   return (
     <div className="min-h-screen bg-gray-100">

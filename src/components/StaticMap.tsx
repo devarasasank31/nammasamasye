@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Loader2, Crosshair } from 'lucide-react';
+import { MapPin, Crosshair } from 'lucide-react';
 
 interface Props {
   lat: number;
@@ -34,7 +34,7 @@ export default function StaticMap({ lat, lng, label, height = 200 }: Props) {
       return;
     }
 
-    let map: L.Map;
+    let map: L.Map | null = null;
     try {
       map = L.map(el.current, {
         center: [lat, lng],
@@ -48,6 +48,10 @@ export default function StaticMap({ lat, lng, label, height = 200 }: Props) {
         keyboard: false,
       });
     } catch {
+      map = null;
+    }
+
+    if (!map) {
       setFailed(true);
       return;
     }

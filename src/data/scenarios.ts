@@ -1,4 +1,4 @@
-import { Language, IncidentCategory, WorkflowQuestion, CategoryParent } from '@/types';
+import { Language, IncidentCategory, CategoryParent } from '@/types';
 
 export const scenarios: IncidentCategory[] = [
   {

@@ -6,20 +6,15 @@ import { Language } from '@/types';
 import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
 import { getDashboardStats } from '@/services/incident';
+import { IncidentStats } from '@/types';
 import { seedDemoData } from '@/lib/demo-store';
 import { ArrowLeft, BarChart3, MapPin } from 'lucide-react';
 
 export default function CommunityPage() {
   const router = useRouter();
   const [lang, setLang] = useState<Language>('en');
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<IncidentStats | null>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    seedDemoData();
-    setLang(getStoredLanguage());
-    loadStats();
-  }, []);
 
   const loadStats = async () => {
     setLoading(true);
@@ -27,6 +22,18 @@ export default function CommunityPage() {
     setStats(data);
     setLoading(false);
   };
+
+  useEffect(() => {
+    const init = async () => {
+      seedDemoData();
+      // Defer hydration-dependent state to a microtask so React finishes
+      // its initial effect flush before we push localStorage values.
+      await Promise.resolve();
+      setLang(getStoredLanguage());
+      await loadStats();
+    };
+    void init();
+  }, []);
 
   const categoryLabels: Record<string, string> = {
     TRAFFIC: 'Traffic',
@@ -70,8 +77,8 @@ export default function CommunityPage() {
                 </h2>
                 <div className="space-y-3">
                   {Object.entries(stats.byCategory)
-                    .sort(([, a]: [string, any], [, b]: [string, any]) => b - a)
-                    .map(([cat, count]: [string, any]) => (
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([cat, count]) => (
                       <div key={cat} className="flex items-center gap-3">
                         <div className="flex-1">
                           <div className="flex justify-between text-sm mb-1">
@@ -99,9 +106,9 @@ export default function CommunityPage() {
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {Object.entries(stats.byArea)
-                    .sort(([, a]: [string, any], [, b]: [string, any]) => b - a)
+                    .sort(([, a], [, b]) => b - a)
                     .slice(0, 12)
-                    .map(([area, count]: [string, any]) => (
+                    .map(([area, count]) => (
                       <div key={area} className="p-3 rounded-xl bg-gray-50 border border-gray-100">
                         <div className="text-lg font-bold text-gray-900">{count}</div>
                         <div className="text-xs text-gray-500">{area}</div>
