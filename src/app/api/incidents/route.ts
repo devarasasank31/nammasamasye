@@ -1,52 +1,109 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { isDemoMode } from '@/lib/supabase';
+import { demoStore } from '@/lib/demo-store';
+import { Language } from '@/types';
+
+interface IncidentBody {
+  session_id?: string;
+  category_id?: string;
+  subcategory?: string;
+  original_text?: string;
+  structured_interpretation?: string;
+  ai_summary?: string;
+  location?: string;
+  location_area?: string;
+  location_lat?: number;
+  location_lng?: number;
+  date_of_incident?: string;
+  language?: Language;
+  answers?: Record<string, string>;
+  evidence_links?: string[];
+  attachments?: { id: string; name: string; kind: 'image' | 'video'; mime: string; size: number; added_at: string }[];
+  ai_scenario_match?: string;
+  ai_confidence?: number;
+  ai_reason?: string;
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const {
-      session_id, category_id, subcategory, original_text,
-      structured_interpretation, ai_summary, location, location_area,
-      language, answers, evidence_links, ai_scenario_match,
-      ai_confidence, ai_reason,
-    } = body;
+    const body: IncidentBody = await req.json();
+
+    if (!body.category_id || !body.subcategory) {
+      return NextResponse.json({ error: 'category_id and subcategory are required' }, { status: 400 });
+    }
+    if (!body.session_id) {
+      return NextResponse.json({ error: 'session_id is required' }, { status: 400 });
+    }
+
+    if (isDemoMode) {
+      const incident = demoStore.createIncident({
+        session_id: body.session_id,
+        category_id: body.category_id,
+        subcategory: body.subcategory,
+        original_text: body.original_text || '',
+        structured_interpretation: body.structured_interpretation || '',
+        ai_summary: body.ai_summary || '',
+        location: body.location || '',
+        location_area: body.location_area || '',
+        location_lat: body.location_lat,
+        location_lng: body.location_lng,
+        date_of_incident: body.date_of_incident,
+        language: body.language || 'en',
+        answers: body.answers || {},
+        evidence_links: body.evidence_links || [],
+        attachments: body.attachments || [],
+        ai_scenario_match: body.ai_scenario_match,
+        ai_confidence: body.ai_confidence,
+        ai_reason: body.ai_reason,
+      });
+      return NextResponse.json({ incident });
+    }
+
+    const { supabase } = await import('@/lib/supabase');
 
     const { data: incident, error } = await supabase
       .from('incidents')
       .insert({
-        session_id,
-        category_id,
-        subcategory,
-        original_text,
-        structured_interpretation: structured_interpretation || '',
-        ai_summary: ai_summary || '',
-        location: location || '',
-        location_area: location_area || '',
-        language: language || 'en',
+        session_id: body.session_id,
+        category_id: body.category_id,
+        subcategory: body.subcategory,
+        original_text: body.original_text || '',
+        structured_interpretation: body.structured_interpretation || '',
+        ai_summary: body.ai_summary || '',
+        location: body.location || '',
+        location_area: body.location_area || '',
+        location_lat: body.location_lat,
+        location_lng: body.location_lng,
+        date_of_incident: body.date_of_incident || null,
+        language: body.language || 'en',
         status: 'NEW',
-        ai_scenario_match: ai_scenario_match || '',
-        ai_confidence: ai_confidence || 0,
-        ai_reason: ai_reason || '',
+        attachments: body.attachments || [],
+        ai_scenario_match: body.ai_scenario_match || '',
+        ai_confidence: body.ai_confidence || 0,
+        ai_reason: body.ai_reason || '',
       })
       .select()
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error || !incident) {
+      return NextResponse.json({ error: error?.message || 'Failed to create incident' }, { status: 500 });
+    }
 
-    if (answers && Object.keys(answers).length > 0) {
+    const answers = body.answers || {};
+    if (Object.keys(answers).length > 0) {
       await supabase.from('incident_answers').insert(
         Object.entries(answers).map(([questionId, answer]) => ({
           incident_id: incident.id,
           question_id: questionId,
           question_text: questionId,
-          answer: answer as string,
+          answer,
         }))
       );
     }
 
-    if (evidence_links && evidence_links.length > 0) {
+    if (body.evidence_links && body.evidence_links.length > 0) {
       await supabase.from('evidence').insert(
-        evidence_links.map((url: string) => ({
+        body.evidence_links.map(url => ({
           incident_id: incident.id,
           type: 'link',
           url,
@@ -66,18 +123,31 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ incident });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Failed to create incident' }, { status: 500 });
   }
 }
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const sessionId = searchParams.get('session_id');
+  try {
+    const { searchParams } = new URL(req.url);
+    const sessionId = searchParams.get('session_id');
 
-  let query = supabase.from('incidents').select('*').order('created_at', { ascending: false });
-  if (sessionId) query = query.eq('session_id', sessionId);
+    if (isDemoMode) {
+      const incidents = sessionId
+        ? demoStore.getIncidentsBySession(sessionId)
+        : demoStore.getAllIncidents();
+      return NextResponse.json({ incidents });
+    }
 
-  const { data, error } = await query.limit(100);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ incidents: data });
+    const { supabase } = await import('@/lib/supabase');
+
+    let query = supabase.from('incidents').select('*').order('created_at', { ascending: false });
+    if (sessionId) query = query.eq('session_id', sessionId);
+
+    const { data, error } = await query.limit(100);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ incidents: data });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || 'Failed to load incidents' }, { status: 500 });
+  }
 }
