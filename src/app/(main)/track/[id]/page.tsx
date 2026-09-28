@@ -9,6 +9,8 @@ import { getAllIncidents, getStatusHistory, getIncidentEvidence, getIncidentById
 import { ArrowLeft, CheckCircle, Circle, Clock, AlertCircle, MessageSquare, Send } from 'lucide-react';
 import { getStatusBadgeClass, getStatusDotClass } from '@/lib/status-colors';
 import AttachmentGallery from '@/components/AttachmentGallery';
+import dynamic from 'next/dynamic';
+const StaticMap = dynamic(() => import('@/components/StaticMap'), { ssr: false, loading: () => <div className="h-[200px] rounded-xl bg-gray-100 animate-pulse" /> });
 
 export default function TrackPage() {
   const router = useRouter();
@@ -165,6 +167,10 @@ export default function TrackPage() {
             )}
 
             <AttachmentGallery attachments={selectedIncident.attachments} />
+
+            {typeof selectedIncident.location_lat === 'number' && typeof selectedIncident.location_lng === 'number' && (
+              <StaticMap lat={selectedIncident.location_lat} lng={selectedIncident.location_lng} label={selectedIncident.location} />
+            )}
 
             {/* Admin Notes (visible to user) */}
             {adminNotes.length > 0 && (

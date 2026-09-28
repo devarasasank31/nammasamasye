@@ -8,6 +8,8 @@ import { seedDemoData } from '@/lib/demo-store';
 import { ArrowLeft, CheckCircle, ExternalLink, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
 import { getStatusBadgeClass, getStatusColor } from '@/lib/status-colors';
 import AttachmentGallery from '@/components/AttachmentGallery';
+import dynamic from 'next/dynamic';
+const StaticMap = dynamic(() => import('@/components/StaticMap'), { ssr: false, loading: () => <div className="h-[200px] rounded-xl bg-gray-100 animate-pulse" /> });
 
 export default function AdminIncidentDetailPage() {
   const router = useRouter();
@@ -244,6 +246,10 @@ export default function AdminIncidentDetailPage() {
             )}
 
             <AttachmentGallery attachments={incident.attachments} />
+
+            {typeof incident.location_lat === 'number' && typeof incident.location_lng === 'number' && (
+              <StaticMap lat={incident.location_lat} lng={incident.location_lng} label={incident.location} height={240} />
+            )}
 
             {incident.ai_scenario_match && (
               <div>

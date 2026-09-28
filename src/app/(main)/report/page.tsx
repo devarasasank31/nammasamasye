@@ -9,6 +9,12 @@ import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { t } from '@/lib/translations';
 import { createIncident } from '@/services/incident';
 import FileUploader from '@/components/FileUploader';
+import dynamic from 'next/dynamic';
+import type { PickedLocation } from '@/components/LocationPicker';
+const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
+  ssr: false,
+  loading: () => <div className="h-[420px] rounded-2xl bg-gray-100 animate-pulse" />,
+});
 import { Send, Mic, MicOff, ArrowLeft, Globe, ChevronRight, MapPin, HelpCircle, X, Square, Link2, Plus, ShieldCheck, Paperclip, Check } from 'lucide-react';
 
 type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'review' | 'safety_review' | 'submitted';
@@ -99,6 +105,8 @@ export default function ReportPage() {
   const [attachments, setAttachments] = useState<AttachmentMeta[]>([]);
   const [safetyChecked, setSafetyChecked] = useState<boolean[]>([false, false, false]);
   const [showEvidenceUploader, setShowEvidenceUploader] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [pickedLocation, setPickedLocation] = useState<PickedLocation | null>(null);
 
   useEffect(() => {
     const stored = getStoredLanguage();
@@ -147,15 +155,19 @@ export default function ReportPage() {
   const moveToNextQuestion = () => {
     if (!selectedScenario) return;
     setShowEvidenceForm(false);
+    setShowLocationPicker(false);
     const nextIdx = currentQuestionIdx + 1;
     if (nextIdx < selectedScenario.workflow.length) {
       setCurrentQuestionIdx(nextIdx);
       const nextQ = selectedScenario.workflow[nextIdx];
       setTimeout(() => {
         addBotMessage(nextQ.text[lang] || nextQ.text.en);
-        // Show evidence form if next question is evidence type
         if (nextQ.type === 'evidence') {
           setTimeout(() => setShowEvidenceForm(true), 300);
+        }
+        if (nextQ.type === 'location') {
+          addBotMessage('📍 Search for the exact spot, use your current location, or tap the map to drop a pin.');
+          setTimeout(() => setShowLocationPicker(true), 300);
         }
       }, 300);
     } else {
@@ -166,9 +178,45 @@ export default function ReportPage() {
     }
   };
 
+  // Called when the user confirms a spot on the map (or skips it)
+  const handleLocationPicked = (loc: PickedLocation | null) => {
+    setShowLocationPicker(false);
+    if (loc) {
+      setPickedLocation(loc);
+      setLocation(loc.address);
+      if (selectedScenario) {
+        const q = selectedScenario.workflow[currentQuestionIdx];
+        setAnswers(prev => ({ ...prev, [q.id]: loc.address }));
+        addUserMessage(loc.address);
+      } else if (currentQuestionIdx === 0) {
+        addUserMessage(loc.address);
+      }
+    } else {
+      if (selectedScenario?.workflow[currentQuestionIdx]) addUserMessage('Skip');
+    }
+    setTimeout(() => moveToNextQuestion(), 250);
+  };
+
   const isYesAnswer = (answer: string) => {
     const lower = answer.toLowerCase().trim();
     return lower === 'yes' || lower === 'ಹೌದು' || lower === 'हाँ' || lower === 'हूँ' || lower === 'అవును';
+  };
+
+  // Starts a scenario's workflow at its first question
+  const startScenario = (scenario: IncidentCategory, label?: string) => {
+    setSelectedScenario(scenario);
+    if (label) addUserMessage(label);
+    const firstQ = scenario.workflow[0];
+    if (firstQ) {
+      addBotMessage(firstQ.text[lang] || firstQ.text.en);
+      setStep('workflow');
+      setCurrentQuestionIdx(0);
+      if (firstQ.type === 'evidence') setTimeout(() => setShowEvidenceForm(true), 300);
+      if (firstQ.type === 'location') {
+        addBotMessage('📍 Search for the exact spot, use your current location, or tap the map to drop a pin.');
+        setTimeout(() => setShowLocationPicker(true), 300);
+      }
+    }
   };
 
   const handleCategorySelect = (scenarioId: string) => {
@@ -180,17 +228,7 @@ export default function ReportPage() {
     }
     const scenario = getScenarioById(scenarioId);
     if (scenario) {
-      setSelectedScenario(scenario);
-      addUserMessage(scenario.name);
-      const firstQ = scenario.workflow[0];
-      if (firstQ) {
-        addBotMessage(firstQ.text[lang] || firstQ.text.en);
-        setStep('workflow');
-        setCurrentQuestionIdx(0);
-        if (firstQ.type === 'evidence') {
-          setTimeout(() => setShowEvidenceForm(true), 300);
-        }
-      }
+      startScenario(scenario, scenario.name);
     } else {
       addBotMessage("Please describe your issue in detail.");
       setStep('free_text');
@@ -220,19 +258,7 @@ export default function ReportPage() {
 
   const handleScenarioConfirm = (scenarioId: string) => {
     const scenario = getScenarioById(scenarioId);
-    if (scenario) {
-      setSelectedScenario(scenario);
-      addUserMessage(scenario.name);
-      const firstQ = scenario.workflow[0];
-      if (firstQ) {
-        addBotMessage(firstQ.text[lang] || firstQ.text.en);
-        setStep('workflow');
-        setCurrentQuestionIdx(0);
-        if (firstQ.type === 'evidence') {
-          setTimeout(() => setShowEvidenceForm(true), 300);
-        }
-      }
-    }
+    if (scenario) startScenario(scenario, scenario.name);
   };
 
   const handleWorkflowAnswer = () => {
@@ -309,6 +335,8 @@ export default function ReportPage() {
       structured_interpretation: '',
       ai_summary: Object.values(answers).join('. '),
       location,
+      location_lat: pickedLocation?.lat,
+      location_lng: pickedLocation?.lng,
       language: lang,
       answers,
       evidence_links: evidenceLinks,
@@ -512,6 +540,18 @@ export default function ReportPage() {
               className="flex-1 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 font-medium text-sm hover:bg-red-100 transition">
               No
             </button>
+          </div>
+        )}
+
+        {/* Location picker — map with search, current location and pin drop */}
+        {showLocationPicker && step === 'workflow' && (
+          <div className="mt-2">
+            <LocationPicker
+              lang={lang}
+              initial={pickedLocation}
+              onPick={loc => handleLocationPicked(loc)}
+              onCancel={() => handleLocationPicked(null)}
+            />
           </div>
         )}
 
@@ -774,7 +814,7 @@ export default function ReportPage() {
       </div>
 
       {/* Input Area */}
-      {step !== 'submitted' && step !== 'review' && step !== 'safety_review' && !showEvidenceForm && (
+      {step !== 'submitted' && step !== 'review' && step !== 'safety_review' && !showEvidenceForm && !showLocationPicker && (
         <div className="sticky bottom-0 glass border-t border-gray-200">
           <div className="max-w-2xl mx-auto px-4 py-3">
             {isRecording && (
