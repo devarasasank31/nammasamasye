@@ -4,8 +4,16 @@ import { getScenarioById } from '@/data/scenarios';
 
 // Server-side only
 const AI_API_KEY = process.env.AI_API_KEY || process.env.GROQ_API_KEY || '';
-const AI_PROVIDER = process.env.AI_PROVIDER || 'openai';
-const AI_MODEL = process.env.AI_MODEL || 'gpt-3.5-turbo';
+const AI_PROVIDER = (process.env.AI_PROVIDER || 'openai').trim();
+
+const PROVIDER_CONFIG: Record<string, { baseUrl: string; defaultModel: string }> = {
+  groq: { baseUrl: 'https://api.groq.com/openai/v1', defaultModel: 'openai/gpt-oss-120b' },
+  openai: { baseUrl: 'https://api.openai.com/v1', defaultModel: 'gpt-4o-mini' },
+  gemini: { baseUrl: '', defaultModel: 'gemini-2.0-flash' },
+};
+
+const CONFIG = PROVIDER_CONFIG[AI_PROVIDER] || PROVIDER_CONFIG.openai;
+const AI_MODEL = (process.env.AI_MODEL || CONFIG.defaultModel).trim();
 
 const SYSTEM_PROMPT = `You are Namma Samasye AI for Bengaluru civic issues. You help classify citizen complaints.
 
@@ -49,7 +57,7 @@ async function callOpenAICompatible(userInput: string, apiKey: string, model: st
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: userInput },
       ],
-      max_tokens: 200,
+      max_tokens: 800,
       temperature: 0.3,
     }),
   });
@@ -64,18 +72,40 @@ async function callOpenAICompatible(userInput: string, apiKey: string, model: st
   const content = data.choices?.[0]?.message?.content;
   if (!content) return null;
 
-  const jsonMatch = content.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) return null;
+  const parsed = parseJsonLoose(content);
+  if (!parsed) {
+    console.log('Could not parse AI response:', content.slice(0, 200));
+    return null;
+  }
+
+  const scenario = getScenarioById(parsed.scenario_id);
+  if (!scenario) {
+    console.log('AI returned unknown scenario_id:', parsed.scenario_id);
+    return null;
+  }
+
+  return {
+    scenario_id: parsed.scenario_id,
+    confidence: Math.min(Math.max(Number(parsed.confidence) || 50, 10), 99),
+    reason: parsed.reason || 'AI determined this category',
+  };
+}
+
+function parseJsonLoose(content: string): { scenario_id: string; confidence: number; reason: string } | null {
+  const cleaned = content
+    .replace(/<analysis>[\s\S]*?<\/analysis>/gi, '')
+    .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '')
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/^[\s\S]*?\{/, '{')
+    .replace(/```json|```/g, '');
+
+  const start = cleaned.indexOf('{');
+  if (start === -1) return null;
+  const end = cleaned.lastIndexOf('}');
+  if (end <= start) return null;
 
   try {
-    const parsed = JSON.parse(jsonMatch[0]);
-    const scenario = getScenarioById(parsed.scenario_id);
-    if (!scenario) return null;
-    return {
-      scenario_id: parsed.scenario_id,
-      confidence: Math.min(Math.max(parsed.confidence || 50, 10), 99),
-      reason: parsed.reason || 'AI determined this category',
-    };
+    return JSON.parse(cleaned.slice(start, end + 1));
   } catch {
     return null;
   }
@@ -110,20 +140,17 @@ export async function POST(request: NextRequest) {
       try {
         let aiResult = null;
 
-        if (AI_PROVIDER === 'groq') {
-          // Groq uses OpenAI-compatible API
-          aiResult = await callOpenAICompatible(userInput, AI_API_KEY, AI_MODEL || 'llama-3.3-70b-versatile', 'https://api.groq.com/openai/v1');
-        } else if (AI_PROVIDER === 'openai') {
-          aiResult = await callOpenAICompatible(userInput, AI_API_KEY, AI_MODEL || 'gpt-3.5-turbo', 'https://api.openai.com/v1');
+        if (AI_PROVIDER === 'groq' || AI_PROVIDER === 'openai') {
+          aiResult = await callOpenAICompatible(userInput, AI_API_KEY, AI_MODEL, CONFIG.baseUrl);
         } else if (AI_PROVIDER === 'gemini') {
           const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${AI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${AI_API_KEY}`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nUser: ${userInput}` }] }],
-                generationConfig: { maxOutputTokens: 200, temperature: 0.3 },
+                generationConfig: { maxOutputTokens: 800, temperature: 0.3 },
               }),
             }
           );
@@ -132,21 +159,17 @@ export async function POST(request: NextRequest) {
           if (response.ok) {
             const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
             if (content) {
-              const jsonMatch = content.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                try {
-                  const parsed = JSON.parse(jsonMatch[0]);
-                  const scenario = getScenarioById(parsed.scenario_id);
-                  if (scenario) {
-                    aiResult = {
-                      scenario_id: parsed.scenario_id,
-                      confidence: Math.min(Math.max(parsed.confidence || 50, 10), 99),
-                      reason: parsed.reason || 'AI determined this category',
-                    };
-                  }
-                } catch {}
+              const parsed = parseJsonLoose(content);
+              if (parsed && getScenarioById(parsed.scenario_id)) {
+                aiResult = {
+                  scenario_id: parsed.scenario_id,
+                  confidence: Math.min(Math.max(Number(parsed.confidence) || 50, 10), 99),
+                  reason: parsed.reason || 'AI determined this category',
+                };
               }
             }
+          } else {
+            console.log('Gemini API error:', data.error?.message);
           }
         }
 
