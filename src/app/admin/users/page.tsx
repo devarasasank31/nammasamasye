@@ -115,7 +115,7 @@ export default function AdminUsersPage() {
           ) : selectedUser ? (
             <div className="space-y-6">
               <button onClick={() => setSelectedUser(null)} className="text-primary text-sm hover:underline">
-                ? Back to all users
+                ← Back to all users
               </button>
 
               <div className="bg-white rounded-2xl border border-gray-200 p-6">

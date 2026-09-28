@@ -97,7 +97,7 @@ export default function TrackPage() {
     const { isDemoMode } = await import('@/lib/supabase');
     if (isDemoMode) {
       const { demoStore } = await import('@/lib/demo-store');
-      demoStore.addAdminNotePublic(selectedIncident.id, 'user', `?? USER REPLY: ${replyText.trim()}`, false);
+      demoStore.addAdminNotePublic(selectedIncident.id, 'user', `📩 USER REPLY: ${replyText.trim()}`, false);
     }
     setReplyText('');
     setReplyingTo(null);
@@ -184,15 +184,15 @@ export default function TrackPage() {
                   Updates from Admin
                 </h3>
                 {adminNotes.map(note => {
-                  const isRequestInfo = note.content.startsWith('?? REQUEST INFO:');
-                  const isUserReply = note.content.startsWith('?? USER REPLY:');
-                  const content = note.content.replace('?? REQUEST INFO: ', '').replace('?? USER REPLY: ', '');
+                  const isRequestInfo = note.content.startsWith('📋 REQUEST INFO:');
+                  const isUserReply = note.content.startsWith('📩 USER REPLY:');
+                  const content = note.content.replace('📋 REQUEST INFO: ', '').replace('📩 USER REPLY: ', '');
 
                   if (isRequestInfo) {
                     return (
                       <div key={note.id} className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-4 space-y-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm">??</span>
+                          <span className="text-sm">📋</span>
                           <span className="text-xs font-bold text-purple-700">Information Requested</span>
                           <span className="text-[10px] text-purple-500">{new Date(note.created_at).toLocaleString()}</span>
                         </div>
@@ -230,7 +230,7 @@ export default function TrackPage() {
                     return (
                       <div key={note.id} className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-bold text-green-700">?? Your Reply</span>
+                          <span className="text-xs font-bold text-green-700">📩 Your Reply</span>
                           <span className="text-[10px] text-green-500">{new Date(note.created_at).toLocaleString()}</span>
                         </div>
                         <p className="text-sm text-green-900">{content}</p>
@@ -241,7 +241,7 @@ export default function TrackPage() {
                   return (
                     <div key={note.id} className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold text-blue-700">?? Admin Note</span>
+                        <span className="text-xs font-bold text-blue-700">📋 Admin Note</span>
                         <span className="text-[10px] text-blue-500">{new Date(note.created_at).toLocaleString()}</span>
                       </div>
                       <p className="text-sm text-blue-900">{note.content}</p>
@@ -279,7 +279,7 @@ export default function TrackPage() {
 
             <button onClick={() => { setSelectedIncident(null); setAdminNotes([]); setHasNewNote(false); }}
               className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 transition">
-              ? Back to all incidents
+              ← Back to all incidents
             </button>
           </div>
         )}
@@ -291,7 +291,7 @@ export default function TrackPage() {
               <div className="text-center py-8 text-gray-400 text-sm">Loading...</div>
             ) : incidents.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-                <div className="text-4xl mb-3">??</div>
+                <div className="text-4xl mb-3">📋</div>
                 <p className="text-gray-500 text-sm">No incidents yet. Start by reporting something.</p>
                 <button onClick={() => router.push('/report')} className="mt-4 px-6 py-2 rounded-xl gradient-bg text-white text-sm font-medium hover:opacity-90 transition">
                   Report Something

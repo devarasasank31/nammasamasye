@@ -27,35 +27,35 @@ interface ChatMessage {
 }
 
 const categoryButtons = [
-  { id: 'traffic_accident', icon: '??', label: 'Traffic / Accident' },
-  { id: 'traffic_pothole', icon: '???', label: 'Pothole / Road Damage' },
-  { id: 'civic_garbage', icon: '???', label: 'Garbage' },
-  { id: 'traffic_parking', icon: '???', label: 'Illegal Parking' },
-  { id: 'civic_streetlight', icon: '??', label: 'Streetlight' },
-  { id: 'civic_footpath', icon: '??', label: 'Footpath Issue' },
-  { id: 'civic_drainage', icon: '??', label: 'Drainage / Water Logging' },
-  { id: 'civic_parks', icon: '??', label: 'Parks & Gardens' },
-  { id: 'civic_water_supply', icon: '??', label: 'Water Supply' },
-  { id: 'civic_stray_animals', icon: '??', label: 'Stray Animals' },
-  { id: 'traffic_interaction', icon: '??', label: 'Police / Traffic Interaction' },
-  { id: 'bribes', icon: '??', label: 'Bribes' },
-  { id: 'safety_harassment', icon: '???', label: 'Safety / Harassment' },
-  { id: 'cybercrime', icon: '??', label: 'Cybercrime' },
-  { id: 'housing_tenant', icon: '??', label: 'Tenant / Landlord' },
-  { id: 'env_noise', icon: '??', label: 'Noise Pollution' },
-  { id: 'util_power', icon: '?', label: 'Power Outage' },
-  { id: 'access_language', icon: '??', label: 'Language Barrier' },
-  { id: 'govt_service', icon: '??', label: 'Government Service' },
-  { id: 'something_else', icon: '?', label: 'Something Else' },
+  { id: 'traffic_accident', icon: '🚗', label: 'Traffic / Accident' },
+  { id: 'traffic_pothole', icon: '🕳️', label: 'Pothole / Road Damage' },
+  { id: 'civic_garbage', icon: '🗑️', label: 'Garbage' },
+  { id: 'traffic_parking', icon: '🅿️', label: 'Illegal Parking' },
+  { id: 'civic_streetlight', icon: '💡', label: 'Streetlight' },
+  { id: 'civic_footpath', icon: '🚶', label: 'Footpath Issue' },
+  { id: 'civic_drainage', icon: '🚰', label: 'Drainage / Water Logging' },
+  { id: 'civic_parks', icon: '🌳', label: 'Parks & Gardens' },
+  { id: 'civic_water_supply', icon: '💧', label: 'Water Supply' },
+  { id: 'civic_stray_animals', icon: '🐕', label: 'Stray Animals' },
+  { id: 'traffic_interaction', icon: '👮', label: 'Police / Traffic Interaction' },
+  { id: 'bribes', icon: '💰', label: 'Bribes' },
+  { id: 'safety_harassment', icon: '🛡️', label: 'Safety / Harassment' },
+  { id: 'cybercrime', icon: '💻', label: 'Cybercrime' },
+  { id: 'housing_tenant', icon: '🏠', label: 'Tenant / Landlord' },
+  { id: 'env_noise', icon: '🔊', label: 'Noise Pollution' },
+  { id: 'util_power', icon: '⚡', label: 'Power Outage' },
+  { id: 'access_language', icon: '🌐', label: 'Language Barrier' },
+  { id: 'govt_service', icon: '📄', label: 'Government Service' },
+  { id: 'something_else', icon: '❓', label: 'Something Else' },
 ];
 
 const supportedPlatforms = [
-  { name: 'Google Drive', icon: '??' },
-  { name: 'YouTube', icon: '??' },
-  { name: 'Imgur', icon: '??' },
-  { name: 'Dropbox', icon: '??' },
-  { name: 'OneDrive', icon: '??' },
-  { name: 'MediaFire', icon: '??' },
+  { name: 'Google Drive', icon: '📁' },
+  { name: 'YouTube', icon: '🎥' },
+  { name: 'Imgur', icon: '📷' },
+  { name: 'Dropbox', icon: '📦' },
+  { name: 'OneDrive', icon: '☁️' },
+  { name: 'MediaFire', icon: '📂' },
 ];
 
 function isValidEvidenceLink(url: string): boolean {
@@ -76,11 +76,7 @@ function isValidEvidenceLink(url: string): boolean {
   }
 }
 
-export default function ReportPage() {
-  const router = useRouter();
-  const chatRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  interface SpeechRecognitionAlternativeLike { transcript: string }
+interface SpeechRecognitionAlternativeLike { transcript: string }
 interface SpeechRecognitionResultLike { isFinal: boolean; 0: SpeechRecognitionAlternativeLike }
 interface SpeechRecognitionEventLike { results: ArrayLike<SpeechRecognitionResultLike> }
 interface SpeechRecognitionLike {
@@ -94,7 +90,12 @@ interface SpeechRecognitionLike {
   onend: (() => void) | null;
 }
 type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
-const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+
+export default function ReportPage() {
+  const router = useRouter();
+  const chatRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   const [lang, setLang] = useState<Language>('en');
   const [step, setStep] = useState<Step>('greeting');
@@ -183,7 +184,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
           setTimeout(() => setShowEvidenceForm(true), 300);
         }
         if (nextQ.type === 'location') {
-          addBotMessage('?? Search for the exact spot, use your current location, or tap the map to drop a pin.');
+          addBotMessage('📍 Search for the exact spot, use your current location, or tap the map to drop a pin.');
           setTimeout(() => setShowLocationPicker(true), 300);
         }
       }, 300);
@@ -216,7 +217,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   const isYesAnswer = (answer: string) => {
     const lower = answer.toLowerCase().trim();
-    return lower === 'yes' || lower === '????' || lower === '???' || lower === '???' || lower === '?????';
+    return lower === 'yes' || lower === 'ಹೌದು' || lower === 'हाँ' || lower === 'हूँ' || lower === 'అవును';
   };
 
   // Starts a scenario's workflow at its first question
@@ -230,7 +231,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
       setCurrentQuestionIdx(0);
       if (firstQ.type === 'evidence') setTimeout(() => setShowEvidenceForm(true), 300);
       if (firstQ.type === 'location') {
-        addBotMessage('?? Search for the exact spot, use your current location, or tap the map to drop a pin.');
+        addBotMessage('📍 Search for the exact spot, use your current location, or tap the map to drop a pin.');
         setTimeout(() => setShowLocationPicker(true), 300);
       }
     }
@@ -263,7 +264,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
     setScenarioMatches(matches);
     if (matches.length > 0 && matches[0].confidence > 50) {
       let response = `${t('bot.scenario_match', lang)}:\n\n`;
-      matches.forEach((m, i) => { response += `${i + 1}. ${m.scenarioName} � ${m.confidence}%\n   ${m.reason}\n\n`; });
+      matches.forEach((m, i) => { response += `${i + 1}. ${m.scenarioName} — ${m.confidence}%\n   ${m.reason}\n\n`; });
       response += `\n${t('bot.disclaimer', lang)}\n\nPlease select the most relevant scenario.`;
       addBotMessage(response);
       setStep('scenario_match');
@@ -292,7 +293,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
       const evKeywords = ['photo', 'video', 'evidence', 'witness', 'screenshots', 'communication', 'documents', 'notices'];
       if (evKeywords.some(kw => question.id.toLowerCase().includes(kw))) {
         setTimeout(() => {
-          addBotMessage("?? Paste your evidence links below. You can add multiple links.");
+          addBotMessage("📎 Paste your evidence links below. You can add multiple links.");
           setShowEvidenceForm(true);
         }, 300);
         return;
@@ -302,7 +303,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
     // Evidence type question
     if (question.type === 'evidence') {
       setTimeout(() => {
-        addBotMessage("?? Paste your evidence links below. You can add multiple links.");
+        addBotMessage("📎 Paste your evidence links below. You can add multiple links.");
         setShowEvidenceForm(true);
       }, 300);
       return;
@@ -321,16 +322,16 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
     if (!evidenceInput.trim()) return;
     const link = evidenceInput.trim();
     if (!link.startsWith('http')) {
-      addBotMessage('? Please paste a link starting with http:// or https://');
+      addBotMessage('❌ Please paste a link starting with http:// or https://');
       return;
     }
     if (!isValidEvidenceLink(link)) {
-      addBotMessage('? Invalid link. Use: Google Drive, YouTube, Imgur, Dropbox, OneDrive, or MediaFire.');
+      addBotMessage('❌ Invalid link. Use: Google Drive, YouTube, Imgur, Dropbox, OneDrive, or MediaFire.');
       return;
     }
     setEvidenceLinks(prev => [...prev, link]);
     setEvidenceInput('');
-    addBotMessage(`? Link added (${evidenceLinks.length + 1} total)`);
+    addBotMessage(`✅ Link added (${evidenceLinks.length + 1} total)`);
   };
 
   const handleRemoveEvidence = (idx: number) => {
@@ -455,7 +456,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
             {(['kn', 'en', 'hi', 'te'] as Language[]).map(l => (
               <button key={l} onClick={() => { setLang(l); setStoredLanguage(l); setShowLangSwitch(false); }}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition ${lang === l ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                {l === 'kn' ? '?????' : l === 'hi' ? '??????' : l === 'te' ? '??????' : 'English'}
+                {l === 'kn' ? 'ಕನ್ನಡ' : l === 'hi' ? 'हिन्दी' : l === 'te' ? 'తెలుగు' : 'English'}
               </button>
             ))}
           </div>
@@ -472,7 +473,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
           </div>
         ))}
 
-        {/* SELECT type options � show clickable buttons */}
+        {/* SELECT type options — show clickable buttons */}
         {step === 'workflow' && currentQuestion?.type === 'select' && currentQuestion.options && !showCustomInput && (
           <div className="grid grid-cols-2 gap-2">
             {currentQuestion.options.map(opt => (
@@ -494,7 +495,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
           </div>
         )}
 
-        {/* CUSTOM INPUT � when Other is selected */}
+        {/* CUSTOM INPUT — when Other is selected */}
         {step === 'workflow' && currentQuestion?.type === 'select' && showCustomInput && (
           <div className="flex gap-2">
             <input
@@ -531,12 +532,12 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
             </button>
             <button onClick={() => { setShowCustomInput(false); setCustomInputValue(''); }}
               className="px-3 py-3 rounded-xl bg-gray-100 text-gray-500 text-sm hover:bg-gray-200 transition">
-              ? Back
+              ← Back
             </button>
           </div>
         )}
 
-        {/* BOOLEAN type � show Yes/No buttons */}
+        {/* BOOLEAN type — show Yes/No buttons */}
         {step === 'workflow' && currentQuestion?.type === 'boolean' && (
           <div className="flex gap-2">
             <button onClick={() => {
@@ -546,7 +547,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
               const evKeywords = ['photo', 'video', 'evidence', 'witness', 'screenshots', 'communication', 'documents', 'notices'];
               if (evKeywords.some(kw => q.id.toLowerCase().includes(kw))) {
                 setTimeout(() => {
-                  addBotMessage("?? Paste your evidence links below.");
+                  addBotMessage("📎 Paste your evidence links below.");
                   setShowEvidenceForm(true);
                 }, 300);
                 return;
@@ -568,7 +569,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
           </div>
         )}
 
-        {/* Location picker � map with search, current location and pin drop */}
+        {/* Location picker — map with search, current location and pin drop */}
         {showLocationPicker && step === 'workflow' && (
           <div className="mt-2">
             <LocationPicker
@@ -580,19 +581,19 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
           </div>
         )}
 
-        {/* INLINE Evidence Form � appears right after evidence question */}
+        {/* INLINE Evidence Form — appears right after evidence question */}
         {showEvidenceForm && step === 'workflow' && (
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-lg">??</span>
+              <span className="text-lg">📎</span>
               <span className="font-bold text-amber-900 text-sm">{t('evidence.add', lang)}</span>
             </div>
 
             {/* Evidence type badges */}
             <div className="flex flex-wrap gap-2">
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">?? Photo</span>
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">?? Video</span>
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">?? Document</span>
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">📸 Photo</span>
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">🎥 Video</span>
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">📄 Document</span>
             </div>
 
             {/* Upload from device / gallery */}
@@ -601,7 +602,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
                 <span className="text-sm font-semibold text-gray-800">Upload from your device</span>
               </div>
               <FileUploader attachments={attachments} onChange={setAttachments} compact />
-              <p className="text-[10px] text-gray-400 mt-1.5">JPG, PNG or WebP up to 8 MB � MP4 / WebM up to 8 MB</p>
+              <p className="text-[10px] text-gray-400 mt-1.5">JPG, PNG or WebP up to 8 MB · MP4 / WebM up to 8 MB</p>
             </div>
 
             {/* Link input */}
@@ -636,21 +637,21 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
             {/* Supported platforms */}
             <div className="bg-white rounded-xl p-2.5 border border-amber-100">
-              <p className="text-[10px] text-amber-800 font-bold mb-1.5">?? Supported:</p>
+              <p className="text-[10px] text-amber-800 font-bold mb-1.5">📌 Supported:</p>
               <div className="flex flex-wrap gap-x-3 gap-y-1">
                 {supportedPlatforms.map(p => (
                   <span key={p.name} className="text-[9px] text-gray-500">{p.icon} {p.name}</span>
                 ))}
               </div>
-              <p className="text-[9px] text-red-400 mt-1">? LinkedIn, Facebook, Twitter, Instagram not supported</p>
+              <p className="text-[9px] text-red-400 mt-1">❌ LinkedIn, Facebook, Twitter, Instagram not supported</p>
             </div>
 
             {/* Done button */}
             <button onClick={handleDoneEvidence}
               className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 transition">
               {(evidenceLinks.length > 0 || attachments.length > 0)
-                ? `Continue � ${evidenceLinks.length} link(s), ${attachments.length} file(s)`
-                : 'Skip � No evidence'}
+                ? `Continue — ${evidenceLinks.length} link(s), ${attachments.length} file(s)`
+                : 'Skip — No evidence'}
             </button>
           </div>
         )}
@@ -717,7 +718,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
                 <FileUploader attachments={attachments} onChange={setAttachments} />
               ) : (
                 <p className="text-[11px] text-gray-400">
-                  {attachments.length === 0 ? 'No files attached yet � JPG, PNG or WebP up to 8 MB.' : `${attachments.length} file(s) attached.`}
+                  {attachments.length === 0 ? 'No files attached yet — JPG, PNG or WebP up to 8 MB.' : `${attachments.length} file(s) attached.`}
                 </p>
               )}
             </div>
@@ -725,7 +726,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
             <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800">{t('evidence.warning', lang)}</div>
             <button
               onClick={() => {
-                addBotMessage('??? Final step � please complete the Safety Review.');
+                addBotMessage('🛡️ Final step — please complete the Safety Review.');
                 setStep('safety_review');
               }}
               className="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
@@ -735,7 +736,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
           </div>
         )}
 
-        {/* SAFETY FINAL REVIEW � required before the report is submitted */}
+        {/* SAFETY FINAL REVIEW — required before the report is submitted */}
         {step === 'safety_review' && (
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-sm">
             <div className="flex items-center gap-2">
@@ -743,9 +744,9 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">{lang === 'kn' ? '??????? ????? ????????' : lang === 'hi' ? '??????? ????? ???????' : lang === 'te' ? '?????? ???? ??????' : 'Safety Final Review'}</h3>
+                <h3 className="font-bold text-gray-900">{lang === 'kn' ? 'ಸುರಕ್ಷಾ ಅಂತಿಮ ಪರಿಶೀಲನೆ' : lang === 'hi' ? 'सुरक्षा अंतिम समीक्षा' : lang === 'te' ? 'భద్రతా తుది సమీక్ష' : 'Safety Final Review'}</h3>
                 <p className="text-[11px] text-gray-500">
-                  {lang === 'kn' ? '???? ???????? ????? ?????? ???? ?????????????? ?????????' : lang === 'hi' ? '??????? ????? ?? ???? ????? ??????? ?? ???? ????' : lang === 'te' ? '??????? ???? ????? ???? ?????? ????? ??????' : 'Check all three before your report is submitted'}
+                  {lang === 'kn' ? 'ವರದಿ ಸಲ್ಲಿಸುವ ಮೊದಲು ಕೆಳಗಿನ ಮೂರು ಪಾಯಿಂಟ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ' : lang === 'hi' ? 'रिपोर्ट भेजने से पहले तीनों बिंदुओं की जाँच करें' : lang === 'te' ? 'నివేదిక పంపే ముందు మూడు అంశాలు తనిఖీ చేయండి' : 'Check all three before your report is submitted'}
                 </p>
               </div>
             </div>
@@ -754,21 +755,21 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
               {[
                 {
                   en: 'Photos and videos do not show my personal details (Aadhaar, bank card, phone number, address).',
-                  kn: '?????/???????????? ???? ???????? ?????????? (?????, ???????, ????).',
-                  hi: '????/?????? ??? ???? ???? ??????? ???? ?? (????, ????, ????).',
-                  te: '????/???????? ?? ????????? ??????? ???? (?????, ???????, ????).',
+                  kn: 'ಚಿತ್ರ/ವೀಡಿಯೊಗಳಲ್ಲಿ ನನ್ನ ವೈಯಕ್ತಿಕ ವಿವರಗಳಿಲ್ಲ (ಆಧಾರ್, ಬ್ಯಾಂಕ್, ಫೋನ್).',
+                  hi: 'फोटो/वीडियो में मेरी निजी जानकारी नहीं है (आधार, बैंक, फ़ोन).',
+                  te: 'ఫోటో/వీడియోలో నా వ్యక్తిగత వివరాలు లేవు (ఆధార్, బ్యాంక్, ఫోన్).',
                 },
                 {
-                  en: 'This report is true to the best of my knowledge � I have not exaggerated or invented anything.',
-                  kn: '? ???? ???? ???????? ???? � ???? ?????? ?????????? ???????.',
-                  hi: '?? ??????? ???? ??????? ?? ?????? ?? ?? � ????? ??? ?? ????-?????? ?? ??? ???? ?????',
-                  te: '? ??????? ???? ????????? ???? ???? � ??? ?????????? ???? ?????? ????.',
+                  en: 'This report is true to the best of my knowledge — I have not exaggerated or invented anything.',
+                  kn: 'ಈ ವರದಿ ನನಗೆ ತಿಳಿದಂತೆ ಸತ್ಯ — ನಾನು ಏನನ್ನೂ ಅತಿಶಯೋಕ್ತಿ ಮಾಡಿಲ್ಲ.',
+                  hi: 'यह रिपोर्ट मेरी जानकारी के अनुसार सच है — मैंने कुछ भी बढ़ा-चढ़ाकर या गलत नहीं लिखा।',
+                  te: 'ఈ నివేదిక నాకు తెలిసినంత వరకు నిజం — ఏదీ అతిశయోక్తి లేదా అబద్ధం కాదు.',
                 },
                 {
                   en: 'I understand the evidence I attached will be reviewed by a human moderator.',
-                  kn: '???? ?????????? ???????????? ???? ????????? ?????????? ???? ????????.',
-                  hi: '??? ?????/????? ??? ?? ???? ???? ?? ?????? ??????? ???????',
-                  te: '???? ???????? ????????? ???? ?????????? ????????? ????? ????????????.',
+                  kn: 'ನಾನು ಸಂಲಗ್ಳಿಸಿದ ಸಾಕ್ಷ್ಯವನ್ನು ಮಾನವ ಪರಿಶೀಲಕರು ನೋಡುತ್ತಾರೆ ಎಂದು ತಿಳಿದಿದೆ.',
+                  hi: 'मैं समझता/समझती हूँ कि मेरा सबूत एक इंसानी मॉडरेटर देखेगा।',
+                  te: 'నేను జోడించిన ఆధారాన్ని మానవ సమీక్షకుడు చూస్తాడని అర్థం చేసుకున్నాను.',
                 },
               ].map((item, i) => {
                 const label = item[lang] || item.en;
@@ -794,15 +795,15 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
             {isEmergencyMessage(originalText || answers.what_happened || '') && (
               <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
-                ?? {t('safety.emergency', lang)}
+                ⚠️ {t('safety.emergency', lang)}
               </div>
             )}
 
             <div className="text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-2.5">
-              {attachments.length > 0 && <div className="mb-1">?? {attachments.length} photo/video attached</div>}
-              {evidenceLinks.length > 0 && <div className="mb-1">?? {evidenceLinks.length} evidence link(s)</div>}
-              {Object.keys(answers).length > 0 && <div>?? {Object.keys(answers).length} answer(s) provided</div>}
-              {!location && <div>?? Location not provided (optional)</div>}
+              {attachments.length > 0 && <div className="mb-1">📎 {attachments.length} photo/video attached</div>}
+              {evidenceLinks.length > 0 && <div className="mb-1">🔗 {evidenceLinks.length} evidence link(s)</div>}
+              {Object.keys(answers).length > 0 && <div>📝 {Object.keys(answers).length} answer(s) provided</div>}
+              {!location && <div>📍 Location not provided (optional)</div>}
             </div>
 
             <div className="flex gap-2">
@@ -810,7 +811,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
                 onClick={() => setStep('review')}
                 className="px-4 py-3 rounded-xl border border-gray-300 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
               >
-                ? Back
+                ← Back
               </button>
               <button
                 onClick={handleSubmit}
@@ -819,8 +820,8 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
               >
                 <ShieldCheck size={17} />
                 {safetyChecked.every(Boolean)
-                  ? (lang === 'kn' ? '???? ???????' : lang === 'hi' ? '??????? ?????' : lang === 'te' ? '??????? ??????' : 'Submit Report')
-                  : (lang === 'kn' ? '???? ??????? ?????????' : lang === 'hi' ? '????? ??????' : lang === 'te' ? '???? ????? ??????' : 'Confirm all 3 items')}
+                  ? (lang === 'kn' ? 'ವರದಿ ಸಲ್ಲಿಸಿ' : lang === 'hi' ? 'रिपोर्ट भेजें' : lang === 'te' ? 'నివేదిక పంపండి' : 'Submit Report')
+                  : (lang === 'kn' ? 'ಮೂರೂ ಪಾಯಿಂಟ್ ಪರಿಶೀಲಿಸಿ' : lang === 'hi' ? 'तीनों जाँचें' : lang === 'te' ? 'మూడు తనిఖీ చేయండి' : 'Confirm all 3 items')}
               </button>
             </div>
           </div>
@@ -829,7 +830,7 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
         {/* Submitted */}
         {step === 'submitted' && (
           <div className="bg-white border border-green-200 rounded-2xl p-6 text-center shadow-sm">
-            <div className="text-4xl mb-3">?</div>
+            <div className="text-4xl mb-3">✅</div>
             <h3 className="font-bold text-gray-900 text-lg mb-2">{t('report.report_submitted', lang)}</h3>
             <div className="text-2xl font-mono font-bold text-primary mb-2">{incidentId}</div>
             <p className="text-sm text-gray-500 mb-4">{t('report.save_id', lang)}</p>
@@ -864,8 +865,8 @@ const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
             {step === 'workflow' && currentQuestion?.type === 'location' && (
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-[10px] text-gray-400">?? Location is optional � geo-tagged photos show location</span>
-                <button onClick={handleSkipQuestion} className="text-[10px] text-primary hover:underline font-medium">Skip ?</button>
+                <span className="text-[10px] text-gray-400">📍 Location is optional — geo-tagged photos show location</span>
+                <button onClick={handleSkipQuestion} className="text-[10px] text-primary hover:underline font-medium">Skip →</button>
               </div>
             )}
 
