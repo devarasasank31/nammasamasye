@@ -1,4 +1,4 @@
-import { Language, Incident, IncidentStatus, Session, Evidence, StatusHistory, AdminNote } from '@/types';
+import { Language, Incident, IncidentStatus, Session, Evidence, StatusHistory, AdminNote, AttachmentMeta } from '@/types';
 
 // ============================================================
 // PERSISTENT DEMO STORE — uses localStorage to survive restarts
@@ -105,6 +105,7 @@ export const demoStore = {
     language: Language;
     answers: Record<string, string>;
     evidence_links: string[];
+    attachments?: AttachmentMeta[];
     ai_scenario_match?: string;
     ai_confidence?: number;
     ai_reason?: string;
@@ -131,6 +132,7 @@ export const demoStore = {
       status: 'NEW',
       severity: 'medium',
       is_recurring: false,
+      attachments: data.attachments || [],
       ai_scenario_match: data.ai_scenario_match || '',
       ai_confidence: data.ai_confidence || 0,
       ai_reason: data.ai_reason || '',

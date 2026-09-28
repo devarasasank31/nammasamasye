@@ -1,4 +1,4 @@
-import { Incident, IncidentStatus, Evidence, StatusHistory, Language } from '@/types';
+import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta } from '@/types';
 import { isDemoMode } from '@/lib/supabase';
 import { demoStore } from '@/lib/demo-store';
 
@@ -17,6 +17,7 @@ export async function createIncident(data: {
   language: Language;
   answers: Record<string, string>;
   evidence_links: string[];
+  attachments?: AttachmentMeta[];
   ai_scenario_match?: string;
   ai_confidence?: number;
   ai_reason?: string;
@@ -43,6 +44,7 @@ export async function createIncident(data: {
       date_of_incident: data.date_of_incident || null,
       language: data.language,
       status: 'NEW',
+      attachments: data.attachments || [],
       ai_scenario_match: data.ai_scenario_match || '',
       ai_confidence: data.ai_confidence || 0,
       ai_reason: data.ai_reason || '',

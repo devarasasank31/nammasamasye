@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS incidents (
   status TEXT NOT NULL DEFAULT 'NEW' CHECK (status IN ('NEW','UNDER_REVIEW','MISSING_INFORMATION','ON_HOLD','PROCEEDING','INVALID','CLOSED','RESOLVED')),
   severity TEXT DEFAULT 'medium',
   is_recurring BOOLEAN DEFAULT FALSE,
+  attachments JSONB DEFAULT '[]',
   ai_scenario_match TEXT DEFAULT '',
   ai_confidence DECIMAL DEFAULT 0,
   ai_reason TEXT DEFAULT '',

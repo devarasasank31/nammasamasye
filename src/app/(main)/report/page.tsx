@@ -2,15 +2,16 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Language, IncidentCategory } from '@/types';
+import { Language, IncidentCategory, AttachmentMeta } from '@/types';
 import { getStoredLanguage, setStoredLanguage, getOrCreateSession } from '@/services/session';
 import { scenarios, getScenarioById } from '@/data/scenarios';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { t } from '@/lib/translations';
 import { createIncident } from '@/services/incident';
-import { Send, Mic, MicOff, ArrowLeft, Globe, ChevronRight, MapPin, HelpCircle, X, Square, Link2, Plus } from 'lucide-react';
+import FileUploader from '@/components/FileUploader';
+import { Send, Mic, MicOff, ArrowLeft, Globe, ChevronRight, MapPin, HelpCircle, X, Square, Link2, Plus, ShieldCheck, Paperclip, Check } from 'lucide-react';
 
-type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'review' | 'submitted';
+type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'review' | 'safety_review' | 'submitted';
 
 interface ChatMessage {
   id: string;
@@ -95,6 +96,9 @@ export default function ReportPage() {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customInputValue, setCustomInputValue] = useState('');
   const [showLangSwitch, setShowLangSwitch] = useState(false);
+  const [attachments, setAttachments] = useState<AttachmentMeta[]>([]);
+  const [safetyChecked, setSafetyChecked] = useState<boolean[]>([false, false, false]);
+  const [showEvidenceUploader, setShowEvidenceUploader] = useState(false);
 
   useEffect(() => {
     const stored = getStoredLanguage();
@@ -308,6 +312,7 @@ export default function ReportPage() {
       language: lang,
       answers,
       evidence_links: evidenceLinks,
+      attachments,
       ai_scenario_match: selectedScenario.name,
       ai_confidence: scenarioMatches[0]?.confidence || 0,
       ai_reason: scenarioMatches[0]?.reason || '',
@@ -525,6 +530,15 @@ export default function ReportPage() {
               <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">📄 Document</span>
             </div>
 
+            {/* Upload from device / gallery */}
+            <div className="bg-white rounded-xl p-3 border border-amber-200">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm font-semibold text-gray-800">Upload from your device</span>
+              </div>
+              <FileUploader attachments={attachments} onChange={setAttachments} compact />
+              <p className="text-[10px] text-gray-400 mt-1.5">JPG, PNG or WebP up to 8 MB · MP4 / WebM up to 8 MB</p>
+            </div>
+
             {/* Link input */}
             <div className="flex gap-2">
               <input
@@ -569,7 +583,9 @@ export default function ReportPage() {
             {/* Done button */}
             <button onClick={handleDoneEvidence}
               className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 transition">
-              {evidenceLinks.length > 0 ? `Continue with ${evidenceLinks.length} link(s)` : 'Skip — No evidence'}
+              {(evidenceLinks.length > 0 || attachments.length > 0)
+                ? `Continue — ${evidenceLinks.length} link(s), ${attachments.length} file(s)`
+                : 'Skip — No evidence'}
             </button>
           </div>
         )}
@@ -615,7 +631,7 @@ export default function ReportPage() {
             ))}
             {evidenceLinks.length > 0 && (
               <div className="text-sm text-gray-600">
-                <span className="font-medium">Evidence ({evidenceLinks.length}):</span>
+                <span className="font-medium">Evidence links ({evidenceLinks.length}):</span>
                 <div className="mt-1 space-y-1">
                   {evidenceLinks.map((link, i) => (
                     <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="block text-xs text-primary hover:underline truncate">{link}</a>
@@ -623,8 +639,125 @@ export default function ReportPage() {
                 </div>
               </div>
             )}
+
+            {/* Photo / video attachments */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Photos & videos ({attachments.length})</span>
+                <button onClick={() => setShowEvidenceUploader(!showEvidenceUploader)} className="text-xs text-primary hover:underline flex items-center gap-1">
+                  <Paperclip size={12} /> {showEvidenceUploader ? 'Done' : 'Attach file'}
+                </button>
+              </div>
+              {showEvidenceUploader ? (
+                <FileUploader attachments={attachments} onChange={setAttachments} />
+              ) : (
+                <p className="text-[11px] text-gray-400">
+                  {attachments.length === 0 ? 'No files attached yet — JPG, PNG or WebP up to 8 MB.' : `${attachments.length} file(s) attached.`}
+                </p>
+              )}
+            </div>
+
             <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800">{t('evidence.warning', lang)}</div>
-            <button onClick={handleSubmit} className="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">{t('report.submit', lang)}</button>
+            <button
+              onClick={() => {
+                addBotMessage('🛡️ Final step — please complete the Safety Review.');
+                setStep('safety_review');
+              }}
+              className="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+            >
+              <ShieldCheck size={18} /> Continue to Safety Review
+            </button>
+          </div>
+        )}
+
+        {/* SAFETY FINAL REVIEW — required before the report is submitted */}
+        {step === 'safety_review' && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                <ShieldCheck size={18} />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">{lang === 'kn' ? 'ಸುರಕ್ಷಾ ಅಂತಿಮ ಪರಿಶೀಲನೆ' : lang === 'hi' ? 'सुरक्षा अंतिम समीक्षा' : lang === 'te' ? 'భద్రతా తుది సమీక్ష' : 'Safety Final Review'}</h3>
+                <p className="text-[11px] text-gray-500">
+                  {lang === 'kn' ? 'ವರದಿ ಸಲ್ಲಿಸುವ ಮೊದಲು ಕೆಳಗಿನ ಮೂರು ಪಾಯಿಂಟ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ' : lang === 'hi' ? 'रिपोर्ट भेजने से पहले तीनों बिंदुओं की जाँच करें' : lang === 'te' ? 'నివేదిక పంపే ముందు మూడు అంశాలు తనిఖీ చేయండి' : 'Check all three before your report is submitted'}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {[
+                {
+                  en: 'Photos and videos do not show my personal details (Aadhaar, bank card, phone number, address).',
+                  kn: 'ಚಿತ್ರ/ವೀಡಿಯೊಗಳಲ್ಲಿ ನನ್ನ ವೈಯಕ್ತಿಕ ವಿವರಗಳಿಲ್ಲ (ಆಧಾರ್, ಬ್ಯಾಂಕ್, ಫೋನ್).',
+                  hi: 'फोटो/वीडियो में मेरी निजी जानकारी नहीं है (आधार, बैंक, फ़ोन).',
+                  te: 'ఫోటో/వీడియోలో నా వ్యక్తిగత వివరాలు లేవు (ఆధార్, బ్యాంక్, ఫోన్).',
+                },
+                {
+                  en: 'This report is true to the best of my knowledge — I have not exaggerated or invented anything.',
+                  kn: 'ಈ ವರದಿ ನನಗೆ ತಿಳಿದಂತೆ ಸತ್ಯ — ನಾನು ಏನನ್ನೂ ಅತಿಶಯೋಕ್ತಿ ಮಾಡಿಲ್ಲ.',
+                  hi: 'यह रिपोर्ट मेरी जानकारी के अनुसार सच है — मैंने कुछ भी बढ़ा-चढ़ाकर या गलत नहीं लिखा।',
+                  te: 'ఈ నివేదిక నాకు తెలిసినంత వరకు నిజం — ఏదీ అతిశయోక్తి లేదా అబద్ధం కాదు.',
+                },
+                {
+                  en: 'I understand the evidence I attached will be reviewed by a human moderator.',
+                  kn: 'ನಾನು ಸಂಲಗ್ಳಿಸಿದ ಸಾಕ್ಷ್ಯವನ್ನು ಮಾನವ ಪರಿಶೀಲಕರು ನೋಡುತ್ತಾರೆ ಎಂದು ತಿಳಿದಿದೆ.',
+                  hi: 'मैं समझता/समझती हूँ कि मेरा सबूत एक इंसानी मॉडरेटर देखेगा।',
+                  te: 'నేను జోడించిన ఆధారాన్ని మానవ సమీక్షకుడు చూస్తాడని అర్థం చేసుకున్నాను.',
+                },
+              ].map((item, i) => {
+                const label = (item as any)[lang] || item.en;
+                const checked = safetyChecked[i];
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setSafetyChecked(prev => prev.map((v, idx) => idx === i ? !v : v))}
+                    className={`w-full flex items-start gap-3 p-3 rounded-xl border text-left transition ${
+                      checked ? 'bg-emerald-50 border-emerald-300' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <span className={`w-5 h-5 mt-0.5 flex-shrink-0 rounded-md border-2 flex items-center justify-center transition ${
+                      checked ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-gray-300'
+                    }`}>
+                      {checked && <Check size={13} strokeWidth={3} />}
+                    </span>
+                    <span className="text-[13px] leading-snug text-gray-700">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {isEmergencyMessage(originalText || answers.what_happened || '') && (
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+                ⚠️ {t('safety.emergency', lang)}
+              </div>
+            )}
+
+            <div className="text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-2.5">
+              {attachments.length > 0 && <div className="mb-1">📎 {attachments.length} photo/video attached</div>}
+              {evidenceLinks.length > 0 && <div className="mb-1">🔗 {evidenceLinks.length} evidence link(s)</div>}
+              {Object.keys(answers).length > 0 && <div>📝 {Object.keys(answers).length} answer(s) provided</div>}
+              {!location && <div>📍 Location not provided (optional)</div>}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStep('review')}
+                className="px-4 py-3 rounded-xl border border-gray-300 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
+              >
+                ← Back
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!safetyChecked.every(Boolean)}
+                className="flex-1 gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <ShieldCheck size={17} />
+                {safetyChecked.every(Boolean)
+                  ? (lang === 'kn' ? 'ವರದಿ ಸಲ್ಲಿಸಿ' : lang === 'hi' ? 'रिपोर्ट भेजें' : lang === 'te' ? 'నివేదిక పంపండి' : 'Submit Report')
+                  : (lang === 'kn' ? 'ಮೂರೂ ಪಾಯಿಂಟ್ ಪರಿಶೀಲಿಸಿ' : lang === 'hi' ? 'तीनों जाँचें' : lang === 'te' ? 'మూడు తనిఖీ చేయండి' : 'Confirm all 3 items')}
+              </button>
+            </div>
           </div>
         )}
 
@@ -641,7 +774,7 @@ export default function ReportPage() {
       </div>
 
       {/* Input Area */}
-      {step !== 'submitted' && step !== 'review' && !showEvidenceForm && (
+      {step !== 'submitted' && step !== 'review' && step !== 'safety_review' && !showEvidenceForm && (
         <div className="sticky bottom-0 glass border-t border-gray-200">
           <div className="max-w-2xl mx-auto px-4 py-3">
             {isRecording && (

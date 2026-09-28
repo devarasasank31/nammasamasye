@@ -7,6 +7,7 @@ import { getIncidentInternal, getIncidentEvidence, getStatusHistory, getAdminNot
 import { seedDemoData } from '@/lib/demo-store';
 import { ArrowLeft, CheckCircle, ExternalLink, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
 import { getStatusBadgeClass, getStatusColor } from '@/lib/status-colors';
+import AttachmentGallery from '@/components/AttachmentGallery';
 
 export default function AdminIncidentDetailPage() {
   const router = useRouter();
@@ -241,6 +242,8 @@ export default function AdminIncidentDetailPage() {
                 <div className="text-sm text-gray-800">{incident.location}</div>
               </div>
             )}
+
+            <AttachmentGallery attachments={incident.attachments} />
 
             {incident.ai_scenario_match && (
               <div>

@@ -45,6 +45,15 @@ export interface WorkflowQuestion {
   options?: { label: Record<Language, string>; value: string }[];
 }
 
+export interface AttachmentMeta {
+  id: string;
+  name: string;
+  kind: 'image' | 'video';
+  mime: string;
+  size: number;
+  added_at: string;
+}
+
 export interface Incident {
   id: string;
   incident_id: string;
@@ -63,6 +72,7 @@ export interface Incident {
   status: IncidentStatus;
   severity?: string;
   is_recurring?: boolean;
+  attachments?: AttachmentMeta[];
   ai_scenario_match?: string;
   ai_confidence?: number;
   ai_reason?: string;

@@ -15,9 +15,18 @@ interface ChatMessage {
     scenario_id: string;
     confidence: number;
     reason: string;
-    source: string;
+    source?: string;
   };
 }
+
+const MAX_HISTORY = 12;
+
+const WELCOME: Record<string, string> = {
+  kn: 'ನಮಸ್ಕಾರ! 👋 ನಾನು Namma Samasye AI.\n\nಏನಾಯಿತು ಎಂದು ನಿಮ್ಮ ಮಾತುಗಳಲ್ಲಿ ಹೇಳಿ — ಕನ್ನಡದಲ್ಲೇ ಆಗಬಹುದು.',
+  hi: 'नमस्ते! 👋 मैं Namma Samasye AI हूँ।\n\nअपने शब्दों में बताएँ कि क्या हुआ — हिंदी में भी चलेगा।',
+  te: 'నమస్కారం! 👋 నేను Namma Samasye AI.\n\nఏమి జరిగిందో మీ మాటల్లో చెప్పండి — తెలుగులో కూడా.',
+  en: "Hello! 👋 I'm Namma Samasye AI.\n\nTell me what happened in your own words.",
+};
 
 export default function AIChatbot() {
   const router = useRouter();
@@ -35,21 +44,12 @@ export default function AIChatbot() {
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      setMessages([{
-        id: 'welcome',
-        role: 'bot',
-        text: lang === 'kn' ? 'ನಮಸ್ಕಾರ! ನಾನು Namma Samasye AI.\n\nನಿಮ್ಮ ಸಮಸ್ಯೆಯನ್ನು ಸರಳವಾಗಿ ವಿವರಿಸಿ.' :
-              lang === 'hi' ? 'नमस्ते! मैं Namma Samasye AI हूँ।\n\nअपनी समस्या सरल शब्दों में बताएं।' :
-              lang === 'te' ? 'నమస్కారం! నేను Namma Samasye AI.\n\nమీ సమస్యను సరళంగా వివరించండి.' :
-              'Hello! I\'m Namma Samasye AI.\n\nDescribe your problem in simple words.',
-      }]);
+      setMessages([{ id: 'welcome', role: 'bot', text: WELCOME[getStoredLanguage()] || WELCOME.en }]);
     }
-  }, [isOpen, lang]);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    }
+    if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [messages]);
 
   useEffect(() => {
@@ -57,63 +57,75 @@ export default function AIChatbot() {
   }, [isOpen]);
 
   const handleSend = async () => {
-    if (!input.trim() || isAnalyzing) return;
+    const text = input.trim();
+    if (!text || isAnalyzing) return;
 
-    const userMsg: ChatMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      text: input.trim(),
-    };
+    const userMsg: ChatMessage = { id: `${Date.now()}-u`, role: 'user', text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsAnalyzing(true);
+
+    // Conversation history so follow-up detail is understood
+    const history = [...messages, userMsg]
+      .slice(-MAX_HISTORY)
+      .map(m => ({ role: m.role, text: m.text }));
 
     try {
       const res = await fetch('/api/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userInput: input.trim(), lang }),
+        body: JSON.stringify({ userInput: text, lang, history }),
       });
-
       const result = await res.json();
-      const scenario = getScenarioById(result.scenario_id);
-      const scenarioName = scenario ? getScenarioName(scenario, lang) : result.scenario_id;
+      setIsAnalyzing(false);
 
-      let botText = '';
-      if (result.confidence >= 70) {
-        botText = lang === 'kn' ? `✅ ಇದು **${scenarioName}** ಸಮಸ್ಯೆ. (${result.confidence}% confidence)\n\n${result.reason}` :
-                  lang === 'hi' ? `✅ यह **${scenarioName}** की समस्या है। (${result.confidence}% confidence)\n\n${result.reason}` :
-                  lang === 'te' ? `✅ ఇది **${scenarioName}** సమస్య. (${result.confidence}% confidence)\n\n${result.reason}` :
-                  `✅ This is a **${scenarioName}** issue. (${result.confidence}% confidence)\n\n${result.reason}`;
-      } else if (result.confidence >= 40) {
-        botText = lang === 'kn' ? `🤔 ಇದು **${scenarioName}** ಆಗಿರಬಹುದು. (${result.confidence}% confidence)\n\n${result.reason}` :
-                  lang === 'hi' ? `🤔 यह **${scenarioName}** हो सकता है। (${result.confidence}% confidence)\n\n${result.reason}` :
-                  lang === 'te' ? `🤔 ఇది **${scenarioName}** కావచ్చు. (${result.confidence}% confidence)\n\n${result.reason}` :
-                  `🤔 This might be **${scenarioName}**. (${result.confidence}% confidence)\n\n${result.reason}`;
-      } else {
-        botText = lang === 'kn' ? `❓ ನನಗೆ ಖಚಿತವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಹೆಚ್ಚು ವಿವರವಾಗಿ ವಿವರಿಸಿ.` :
-                  lang === 'hi' ? `❓ मुझे पक्का नहीं है। कृपया और विस्तार से बताएं।` :
-                  lang === 'te' ? `❓ నాకు ఖచ్చితంగా తెలియదు. దయచేసి మరింత వివరంగా చెప్పండి.` :
-                  `❓ I'm not sure. Please describe in more detail.`;
+      if (result.type === 'chat' || (!result.type && result.reply)) {
+        setMessages(prev => [...prev, { id: `${Date.now()}-b`, role: 'bot', text: result.reply }]);
+        if (result.action === 'open_report') {
+          localStorage.setItem('ns_language', lang);
+          setTimeout(() => { router.push('/report'); setIsOpen(false); }, 700);
+        } else if (result.action === 'open_track') {
+          setTimeout(() => { router.push('/track'); setIsOpen(false); }, 700);
+        }
+        return;
       }
 
-      const botMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+      const scenario = getScenarioById(result.scenario_id);
+      const scenarioName = scenario ? getScenarioName(scenario, lang) : result.scenario_id;
+      const reason = result.reason || '';
+      const L = labels[lang] || labels.en;
+
+      let botText: string;
+      if (result.confidence >= 70) {
+        botText = `${L.confirmed} **${scenarioName}** ${L.confirmedSuffix} (${result.confidence}%)\n\n${reason}`;
+      } else if (result.confidence >= 40) {
+        botText = `${L.maybe} **${scenarioName}** ${L.maybeSuffix} (${result.confidence}%)\n\n${reason}`;
+      } else {
+        botText = `${L.notsure}${reason ? `\n\n${reason}` : ''}`;
+      }
+
+      setMessages(prev => [...prev, {
+        id: `${Date.now()}-b`,
         role: 'bot',
         text: botText,
-        aiResponse: result,
-      };
-      setMessages(prev => [...prev, botMsg]);
+        aiResponse: {
+          scenario_id: result.scenario_id,
+          confidence: result.confidence,
+          reason: reason,
+          source: result.source,
+        },
+      }]);
     } catch {
-      const errorMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+      setIsAnalyzing(false);
+      setMessages(prev => [...prev, {
+        id: `${Date.now()}-b`,
         role: 'bot',
-        text: '❌ Something went wrong. Please try again.',
-      };
-      setMessages(prev => [...prev, errorMsg]);
+        text: lang === 'kn' ? '❌ ಏದೋ ತಪ್ಪಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.' :
+              lang === 'hi' ? '❌ कुछ गड़बड़ हुई। दोबारा कोशिश करें।' :
+              lang === 'te' ? '❌ ఏదో తప్పు జరిగింది. మళ్లీ ప్రయత్నించండి.' :
+              '❌ Something went wrong. Please try again.',
+      }]);
     }
-
-    setIsAnalyzing(false);
   };
 
   const handleReportWithAI = (scenarioId: string) => {
@@ -124,7 +136,6 @@ export default function AIChatbot() {
 
   return (
     <>
-      {/* Floating Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
@@ -136,10 +147,8 @@ export default function AIChatbot() {
         </button>
       )}
 
-      {/* Chat Window */}
       {isOpen && (
         <div className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] h-[550px] max-h-[calc(100vh-6rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-          {/* Header */}
           <div className="gradient-bg px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -147,7 +156,9 @@ export default function AIChatbot() {
               </div>
               <div>
                 <h3 className="text-white font-semibold text-sm">Namma Samasye AI</h3>
-                <p className="text-white/70 text-[10px]">Describe your problem</p>
+                <p className="text-white/70 text-[10px]">
+                  {lang === 'kn' ? 'ನಿಮ್ಮ ಸಮಸ್ಯೆ ಹೇಳಿ' : lang === 'hi' ? 'अपनी समस्या बताएँ' : lang === 'te' ? 'మీ సమస్య చెప్పండి' : 'Describe your problem'}
+                </p>
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-white/80 hover:text-white p-1">
@@ -155,7 +166,6 @@ export default function AIChatbot() {
             </button>
           </div>
 
-          {/* Chat Messages */}
           <div ref={chatRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
             {messages.map(msg => (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -174,11 +184,12 @@ export default function AIChatbot() {
                     {msg.text}
                   </div>
 
-                  {/* AI Suggestion Card */}
                   {msg.aiResponse && msg.aiResponse.confidence >= 50 && (
                     <div className="mt-2 bg-primary/5 border border-primary/20 rounded-xl p-3">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-primary">Suggested Category</span>
+                        <span className="text-xs font-medium text-primary">
+                          {lang === 'kn' ? 'ಸೂಚಿತ ವರ್ಗ' : lang === 'hi' ? 'सुझाई गई श्रेणी' : lang === 'te' ? 'సూచించిన వర్గం' : 'Suggested Category'}
+                        </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
                           {msg.aiResponse.confidence}% match
                         </span>
@@ -192,7 +203,8 @@ export default function AIChatbot() {
                         onClick={() => handleReportWithAI(msg.aiResponse!.scenario_id)}
                         className="w-full py-2 rounded-lg gradient-bg text-white text-xs font-medium hover:opacity-90 transition flex items-center justify-center gap-1"
                       >
-                        Report This Issue <ChevronRight size={14} />
+                        {lang === 'kn' ? 'ವರದಿ ಮಾಡಿ' : lang === 'hi' ? 'रिपोर्ट करें' : lang === 'te' ? 'నివేదించండి' : 'Report This Issue'}
+                        <ChevronRight size={14} />
                       </button>
                     </div>
                   )}
@@ -209,14 +221,15 @@ export default function AIChatbot() {
                       <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                       <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
-                    <span className="text-xs text-gray-400">Analyzing...</span>
+                    <span className="text-xs text-gray-400">
+                      {lang === 'kn' ? 'ಯೋಚಿಸಲಾಗುತ್ತಿದೆ...' : lang === 'hi' ? 'सोच रहा हूँ...' : lang === 'te' ? 'ఆలోచిస్తున్నాను...' : 'Thinking...'}
+                    </span>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Input */}
           <div className="p-3 border-t border-gray-200 bg-white">
             <div className="flex gap-2">
               <input
@@ -225,7 +238,7 @@ export default function AIChatbot() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSend()}
-                placeholder={lang === 'kn' ? 'ನಿಮ್ಮ ಸಮಸ್ಯೆ ವಿವರಿಸಿ...' : lang === 'hi' ? 'अपनी समस्या बताएं...' : lang === 'te' ? 'మీ సమస్య వివరించండి...' : 'Describe your problem...'}
+                placeholder={lang === 'kn' ? 'ನಿಮ್ಮ ಸಮಸ್ಯೆ ವಿವರಿಸಿ...' : lang === 'hi' ? 'अपनी समस्या बताएँ...' : lang === 'te' ? 'మీ సమస్య వివరించండి...' : 'Describe your problem...'}
                 className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
                 disabled={isAnalyzing}
               />
@@ -243,3 +256,42 @@ export default function AIChatbot() {
     </>
   );
 }
+
+type LabelSet = {
+  confirmed: string;
+  confirmedSuffix: string;
+  maybe: string;
+  maybeSuffix: string;
+  notsure: string;
+};
+
+const labels: Record<string, LabelSet> = {
+  en: {
+    confirmed: '✅ This is a',
+    confirmedSuffix: 'issue.',
+    maybe: '🤔 This might be a',
+    maybeSuffix: 'issue.',
+    notsure: '❓ I’m not sure yet — tell me a bit more about what happened.',
+  },
+  kn: {
+    confirmed: '✅ ಇದು',
+    confirmedSuffix: 'ಸಮಸ್ಯೆ.',
+    maybe: '🤔 ಇದು',
+    maybeSuffix: 'ಆಗಿರಬಹುದು.',
+    notsure: '❓ ಇನ್ನೂ ಖಚಿತವಿಲ್ಲ — ಏನಾಯಿತು ಎಂದು ಸ್ವಲ್ಪ ವಿವರವಾಗಿ ಹೇಳಿ.',
+  },
+  hi: {
+    confirmed: '✅ यह',
+    confirmedSuffix: 'की समस्या है।',
+    maybe: '🤔 यह',
+    maybeSuffix: 'हो सकता है।',
+    notsure: '❓ अभी पक्का नहीं है — थोड़ा और विस्तार से बताएँ।',
+  },
+  te: {
+    confirmed: '✅ ఇది',
+    confirmedSuffix: 'సమస్య.',
+    maybe: '🤔 ఇది',
+    maybeSuffix: 'కావచ్చు.',
+    notsure: '❓ ఇంకా ఖచ్చితంగా తెలియదు — కొంచెం వివరంగా చెప్పండి.',
+  },
+};

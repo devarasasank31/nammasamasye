@@ -8,6 +8,7 @@ import { Language, Incident, StatusHistory, Evidence, AdminNote } from '@/types'
 import { getAllIncidents, getStatusHistory, getIncidentEvidence, getIncidentById } from '@/services/incident';
 import { ArrowLeft, CheckCircle, Circle, Clock, AlertCircle, MessageSquare, Send } from 'lucide-react';
 import { getStatusBadgeClass, getStatusDotClass } from '@/lib/status-colors';
+import AttachmentGallery from '@/components/AttachmentGallery';
 
 export default function TrackPage() {
   const router = useRouter();
@@ -162,6 +163,8 @@ export default function TrackPage() {
                 <span className="font-medium">Location:</span> {selectedIncident.location}
               </div>
             )}
+
+            <AttachmentGallery attachments={selectedIncident.attachments} />
 
             {/* Admin Notes (visible to user) */}
             {adminNotes.length > 0 && (

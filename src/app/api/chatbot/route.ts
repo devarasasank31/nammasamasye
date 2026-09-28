@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { getScenarioById } from '@/data/scenarios';
+import { detectIntent, intentReply, askMore } from '@/lib/conversation';
 
 // Server-side only
 const AI_API_KEY = process.env.AI_API_KEY || process.env.GROQ_API_KEY || '';
@@ -15,192 +16,231 @@ const PROVIDER_CONFIG: Record<string, { baseUrl: string; defaultModel: string }>
 const CONFIG = PROVIDER_CONFIG[AI_PROVIDER] || PROVIDER_CONFIG.openai;
 const AI_MODEL = (process.env.AI_MODEL || CONFIG.defaultModel).trim();
 
-const SYSTEM_PROMPT = `You are Namma Samasye AI for Bengaluru civic issues. You help classify citizen complaints.
+const MAX_TURNS = 12;
+const MAX_TURN_CHARS = 1200;
 
-Given a user description, respond with ONLY a JSON object:
-{"scenario_id":"id","confidence":85,"reason":"brief reason"}
+const SYSTEM_PROMPT = `You are the friendly chatbot inside "Namma Samasye", an app for reporting civic problems in Bengaluru (roads, garbage, water, power, accidents, bribes, safety, cybercrime).
 
-Available scenario IDs:
-- traffic_accident: vehicle crash, accident, hit and run, someone hit me, bike fell, car crashed, broken leg from accident
-- traffic_wrong_side: wrong side driving, opposite direction, wrong way, came from wrong side
-- traffic_pothole: pothole, road hole, road broken, bad road, manhole open
-- civic_garbage: garbage, trash, waste, litter, dustbin, kachra
-- traffic_parking: illegal parking, vehicle blocking, footpath parking
-- civic_streetlight: streetlight not working, dark road, no light, andhera
-- civic_footpath: footpath broken, sidewalk blocked, encroachment
-- civic_drainage: drain blocked, water logging, flooding, sewage, nala
-- civic_parks: park dirty, park maintenance, broken bench
-- civic_water_supply: no water, water not coming, paani nahi aa raha
-- civic_stray_animals: stray dog, dog bite, cow on road, kutta
-- traffic_interaction: police bribe, challan, traffic fine
-- bribes: government bribe, official asking money, corruption, rishwat
-- safety_harassment: harassment, eve teasing, stalking, chain snatching, robbery
-- cybercrime: online fraud, OTP scam, UPI fraud, hacking
-- housing_tenant: landlord issue, deposit not returned, rent problem
-- env_noise: noise pollution, loud music, DJ, shor
-- util_power: power cut, electricity gone, light chali gayi, bijli
-- access_language: language barrier, no kannada
-- govt_service: government service delay, file stuck, certificate issue
+You do TWO jobs depending on what the user sends:
 
-Analyze the full context. If user mentions wrong side driving + red signal + accident + broken leg, that's traffic_accident with high confidence. Match the BEST scenario based on the complete description.`;
+JOB 1 — CONVERSATION
+If the user is just talking to you (greeting, small talk, thanks, asking what the app does, asking a general question, vague message), reply naturally and helpfully as a short chat message. Keep it under 60 words. Be warm, human, practical. Never lecture.
 
-async function callOpenAICompatible(userInput: string, apiKey: string, model: string, baseUrl: string): Promise<{ scenario_id: string; confidence: number; reason: string } | null> {
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: model,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userInput },
-      ],
-      max_tokens: 800,
-      temperature: 0.3,
-    }),
-  });
+JOB 2 — CLASSIFICATION
+If the user is describing a problem or incident, classify it. Use the FULL conversation history — if they add detail in later messages (e.g. first "bike accident", then "wrong side car, my leg broke"), combine everything before deciding.
 
-  const data = await response.json();
+Respond with ONLY one JSON object, no markdown, no extra text.
 
-  if (!response.ok) {
-    console.log('API error:', data.error?.message || response.statusText);
-    return null;
-  }
+For conversation:
+{"type":"chat","reply":"your reply"}
 
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) return null;
+For classification:
+{"type":"classify","scenario_id":"id","confidence":85,"reason":"brief reason"}
 
-  const parsed = parseJsonLoose(content);
-  if (!parsed) {
-    console.log('Could not parse AI response:', content.slice(0, 200));
-    return null;
-  }
+scenario_id must be exactly one of:
+traffic_accident | traffic_wrong_side | traffic_pothole | civic_garbage |
+traffic_parking | civic_streetlight | civic_footpath | civic_drainage |
+civic_parks | civic_water_supply | civic_stray_animals | traffic_interaction |
+bribes | safety_harassment | cybercrime | housing_tenant | env_noise |
+util_power | access_language | govt_service | something_else
 
-  const scenario = getScenarioById(parsed.scenario_id);
-  if (!scenario) {
-    console.log('AI returned unknown scenario_id:', parsed.scenario_id);
-    return null;
-  }
+Rules:
+- Never invent laws, contacts, phone numbers or official names.
+- Never accuse anyone of a crime.
+- confidence 1-99.
+- If still unclear after the history, use confidence below 50.`;
 
-  return {
-    scenario_id: parsed.scenario_id,
-    confidence: Math.min(Math.max(Number(parsed.confidence) || 50, 10), 99),
-    reason: parsed.reason || 'AI determined this category',
-  };
-}
-
-function parseJsonLoose(content: string): { scenario_id: string; confidence: number; reason: string } | null {
-  const cleaned = content
-    .replace(/<analysis>[\s\S]*?<\/analysis>/gi, '')
-    .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '')
-    .replace(/<think>[\s\S]*?<\/think>/gi, '')
-    .replace(/^[\s\S]*?\{/, '{')
-    .replace(/```json|```/g, '');
-
-  const start = cleaned.indexOf('{');
-  if (start === -1) return null;
-  const end = cleaned.lastIndexOf('}');
-  if (end <= start) return null;
-
-  try {
-    return JSON.parse(cleaned.slice(start, end + 1));
-  } catch {
-    return null;
-  }
+interface Turn {
+  role: 'user' | 'bot';
+  text: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { userInput, lang } = await request.json();
+    const body = await request.json();
+    const userInput: string = body.userInput || '';
+    const lang: string = body.lang || 'en';
+    const history: Turn[] = Array.isArray(body.history)
+      ? body.history.slice(-MAX_TURNS)
+      : [];
 
     if (!userInput || typeof userInput !== 'string') {
       return NextResponse.json({ error: 'No input provided' }, { status: 400 });
     }
 
-    console.log('Chatbot request:', { userInput, provider: AI_PROVIDER, hasKey: !!AI_API_KEY });
-
-    // Step 1: Try trained scenarios
-    const trainedMatch = matchTrainedScenario(userInput);
-
-    // Step 2: If trained confidence is high, use it
-    if (trainedMatch && trainedMatch.confidence >= 70) {
-      console.log('Using trained result:', trainedMatch);
+    // ---- Fast path: deterministic conversational intents ----
+    const intent = detectIntent(userInput);
+    if (intent && intent !== 'yes' && intent !== 'no') {
+      const reply = intentReply(intent, lang);
       return NextResponse.json({
-        scenario_id: trainedMatch.scenario_id,
-        confidence: trainedMatch.confidence,
-        reason: trainedMatch.reason,
-        source: 'trained',
+        type: 'chat',
+        reply: reply.text,
+        action: reply.action || null,
+        source: 'rules',
       });
     }
 
-    // Step 3: Call AI API
+    // ---- Build transcript so the model sees added context ----
+    const transcript = [
+      ...history.map(t => `${t.role === 'user' ? 'User' : 'Assistant'}: ${truncate(t.text)}`),
+      `User: ${truncate(userInput)}`,
+    ].join('\n');
+
+    // ---- Strong trained match: answer instantly, no API round-trip ----
+    const trainedMatch = matchTrainedScenario(userInput);
+    if (trainedMatch && trainedMatch.confidence >= 85) {
+      return NextResponse.json({ type: 'classify', ...trainedMatch, source: 'trained' });
+    }
+
+    // ---- Call AI with full history ----
     if (AI_API_KEY) {
       try {
-        let aiResult = null;
-
-        if (AI_PROVIDER === 'groq' || AI_PROVIDER === 'openai') {
-          aiResult = await callOpenAICompatible(userInput, AI_API_KEY, AI_MODEL, CONFIG.baseUrl);
-        } else if (AI_PROVIDER === 'gemini') {
-          const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${AI_API_KEY}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nUser: ${userInput}` }] }],
-                generationConfig: { maxOutputTokens: 800, temperature: 0.3 },
-              }),
-            }
-          );
-
-          const data = await response.json();
-          if (response.ok) {
-            const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (content) {
-              const parsed = parseJsonLoose(content);
-              if (parsed && getScenarioById(parsed.scenario_id)) {
-                aiResult = {
-                  scenario_id: parsed.scenario_id,
-                  confidence: Math.min(Math.max(Number(parsed.confidence) || 50, 10), 99),
-                  reason: parsed.reason || 'AI determined this category',
-                };
-              }
-            }
-          } else {
-            console.log('Gemini API error:', data.error?.message);
+        const aiResult = await callAI(transcript);
+        if (aiResult) {
+          if (aiResult.type === 'chat') {
+            return NextResponse.json({ ...aiResult, source: 'ai' });
           }
-        }
-
-        if (aiResult && aiResult.confidence >= 50) {
-          console.log('Using AI result:', aiResult);
-          if (trainedMatch && trainedMatch.confidence >= aiResult.confidence) {
-            return NextResponse.json({ ...trainedMatch, source: 'trained' });
+          if (aiResult.confidence >= 50) {
+            if (trainedMatch && trainedMatch.confidence > aiResult.confidence) {
+              return NextResponse.json({ type: 'classify', ...trainedMatch, source: 'trained' });
+            }
+            return NextResponse.json({ ...aiResult, source: 'ai' });
           }
-          return NextResponse.json({ ...aiResult, source: 'ai' });
+          // Too vague to classify — ask naturally instead of a canned reply
+          return NextResponse.json({
+            type: 'chat',
+            reply: askMore(userInput, lang),
+            source: 'ai',
+          });
         }
       } catch (err) {
         console.log('AI API error:', err);
       }
-    } else {
-      console.log('No API key configured');
     }
 
-    // Step 4: Use trained match
-    if (trainedMatch) {
-      return NextResponse.json({ ...trainedMatch, source: 'trained' });
+    // ---- Fallbacks ----
+    if (trainedMatch && trainedMatch.confidence >= 55) {
+      return NextResponse.json({ type: 'classify', ...trainedMatch, source: 'trained' });
     }
 
-    // Step 5: Fallback
     return NextResponse.json({
-      scenario_id: 'something_else',
-      confidence: 30,
-      reason: 'Could not determine category. Please describe in more detail.',
+      type: 'chat',
+      reply: askMore(userInput, lang),
       source: 'fallback',
     });
   } catch (error) {
     console.error('Chatbot API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+function truncate(s: string): string {
+  return s.length > MAX_TURN_CHARS ? s.slice(0, MAX_TURN_CHARS) + '…' : s;
+}
+
+type AIResult =
+  | { type: 'chat'; reply: string }
+  | { type: 'classify'; scenario_id: string; confidence: number; reason: string };
+
+async function callAI(transcript: string): Promise<AIResult | null> {
+  if (AI_PROVIDER === 'groq' || AI_PROVIDER === 'openai') {
+    return callOpenAICompatible(transcript);
+  }
+  if (AI_PROVIDER === 'gemini') {
+    return callGemini(transcript);
+  }
+  return null;
+}
+
+async function callOpenAICompatible(transcript: string): Promise<AIResult | null> {
+  const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${AI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: transcript },
+      ],
+      max_tokens: 700,
+      temperature: 0.4,
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    console.log('API error:', data.error?.message || response.statusText);
+    return null;
+  }
+  return normalise(data.choices?.[0]?.message?.content);
+}
+
+async function callGemini(transcript: string): Promise<AIResult | null> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${AI_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ role: 'user', parts: [{ text: transcript }] }],
+        generationConfig: { maxOutputTokens: 700, temperature: 0.4 },
+      }),
+    }
+  );
+
+  const data = await response.json();
+  if (!response.ok) {
+    console.log('Gemini API error:', data.error?.message);
+    return null;
+  }
+  return normalise(data.candidates?.[0]?.content?.parts?.[0]?.text);
+}
+
+function normalise(content: unknown): AIResult | null {
+  if (typeof content !== 'string' || !content.trim()) return null;
+  const parsed = parseJsonLoose(content);
+  if (!parsed) return null;
+
+  if (parsed.type === 'chat' && typeof parsed.reply === 'string' && parsed.reply.trim()) {
+    return { type: 'chat', reply: parsed.reply.trim() };
+  }
+
+  const sid = parsed.scenario_id;
+  if (typeof sid === 'string' && getScenarioById(sid)) {
+    return {
+      type: 'classify',
+      scenario_id: sid,
+      confidence: Math.min(Math.max(Number(parsed.confidence) || 50, 1), 99),
+      reason: typeof parsed.reason === 'string' ? parsed.reason : 'Matched by AI',
+    };
+  }
+
+  // Model replied in prose when we expected JSON — treat as chat
+  if (!parsed.type && !parsed.scenario_id) {
+    return { type: 'chat', reply: content.trim().slice(0, 400) };
+  }
+  return null;
+}
+
+function parseJsonLoose(content: string): Record<string, any> | null {
+  const cleaned = content
+    .replace(/<analysis>[\s\S]*?<\/analysis>/gi, '')
+    .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '')
+    .replace(/```json|```/g, '')
+    .replace(/^[^{]*/, '')
+    .replace(/[^}]*$/, '');
+
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if (start === -1 || end <= start) return null;
+
+  try {
+    return JSON.parse(cleaned.slice(start, end + 1));
+  } catch {
+    return null;
   }
 }
