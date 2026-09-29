@@ -25,31 +25,6 @@ const features = [
   { icon: TrendingUp, title: 'Track Progress', desc: 'Real-time status updates', color: '#ffce00', dark: true },
 ];
 
-function Gandaberunda({ className = '' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 200 200" className={className} aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id="ka-berunda" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#e41e20" />
-          <stop offset="100%" stopColor="#ffce00" />
-        </linearGradient>
-      </defs>
-      <g fill="url(#ka-berunda)">
-        <circle cx="100" cy="104" r="26" />
-        <path d="M100 128c-9 0-16 6-20 14-5 10-6 22-4 34 6-8 14-13 24-13s18 5 24 13c2-12 1-24-4-34-4-8-11-14-20-14z" />
-        <path d="M74 96c-14-6-28-4-40 6-9 7-15 17-17 29 12-6 24-7 35-3 9 3 17 9 24 16l8-4-10-44z" />
-        <path d="M126 96c14-6 28-4 40 6 9 7 15 17 17 29-12-6-24-7-35-3-9 3-17 9-24 16l-8-4 10-44z" />
-        <path d="M84 74c-6-9-6-20 0-30 4-7 11-12 20-14-4 8-5 16-3 24 2 7 7 13 13 17l-14 14-16-11z" />
-        <path d="M116 74c6-9 6-20 0-30-4-7-11-12-20-14 4 8 5 16 3 24-2 7-7 13-13 17l14 14 16-11z" />
-        <path d="M78 62c-8-4-17-3-24 3 5 4 11 6 18 6l6-9z" />
-        <path d="M122 62c8-4 17-3 24 3-5 4-11 6-18 6l-6-9z" />
-      </g>
-      <circle cx="90" cy="62" r="4" fill="#1a1a1a" />
-      <circle cx="110" cy="62" r="4" fill="#1a1a1a" />
-    </svg>
-  );
-}
-
 const categories = [
   { icon: '🚗', label: 'Traffic' },
   { icon: '🕳️', label: 'Potholes' },
@@ -150,7 +125,6 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="relative z-10 overflow-hidden">
-        <Gandaberunda className="pointer-events-none absolute -right-24 -top-10 w-[420px] h-[420px] ka-watermark hidden md:block" />
         <div className="max-w-7xl mx-auto px-4 pt-16 pb-24 md:pt-24 md:pb-32">
           <div className="max-w-3xl">
             <h1 className={`text-5xl md:text-7xl font-extrabold leading-tight transition-all duration-700 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
