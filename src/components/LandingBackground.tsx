@@ -284,10 +284,12 @@ export default function LandingBackground({ darkMode }: { darkMode: boolean }) {
 
   const last = heritage.length - 1;
   const pos = progress * last;
-  const tone = darkMode ? 'rgba(3,3,7,0.66)' : 'rgba(18,12,10,0.38)';
+  const tone = darkMode ? 'rgba(3,3,7,0.66)' : 'rgba(30,19,12,0.58)';
+  // The dark scenes are night skies, the light ones are their daytime twins —
+  // both need only a gentle veil so the backdrop stays readable in either mode.
   const scrim = darkMode
     ? 'linear-gradient(180deg, rgba(5,5,9,0.45) 0%, rgba(5,5,9,0.55) 45%, rgba(5,5,9,0.72) 100%)'
-    : 'linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.66) 45%, rgba(255,255,255,0.80) 100%)';
+    : 'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.26) 45%, rgba(255,255,255,0.48) 100%)';
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
@@ -301,12 +303,12 @@ export default function LandingBackground({ darkMode }: { darkMode: boolean }) {
             className="absolute inset-0"
             style={{ opacity, transform: `translate3d(0, ${drift}vh, 0)` }}
           >
-            <div className="absolute inset-0" style={{ background: stop.sky }} />
+            <div className="absolute inset-0" style={{ background: darkMode ? stop.sky : stop.skyLight }} />
             <Scene index={i} tone={tone} glow={stop.glow} />
             <div className="absolute inset-0 hidden md:flex items-start justify-end pr-[5vw] pt-[14vh]">
               <span
                 className="text-[11vw] font-extrabold leading-none tracking-tight select-none"
-                style={{ color: stop.glow, opacity: 0.1 }}
+                style={{ color: darkMode ? stop.glow : 'rgba(58,36,20,0.85)', opacity: darkMode ? 0.1 : 0.12 }}
               >
                 {stop.native}
               </span>
@@ -322,8 +324,10 @@ export default function LandingBackground({ darkMode }: { darkMode: boolean }) {
           style={{
             left: `${p.l}%`,
             top: `${p.t}%`,
-            background: i % 3 === 0 ? '#ffce00' : '#e41e20',
-            opacity: 0.5,
+            background: i % 3 === 0
+              ? (darkMode ? '#ffce00' : '#b45309')
+              : '#e41e20',
+            opacity: darkMode ? 0.5 : 0.35,
             animationDelay: `${p.d}s`,
           }}
         />

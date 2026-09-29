@@ -32,6 +32,19 @@ let sessions: Session[] = loadFromStorage<Session[]>('ns_sessions', []);
 let incidents: DemoIncident[] = loadFromStorage<DemoIncident[]>('ns_incidents', []);
 let idCounter = loadFromStorage<number>('ns_id_counter', 100);
 
+// Problems people typed under "Something Else" — kept with a usage count so
+// the next citizen gets them offered as suggestions instead of retyping.
+export interface CustomProblem {
+  text: string;
+  normalized: string;
+  count: number;
+  language: Language;
+  first_seen: string;
+  last_seen: string;
+}
+
+let customProblems: CustomProblem[] = loadFromStorage<CustomProblem[]>('ns_custom_problems', []);
+
 function genId(): string {
   idCounter++;
   saveToStorage('ns_id_counter', idCounter);
@@ -50,6 +63,7 @@ function genIncidentId(): string {
 function persistAll(): void {
   saveToStorage('ns_sessions', sessions);
   saveToStorage('ns_incidents', incidents);
+  saveToStorage('ns_custom_problems', customProblems);
 }
 
 // ============================================================
@@ -281,10 +295,45 @@ export const demoStore = {
     return pub;
   },
 
+  // --- "Something else" custom problems ---
+  recordCustomProblem(text: string, language: Language): CustomProblem | null {
+    const trimmed = text.trim().replace(/\s+/g, ' ');
+    if (trimmed.length < 4) return null;
+    const normalized = trimmed.toLowerCase();
+    const now = new Date().toISOString();
+    const existing = customProblems.find(p => p.normalized === normalized);
+    if (existing) {
+      existing.count += 1;
+      existing.last_seen = now;
+      if (language) existing.language = language;
+      persistAll();
+      return existing;
+    }
+    const record: CustomProblem = {
+      text: trimmed,
+      normalized,
+      count: 1,
+      language,
+      first_seen: now,
+      last_seen: now,
+    };
+    customProblems.unshift(record);
+    if (customProblems.length > 300) customProblems.length = 300;
+    persistAll();
+    return record;
+  },
+
+  getCustomProblems(limit = 8): CustomProblem[] {
+    return [...customProblems]
+      .sort((a, b) => b.count - a.count || (a.last_seen < b.last_seen ? 1 : -1))
+      .slice(0, Math.max(1, limit));
+  },
+
   clearAll(): void {
     sessions = [];
     incidents = [];
     idCounter = 100;
+    customProblems = [];
     persistAll();
   },
 };

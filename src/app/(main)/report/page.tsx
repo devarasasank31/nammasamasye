@@ -40,6 +40,7 @@ const categoryButtons = [
   { id: 'civic_water_supply', icon: '💧', label: 'Water Supply' },
   { id: 'civic_stray_animals', icon: '🐕', label: 'Stray Animals' },
   { id: 'traffic_interaction', icon: '👮', label: 'Police / Traffic Interaction' },
+  { id: 'civic_sense', icon: '🚨', label: 'Civic Sense / Violations' },
   { id: 'bribes', icon: '💰', label: 'Bribes' },
   { id: 'safety_harassment', icon: '🛡️', label: 'Safety / Harassment' },
   { id: 'cybercrime', icon: '💻', label: 'Cybercrime' },
@@ -143,6 +144,8 @@ export default function ReportPage() {
   const [showEvidenceUploader, setShowEvidenceUploader] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [pickedLocation, setPickedLocation] = useState<PickedLocation | null>(null);
+  // What other citizens typed under "Something else", with how many used it.
+  const [customSuggestions, setCustomSuggestions] = useState<{ text: string; count: number }[]>([]);
 
   useEffect(() => {
     if (chatRef.current) {
@@ -263,11 +266,22 @@ export default function ReportPage() {
     }
   };
 
+  const loadCustomSuggestions = () => {
+    void fetch('/api/custom-problems')
+      .then(r => (r.ok ? r.json() : { suggestions: [] }))
+      .then((d: { suggestions?: { text: string; count: number }[] }) => {
+        setCustomSuggestions(Array.isArray(d.suggestions) ? d.suggestions : []);
+      })
+      .catch(() => {});
+  };
+
   const handleCategorySelect = (scenarioId: string) => {
     if (scenarioId === 'something_else') {
       addUserMessage(t('bot.something_else', lang));
       addBotMessage(t('bot.describe_detail', lang));
       setStep('free_text');
+      // Show what others typed here so it is a tap instead of a retyping job.
+      loadCustomSuggestions();
       return;
     }
     const scenario = getScenarioById(scenarioId);
@@ -276,6 +290,7 @@ export default function ReportPage() {
     } else {
       addBotMessage(t('bot.describe_detail', lang));
       setStep('free_text');
+      loadCustomSuggestions();
     }
   };
 
@@ -309,6 +324,13 @@ export default function ReportPage() {
     setInputValue('');
     setOriginalText(heard);
     addUserMessage(heard);
+
+    // Keep it in the database so the next person sees it as a suggestion.
+    void fetch('/api/custom-problems', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: heard, language: lang }),
+    }).then(() => loadCustomSuggestions()).catch(() => {});
 
     let text = heard;
     if (voiceTextRef.current) {
@@ -965,6 +987,26 @@ export default function ReportPage() {
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-[10px] text-gray-400">📍 Location is optional — geo-tagged photos show location</span>
                 <button onClick={handleSkipQuestion} className="text-[10px] text-primary hover:underline font-medium">Skip →</button>
+              </div>
+            )}
+
+            {step === 'free_text' && customSuggestions.length > 0 && (
+              <div className="mb-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">
+                  {t('bot.people_also_reported', lang)}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {customSuggestions.map(s => (
+                    <button
+                      key={s.text}
+                      onClick={() => { setInputValue(s.text); inputRef.current?.focus(); }}
+                      className="max-w-full truncate text-xs px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 hover:border-primary hover:text-primary transition"
+                    >
+                      {s.text}
+                      <span className="ml-1.5 text-[10px] font-semibold text-gray-400">×{s.count}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 

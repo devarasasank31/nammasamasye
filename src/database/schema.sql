@@ -175,6 +175,17 @@ CREATE TABLE IF NOT EXISTS language_metadata (
   UNIQUE(language, key)
 );
 
+-- Custom problems typed under "Something Else", with how many people used them
+CREATE TABLE IF NOT EXISTS custom_problems (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  text TEXT NOT NULL,
+  normalized TEXT NOT NULL UNIQUE,
+  language TEXT NOT NULL DEFAULT 'en',
+  count INTEGER NOT NULL DEFAULT 1,
+  first_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Indexes
 CREATE INDEX idx_incidents_session ON incidents(session_id);
 CREATE INDEX idx_incidents_status ON incidents(status);
@@ -188,6 +199,7 @@ CREATE INDEX idx_notifications_session ON notifications(session_id);
 CREATE INDEX idx_community_clusters_area ON community_clusters(area);
 CREATE INDEX idx_audit_logs_admin ON audit_logs(admin_id);
 CREATE INDEX idx_area_statistics_area ON area_statistics(area);
+CREATE INDEX idx_custom_problems_count ON custom_problems(count DESC);
 
 -- Function to generate incident ID
 CREATE OR REPLACE FUNCTION generate_incident_id()

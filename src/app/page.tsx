@@ -7,7 +7,9 @@ import { getStoredLanguage, setStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
 import { heritage } from '@/lib/heritage';
 import LandingBackground from '@/components/LandingBackground';
-import { Globe, Menu, X, FileSearch, Sparkles, ArrowRight, Shield, Mic, Paperclip, TrendingUp, Sun, Moon } from 'lucide-react';
+import { Globe, Menu, X, FileSearch, Sparkles, ArrowRight, Shield, Mic, Paperclip, TrendingUp, Sun, Moon, Monitor } from 'lucide-react';
+
+type ThemePref = 'system' | 'dark' | 'light';
 
 const languages: { code: Language; label: string; native: string }[] = [
   { code: 'kn', label: 'Kannada', native: 'ಕನ್ನಡ' },
@@ -33,6 +35,7 @@ const categories = [
   { icon: '🚰', label: 'Drainage' },
   { icon: '💧', label: 'Water' },
   { icon: '👮', label: 'Police' },
+  { icon: '🚨', label: 'Civic Sense' },
   { icon: '💰', label: 'Bribes' },
   { icon: '🛡️', label: 'Safety' },
   { icon: '💻', label: 'Cybercrime' },
@@ -47,6 +50,8 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+  const [themePref, setThemePref] = useState<ThemePref>('system');
+  const [systemDark, setSystemDark] = useState(true);
 
   useEffect(() => {
     const init = async () => {
@@ -55,17 +60,39 @@ export default function LandingPage() {
       await Promise.resolve();
       setMounted(true);
       setLang(getStoredLanguage());
-      const savedTheme = localStorage.getItem('ns_theme');
-      setDarkMode(savedTheme ? savedTheme === 'dark' : true);
     };
     void init();
+
+    // Follow the operating system unless this visitor picked dark or light
+    // themselves — and keep following the OS if they change it later.
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const apply = () => {
+      const saved = localStorage.getItem('ns_theme');
+      const pref: ThemePref = saved === 'dark' || saved === 'light' ? saved : 'system';
+      setThemePref(pref);
+      setSystemDark(media.matches);
+      setDarkMode(pref === 'system' ? media.matches : pref === 'dark');
+    };
+    apply();
+    media.addEventListener('change', apply);
+    return () => media.removeEventListener('change', apply);
   }, []);
 
   const toggleTheme = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    localStorage.setItem('ns_theme', newMode ? 'dark' : 'light');
+    // system -> the opposite of what is on screen (always a visible change)
+    // -> the other one -> back to system.
+    const next: ThemePref = themePref === 'system'
+      ? (darkMode ? 'light' : 'dark')
+      : themePref === 'dark' ? 'light' : 'system';
+    setThemePref(next);
+    setDarkMode(next === 'system' ? systemDark : next === 'dark');
+    localStorage.setItem('ns_theme', next);
   };
+
+  const themeLabel = themePref === 'system'
+    ? `Theme: system (${systemDark ? 'dark' : 'light'}) — click to set ${systemDark ? 'light' : 'dark'}`
+    : `Theme: ${themePref} — click for ${themePref === 'dark' ? 'light' : 'system default'}`;
+  const themeIcon = themePref === 'system' ? <Monitor size={18} /> : darkMode ? <Sun size={18} /> : <Moon size={18} />;
 
   const handleLanguageChange = (newLang: Language) => {
     setLang(newLang);
@@ -97,15 +124,15 @@ export default function LandingPage() {
             <button onClick={() => setShowLangModal(true)} className="hover:text-primary flex items-center gap-1 transition">
               <Globe size={16} /> {languages.find(l => l.code === lang)?.native || 'English'}
             </button>
-            <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-white/10 transition">
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            <button onClick={toggleTheme} title={themeLabel} aria-label={themeLabel} className="p-2 rounded-lg hover:bg-white/10 transition">
+              {themeIcon}
             </button>
             <a href="/privacy" className="hover:text-primary transition">Privacy</a>
             <a href="/safety" className="hover:text-primary transition">Safety</a>
           </div>
           <div className="flex items-center gap-2 md:hidden">
-            <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-white/10 transition">
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            <button onClick={toggleTheme} title={themeLabel} aria-label={themeLabel} className="p-2 rounded-lg hover:bg-white/10 transition">
+              {themeIcon}
             </button>
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}

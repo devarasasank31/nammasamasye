@@ -1,5 +1,5 @@
 import { Language } from '@/types';
-import { scenarios } from '@/data/scenarios';
+import { scenarios, getScenarioName } from '@/data/scenarios';
 import { normalizeForMatch, guessLanguage } from '@/lib/ai/language';
 
 export interface ScenarioMatch {
@@ -30,6 +30,17 @@ const KEYWORD_MAP: Record<string, string[]> = {
   footpath: ['footpath', 'sidewalk', 'pedestrian', 'walking', 'pavement', 'ಫುಟ್‌ಪಾತ್', 'ನಡಿಗೆ', 'ఫుట్‌పాత్', 'పాదచారి', 'फुटपाथ'],
   drainage: ['drain', 'drainage', 'blocked', 'water logging', 'pani bhar', 'paani bhar', 'ಚರಂಡಿ', 'ಡ್ರೈನ್', 'డ్రైనేజీ', 'నాలు', 'नाली', 'पानी भर'],
   wrong_side: ['wrong side', 'opposite', 'oncoming', 'ulta', 'ತಪ್ಪು ಬದಿ', 'తప్పు వైపు', 'गलत दिशा', 'उल्टा'],
+  civic_sense: [
+    'stunt', 'stunts', 'wheelie', 'racing', 'overspeeding', 'over speeding',
+    'rash driving', 'reckless', 'jumped the signal', 'jumping signal',
+    'signal jump', 'red light jump', 'zebra crossing', 'no helmet',
+    'helmetless', 'triple riding', 'three riding', 'drunk driving',
+    'going wrong side', 'coming wrong side',
+    'stunt kar rahe', 'signal toda', 'bina helmet', 'race kar rahe',
+    'ಸ್ಟಂಟ್', 'ವೀಲಿ', 'ಅತಿವೇಗ', 'ಸಿಗ್ನಲ್ ದಾಟಿದ', 'ಹೆಲ್ಮೆಟ್ ಇಲ್ಲ', 'ರೇಸಿಂಗ್',
+    'స్టంట్', 'వీలీ', 'అధిక వేగం', 'సిగ్నల్ దాటి', 'హెల్మెట్ లేదు', 'రేసింగ్',
+    'स्टंट', 'व्हीली', 'रेसिंग', 'सिग्नल तोड़ा', 'बिना हेलमेट', 'लापरवाही',
+  ],
 };
 
 const FALLBACK_REASON: Record<Language, string> = {
@@ -54,9 +65,10 @@ export function classifyIncident(text: string, language: Language): ScenarioMatc
   const scenarioKeywordMap: Record<string, string[]> = {
     traffic_accident: [...KEYWORD_MAP.accident],
     traffic_wrong_side: [...KEYWORD_MAP.wrong_side],
+    civic_sense: [...KEYWORD_MAP.civic_sense],
     traffic_parking: [...KEYWORD_MAP.parking],
     traffic_interaction: [...KEYWORD_MAP.traffic_stop],
-    civic_pothole: [...KEYWORD_MAP.pothole],
+    traffic_pothole: [...KEYWORD_MAP.pothole],
     civic_garbage: [...KEYWORD_MAP.garbage],
     civic_streetlight: [...KEYWORD_MAP.streetlight],
     civic_footpath: [...KEYWORD_MAP.footpath],
@@ -78,7 +90,7 @@ export function classifyIncident(text: string, language: Language): ScenarioMatc
       if (scenario) {
         results.push({
           scenarioId,
-          scenarioName: scenario.name,
+          scenarioName: getScenarioName(scenario, effectiveLanguage),
           confidence,
           reason: `The description mentions: ${matched.join(', ')}.`,
         });

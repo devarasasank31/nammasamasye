@@ -40,13 +40,14 @@ For classification:
 {"type":"classify","scenario_id":"id","confidence":85,"reason":"brief reason"}
 
 scenario_id must be exactly one of:
-traffic_accident | traffic_wrong_side | traffic_pothole | civic_garbage |
+traffic_accident | traffic_wrong_side | civic_sense | traffic_pothole | civic_garbage |
 traffic_parking | civic_streetlight | civic_footpath | civic_drainage |
 civic_parks | civic_water_supply | civic_stray_animals | traffic_interaction |
 bribes | safety_harassment | cybercrime | housing_tenant | env_noise |
 util_power | access_language | govt_service | something_else
 
 Rules:
+- civic_sense means traffic rules being broken even if nobody was hurt yet: stunts/wheelies, street racing or overspeeding, wrong-side driving, jumping signals, no helmet or triple riding, drunk or reckless driving. Prefer civic_sense over traffic_interaction when someone describes such behaviour.
 - Never invent laws, contacts, phone numbers or official names.
 - Never accuse anyone of a crime.
 - confidence 1-99.

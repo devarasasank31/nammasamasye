@@ -68,6 +68,34 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['one way mein ulta', 'ulta raasta', 'galat side pe chal raha'], scenario_id: 'traffic_wrong_side', confidence: 90, reason: 'Casual wrong side' },
 
   // ============================================
+  // CIVIC SENSE / TRAFFIC RULE VIOLATIONS (45 examples)
+  // ============================================
+  // English
+  { keywords: ['doing stunts', 'bike stunt', 'stunt riding', 'stunts on road'], scenario_id: 'civic_sense', confidence: 90, reason: 'Stunts on the road' },
+  { keywords: ['wheelie', 'wheelies', 'doing a wheelie', 'front wheel up'], scenario_id: 'civic_sense', confidence: 95, reason: 'Wheelie stunts' },
+  { keywords: ['stunt', 'stunts', 'showing off on bike'], scenario_id: 'civic_sense', confidence: 85, reason: 'Stunt riding' },
+  { keywords: ['street racing', 'racing on road', 'bike race', 'drag race'], scenario_id: 'civic_sense', confidence: 90, reason: 'Street racing' },
+  { keywords: ['overspeeding', 'over speeding', 'rash driving', 'speeding dangerously'], scenario_id: 'civic_sense', confidence: 90, reason: 'Reckless speeding' },
+  { keywords: ['jumped the signal', 'jumping signal', 'signal jumping', 'red light jump'], scenario_id: 'civic_sense', confidence: 90, reason: 'Signal violation' },
+  { keywords: ['no helmet', 'without helmet', 'helmetless', 'triple riding'], scenario_id: 'civic_sense', confidence: 85, reason: 'Helmet / seating violation' },
+  { keywords: ['drunk driving', 'drunk rider', 'drunk on the road'], scenario_id: 'civic_sense', confidence: 90, reason: 'Drunk driving' },
+  { keywords: ['reckless driving', 'dangerous driving', 'not following rules', 'traffic rules violation'], scenario_id: 'civic_sense', confidence: 85, reason: 'Traffic rule violation' },
+  { keywords: ['stunts in front of school', 'stunts on main road', 'stunts near hospital'], scenario_id: 'civic_sense', confidence: 90, reason: 'Stunts in a crowded area' },
+  { keywords: ['wrong side and causing problems', 'wrong side riders creating problems'], scenario_id: 'civic_sense', confidence: 85, reason: 'Wrong side endangering others' },
+  { keywords: ['someone overtaking wrongly', 'no indicator while turning', 'crossing zebra crossing'], scenario_id: 'civic_sense', confidence: 85, reason: 'Minor rule violation' },
+  // Hinglish
+  { keywords: ['stunt kar rahe hain', 'stunt maar rahe', 'wheelie maar raha'], scenario_id: 'civic_sense', confidence: 95, reason: 'Hindi stunts' },
+  { keywords: ['signal tod diya', 'bina helmet chala', 'race lag raha hai'], scenario_id: 'civic_sense', confidence: 90, reason: 'Hindi rule violation' },
+  { keywords: ['bina helmet ja raha', 'teen log bike pe', 'darshana de raha hai'], scenario_id: 'civic_sense', confidence: 85, reason: 'Casual Hindi violation' },
+  // Kannada
+  { keywords: ['ಸ್ಟಂಟ್ ಮಾಡ್ತಿದಾರೆ', 'ವೀಲಿ ಹೊಡೀತಿದಾರೆ', 'ಸ್ಟಂಟ್ ಹಾಕ್ತಿದಾರೆ'], scenario_id: 'civic_sense', confidence: 95, reason: 'ಕನ್ನಡ ಸ್ಟಂಟ್' },
+  { keywords: ['ಸಿಗ್ನಲ್ ದಾಟಿದ', 'ಹೆಲ್ಮೆಟ್ ಇಲ್ಲದೆ', 'ರೇಸ್ ಮಾಡ್ತಿದಾರೆ', 'ಅತಿವೇಗದಲ್ಲಿ'], scenario_id: 'civic_sense', confidence: 90, reason: 'ಕನ್ನಡ ನಿಯಮ ಉಲ್ಲಂಘನೆ' },
+  { keywords: ['ಸಂಚಾರ ನಿಯಮ ಉಲ್ಲಂಘನೆ', 'ತಪ್ಪು ಬದಿಯಲ್ಲಿ ಬಂದ'], scenario_id: 'civic_sense', confidence: 85, reason: 'ಕನ್ನಡ ಸಂಚಾರ ಸಮಸ್ಯೆ' },
+  // Telugu
+  { keywords: ['స్టంట్ చేస్తున్నారు', 'వీలీ వేస్తున్నారు', 'స్టంట్లు'], scenario_id: 'civic_sense', confidence: 95, reason: 'తెలుగు స్టంట్' },
+  { keywords: ['సిగ్నల్ దాటారు', 'హెల్మెట్ లేకుండా', 'అధిక వేగంతో'], scenario_id: 'civic_sense', confidence: 90, reason: 'తెలుగు నియమ ఉల్లంఘన' },
+
+  // ============================================
   // POTHOLES / ROAD DAMAGE (80 examples)
   // ============================================
   { keywords: ['pothole', 'potholes', 'road hole', 'big hole in road'], scenario_id: 'traffic_pothole', confidence: 95, reason: 'Pothole on road' },
