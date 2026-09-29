@@ -7,6 +7,7 @@ import { getStoredLanguage, setStoredLanguage, getOrCreateSession } from '@/serv
 import { getScenarioById } from '@/data/scenarios';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
+import { detectReplyLanguage, shouldAdoptLanguage, speechLocale, isLanguage } from '@/lib/ai/language';
 import { t } from '@/lib/translations';
 import { createIncident } from '@/services/incident';
 import FileUploader from '@/components/FileUploader';
@@ -54,10 +55,21 @@ const supportedPlatforms = [
   { name: 'Google Drive', icon: '📁' },
   { name: 'YouTube', icon: '🎥' },
   { name: 'Imgur', icon: '📷' },
-  { name: 'Dropbox', icon: '📦' },
+  { name: 'Dropbox', icon: '🪣' },
   { name: 'OneDrive', icon: '☁️' },
-  { name: 'MediaFire', icon: '📂' },
+  { name: 'MediaFire', icon: '🔥' },
 ];
+
+const VOICE_LABELS: Record<string, string> = {
+  kn: 'ಕನ್ನಡ',
+  hi: 'हिन्दी',
+  te: 'తెలుగు',
+  en: 'English',
+};
+
+function voiceLabel(locale: string): string {
+  return VOICE_LABELS[locale.split('-')[0]] || VOICE_LABELS.en;
+}
 
 function isValidEvidenceLink(url: string): boolean {
   try {
@@ -84,6 +96,7 @@ interface SpeechRecognitionLike {
   lang: string;
   interimResults: boolean;
   continuous: boolean;
+  maxAlternatives: number;
   start(): void;
   stop(): void;
   onresult: ((ev: SpeechRecognitionEventLike) => void) | null;
@@ -97,6 +110,9 @@ export default function ReportPage() {
   const chatRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  // True while the current input came from the microphone, so we know to
+  // translate it before it goes anywhere near the workflow.
+  const voiceTextRef = useRef(false);
 
   const [lang, setLang] = useState<Language>('en');
   const [step, setStep] = useState<Step>('greeting');
@@ -115,6 +131,10 @@ export default function ReportPage() {
   const [originalText, setOriginalText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
+  // Where the microphone is currently listening. It follows the citizen once
+  // their speech has been identified, and otherwise tracks the app language.
+  const [voiceOverride, setVoiceOverride] = useState<string | null>(null);
+  const listeningLocale = voiceOverride ?? speechLocale(lang);
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customInputValue, setCustomInputValue] = useState('');
   const [showLangSwitch, setShowLangSwitch] = useState(false);
@@ -259,19 +279,60 @@ export default function ReportPage() {
     }
   };
 
+  // Voice arrives in whichever language the citizen actually spoke. Detect it,
+  // switch the microphone over, and hand the workflow the app language.
+  const maybeTranslateVoice = async (heard: string, announce = true): Promise<string> => {
+    try {
+      const res = await fetch('/api/ai/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: heard, target: lang }),
+      });
+      if (!res.ok) return heard;
+      const data = (await res.json()) as { detected?: unknown; translated?: unknown; changed?: boolean };
+      // Always follow the citizen's actual language for the microphone.
+      if (isLanguage(data.detected)) setVoiceOverride(speechLocale(data.detected));
+      if (announce && data.changed && typeof data.translated === 'string' && data.translated.trim()) {
+        const translated = data.translated.trim();
+        addBotMessage(`${t('bot.voice_translated', lang)}\n\n${translated}`);
+        return translated;
+      }
+      return heard;
+    } catch {
+      return heard;
+    }
+  };
+
   const handleFreeTextSubmit = async () => {
     if (!inputValue.trim()) return;
-    const text = inputValue.trim();
+    const heard = inputValue.trim();
     setInputValue('');
-    setOriginalText(text);
-    addUserMessage(text);
-    if (isEmergencyMessage(text)) addBotMessage(t('safety.emergency', lang));
-    const matches = classifyIncident(text, lang);
+    setOriginalText(heard);
+    addUserMessage(heard);
+
+    let text = heard;
+    if (voiceTextRef.current) {
+      voiceTextRef.current = false;
+      text = await maybeTranslateVoice(heard);
+    }
+
+    // If the citizen wrote in another language, answer in that language and
+    // switch the rest of the conversation over too.
+    const detected = detectReplyLanguage(text, lang);
+    const replyLang = shouldAdoptLanguage(detected, lang, text) ? detected : lang;
+    if (replyLang !== lang) {
+      setLang(replyLang);
+      setStoredLanguage(replyLang);
+      setVoiceOverride(speechLocale(replyLang));
+    }
+
+    if (isEmergencyMessage(text)) addBotMessage(t('safety.emergency', replyLang));
+    const matches = classifyIncident(text, replyLang);
     setScenarioMatches(matches);
     if (matches.length > 0 && matches[0].confidence > 50) {
-      let response = `${t('bot.scenario_match', lang)}:\n\n`;
+      let response = `${t('bot.scenario_match', replyLang)}:\n\n`;
       matches.forEach((m, i) => { response += `${i + 1}. ${m.scenarioName} — ${m.confidence}%\n   ${m.reason}\n\n`; });
-      response += `\n${t('bot.disclaimer', lang)}\n\n${t('bot.select_scenario', lang)}`;
+      response += `\n${t('bot.disclaimer', replyLang)}\n\n${t('bot.select_scenario', replyLang)}`;
       addBotMessage(response);
       setStep('scenario_match');
       return;
@@ -289,7 +350,7 @@ export default function ReportPage() {
       return;
     }
 
-    addBotMessage(t('bot.select_category', lang));
+    addBotMessage(t('bot.select_category', replyLang));
     setStep('category_select');
   };
 
@@ -298,11 +359,19 @@ export default function ReportPage() {
     if (scenario) startScenario(scenario, scenario.name);
   };
 
-  const handleWorkflowAnswer = () => {
+  const handleWorkflowAnswer = async () => {
     if (!inputValue.trim() || !selectedScenario) return;
     const answer = inputValue.trim();
     const question = selectedScenario.workflow[currentQuestionIdx];
     setInputValue('');
+
+    // Voice answers are kept exactly as spoken (place names and all), but the
+    // call still identifies the language so the microphone follows along.
+    if (voiceTextRef.current) {
+      voiceTextRef.current = false;
+      await maybeTranslateVoice(answer, false);
+    }
+
     if (question.type === 'location') setLocation(answer);
     addUserMessage(answer);
     setAnswers(prev => ({ ...prev, [question.id]: answer }));
@@ -414,12 +483,14 @@ export default function ReportPage() {
     }
     const recognition = new SR();
     recognitionRef.current = recognition;
-    recognition.lang = lang === 'kn' ? 'kn-IN' : lang === 'hi' ? 'hi-IN' : lang === 'te' ? 'te-IN' : 'en-IN';
+    recognition.lang = listeningLocale;
     recognition.interimResults = true;
     recognition.continuous = true;
+    recognition.maxAlternatives = 1;
     setIsRecording(true);
     setLiveTranscript('');
     setInputValue('');
+    voiceTextRef.current = false;
     recognition.start();
     let final = '';
     recognition.onresult = (event: SpeechRecognitionEventLike) => {
@@ -428,6 +499,7 @@ export default function ReportPage() {
         if (event.results[i].isFinal) final += event.results[i][0].transcript;
         else interim += event.results[i][0].transcript;
       }
+      if (final.trim()) voiceTextRef.current = true;
       setInputValue(final + interim);
       setLiveTranscript(interim);
     };
@@ -440,6 +512,10 @@ export default function ReportPage() {
         if (recognitionRef.current) {
           try { recognition.start(); } catch {}
         }
+      } else if (e.error === 'network') {
+        setIsRecording(false);
+        recognitionRef.current = null;
+        addBotMessage(t('bot.try_again', lang));
       } else if (e.error !== 'aborted') {
         setIsRecording(false);
         addBotMessage(t('bot.try_again', lang));
@@ -473,7 +549,7 @@ export default function ReportPage() {
         {showLangSwitch && (
           <div className="border-t border-gray-100 px-4 py-2 flex gap-2 bg-white">
             {(['kn', 'en', 'hi', 'te'] as Language[]).map(l => (
-              <button key={l} onClick={() => { setLang(l); setStoredLanguage(l); setShowLangSwitch(false); }}
+              <button key={l} onClick={() => { setLang(l); setStoredLanguage(l); setVoiceOverride(speechLocale(l)); setShowLangSwitch(false); }}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition ${lang === l ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                 {l === 'kn' ? 'ಕನ್ನಡ' : l === 'hi' ? 'हिन्दी' : l === 'te' ? 'తెలుగు' : 'English'}
               </button>
@@ -867,7 +943,10 @@ export default function ReportPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                    <span className="text-xs text-red-600 font-medium">Listening... Speak now</span>
+                    <span className="text-xs text-red-600 font-medium">{t('bot.listening', lang)}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-medium">
+                      🎤 {voiceLabel(listeningLocale)}
+                    </span>
                   </div>
                   <button onClick={handleVoiceInput}
                     className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition flex items-center gap-1.5">
@@ -894,7 +973,8 @@ export default function ReportPage() {
                 className={`p-3 rounded-xl transition ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                 {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
-              <input ref={inputRef} type="text" value={inputValue} onChange={e => setInputValue(e.target.value)}
+              <input ref={inputRef} type="text" value={inputValue}
+                onChange={e => { voiceTextRef.current = false; setInputValue(e.target.value); }}
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
                     if (step === 'free_text') handleFreeTextSubmit();

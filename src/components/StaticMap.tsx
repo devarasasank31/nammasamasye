@@ -40,7 +40,7 @@ export default function StaticMap({ lat, lng, label, height = 200 }: Props) {
         center: [lat, lng],
         zoom: 17,
         zoomControl: false,
-        attributionControl: true,
+        attributionControl: false,
         dragging: false,
         scrollWheelZoom: false,
         doubleClickZoom: false,
@@ -57,7 +57,6 @@ export default function StaticMap({ lat, lng, label, height = 200 }: Props) {
     }
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap',
       maxZoom: 20,
       crossOrigin: true,
     }).addTo(map);
@@ -95,7 +94,6 @@ export default function StaticMap({ lat, lng, label, height = 200 }: Props) {
           </span>
         )}
       </div>
-      <p className="text-[10px] text-gray-400">Map data © OpenStreetMap contributors</p>
     </div>
   );
 }

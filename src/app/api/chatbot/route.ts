@@ -2,6 +2,8 @@
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { getScenarioById } from '@/data/scenarios';
 import { detectIntent, intentReply, askMore } from '@/lib/conversation';
+import { detectReplyLanguage, languageName } from '@/lib/ai/language';
+import { Language } from '@/types';
 
 // Server-side only
 const AI_API_KEY = process.env.AI_API_KEY || process.env.GROQ_API_KEY || '';
@@ -57,14 +59,15 @@ const LANGUAGE_NAMES: Record<string, string> = {
   te: 'Telugu (తెలుగు)',
 };
 
-function buildSystemPrompt(lang: string): string {
-  const name = LANGUAGE_NAMES[lang] || LANGUAGE_NAMES.en;
+function buildSystemPrompt(replyLang: string): string {
+  const name = LANGUAGE_NAMES[replyLang] || LANGUAGE_NAMES.en;
   return `${SYSTEM_PROMPT}
 
 LANGUAGE
-- The conversation language is ${name}. ALWAYS reply in ${name}, even when the user writes in English or in Latin-script transliteration (for example "kuch nahi ho raha", "gundi road", "bijli gayi").
-- The user may mix ${name}, English and transliterated Hindi/Kannada/Telugu inside a single message, and may answer your ${name} question in English. Understand the whole message, keep replying in ${name}, and never ask them to switch language.
-- When you return a classification, write "reason" in ${name} in one short sentence.`;
+- The citizen's latest message is written in ${name}. Write EVERY reply in ${name} — chat replies and the "reason" field alike.
+- The citizen may answer in any of English, Kannada, Hindi or Telugu, in native script or in Latin transliteration ("kuch nahi ho raha", "gundi road", "bijli gayi", "ledu sir"), and may mix two languages in one message. Understand all of it.
+- If the latest message is clearly in a different language from ${name}, switch to that language for your reply instead. Follow the citizen, never the app settings.
+- Never ask the citizen to switch language, and never reply in a language they did not use.`;
 }
 
 interface Turn {
@@ -91,14 +94,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No input provided' }, { status: 400 });
     }
 
+    // Answer in whatever language this message is written in, not the one the
+    // app happens to be set to.
+    const appLang: Language = lang === 'kn' || lang === 'hi' || lang === 'te' ? lang : 'en';
+    const replyLang: Language = detectReplyLanguage(userInput, appLang);
+    const replyLangName = languageName(replyLang);
+
     // ---- Fast path: deterministic conversational intents ----
     const intent = detectIntent(userInput);
     if (intent && intent !== 'yes' && intent !== 'no') {
-      const reply = intentReply(intent, lang);
+      const reply = intentReply(intent, replyLang);
       return NextResponse.json({
         type: 'chat',
         reply: reply.text,
         action: reply.action || null,
+        replyLang,
         source: 'rules',
       });
     }
@@ -112,27 +122,29 @@ export async function POST(request: NextRequest) {
     // ---- Strong trained match: answer instantly, no API round-trip ----
     const trainedMatch = matchTrainedScenario(userInput);
     if (trainedMatch && trainedMatch.confidence >= 85) {
-      return NextResponse.json({ type: 'classify', ...trainedMatch, source: 'trained' });
+      return NextResponse.json({ type: 'classify', ...trainedMatch, replyLang, replyLangName, source: 'trained' });
     }
 
     // ---- Call AI with full history ----
     if (AI_API_KEY) {
       try {
-        const aiResult = await callAI(transcript, lang);
+        const aiResult = await callAI(transcript, replyLang);
         if (aiResult) {
           if (aiResult.type === 'chat') {
-            return NextResponse.json({ ...aiResult, source: 'ai' });
+            return NextResponse.json({ ...aiResult, replyLang, replyLangName, source: 'ai' });
           }
           if (aiResult.confidence >= 50) {
             if (trainedMatch && trainedMatch.confidence > aiResult.confidence) {
-              return NextResponse.json({ type: 'classify', ...trainedMatch, source: 'trained' });
+              return NextResponse.json({ type: 'classify', ...trainedMatch, replyLang, replyLangName, source: 'trained' });
             }
-            return NextResponse.json({ ...aiResult, source: 'ai' });
+            return NextResponse.json({ ...aiResult, replyLang, replyLangName, source: 'ai' });
           }
           // Too vague to classify — ask naturally instead of a canned reply
           return NextResponse.json({
             type: 'chat',
-            reply: askMore(userInput, lang),
+            reply: askMore(userInput, replyLang),
+            replyLang,
+            replyLangName,
             source: 'ai',
           });
         }
@@ -143,12 +155,14 @@ export async function POST(request: NextRequest) {
 
     // ---- Fallbacks ----
     if (trainedMatch && trainedMatch.confidence >= 55) {
-      return NextResponse.json({ type: 'classify', ...trainedMatch, source: 'trained' });
+      return NextResponse.json({ type: 'classify', ...trainedMatch, replyLang, replyLangName, source: 'trained' });
     }
 
     return NextResponse.json({
       type: 'chat',
-      reply: askMore(userInput, lang),
+      reply: askMore(userInput, replyLang),
+      replyLang,
+      replyLangName,
       source: 'fallback',
     });
   } catch (error) {

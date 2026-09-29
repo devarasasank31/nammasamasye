@@ -4,8 +4,12 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, Send, Bot, ChevronRight, Sparkles } from 'lucide-react';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
-import { getStoredLanguage } from '@/services/session';
+import { getStoredLanguage, setStoredLanguage } from '@/services/session';
 import { Language } from '@/types';
+
+function asLanguage(value: unknown, fallback: Language): Language {
+  return value === 'kn' || value === 'hi' || value === 'te' || value === 'en' ? value : fallback;
+}
 
 interface ChatMessage {
   id: string;
@@ -86,10 +90,18 @@ export default function AIChatbot() {
       const result = await res.json();
       setIsAnalyzing(false);
 
+      // The bot answers in the language of the message it just received —
+      // follow it so the rest of the chat speaks the same language.
+      const rl = asLanguage(result.replyLang, lang);
+      if (rl !== lang) {
+        setLang(rl);
+        setStoredLanguage(rl);
+      }
+
       if (result.type === 'chat' || (!result.type && result.reply)) {
         setMessages(prev => [...prev, { id: `${Date.now()}-b`, role: 'bot', text: result.reply }]);
         if (result.action === 'open_report') {
-          localStorage.setItem('ns_language', lang);
+          localStorage.setItem('ns_language', rl);
           setTimeout(() => { router.push('/report'); setIsOpen(false); }, 700);
         } else if (result.action === 'open_track') {
           setTimeout(() => { router.push('/track'); setIsOpen(false); }, 700);
@@ -98,9 +110,9 @@ export default function AIChatbot() {
       }
 
       const scenario = getScenarioById(result.scenario_id);
-      const scenarioName = scenario ? getScenarioName(scenario, lang) : result.scenario_id;
+      const scenarioName = scenario ? getScenarioName(scenario, rl) : result.scenario_id;
       const reason = result.reason || '';
-      const L = labels[lang] || labels.en;
+      const L = labels[rl] || labels.en;
 
       let botText: string;
       if (result.confidence >= 70) {

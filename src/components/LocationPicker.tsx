@@ -216,6 +216,7 @@ export default function LocationPicker({ onPick, onCancel, lang = 'en', initial 
         center: initial ? [initial.lat, initial.lng] : BLR,
         zoom: initial ? 17 : 12,
         zoomControl: false,
+        attributionControl: false,
         maxZoom: 20,
       });
     } catch {
