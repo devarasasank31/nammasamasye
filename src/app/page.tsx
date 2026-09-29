@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Language } from '@/types';
 import { getStoredLanguage, setStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
+import { heritage } from '@/lib/heritage';
+import LandingBackground from '@/components/LandingBackground';
 import { Globe, Menu, X, FileSearch, Sparkles, ArrowRight, Shield, Mic, Paperclip, TrendingUp, Sun, Moon } from 'lucide-react';
 
 const languages: { code: Language; label: string; native: string }[] = [
@@ -21,16 +23,6 @@ const features = [
   { icon: Sparkles, title: 'AI-Powered', desc: 'Smart bot identifies your problem', color: '#e41e20', dark: false },
   { icon: Paperclip, title: 'Evidence Support', desc: 'Attach photos, videos, docs', color: '#8b5cf6', dark: false },
   { icon: TrendingUp, title: 'Track Progress', desc: 'Real-time status updates', color: '#ffce00', dark: true },
-];
-
-const heritage = [
-  { era: '6th century', title: 'Badami', native: 'ಬಾದಾಮಿ', desc: 'Chalukyan rock-cut caves above the Agastya lake.' },
-  { era: '14th century', title: 'Hampi', native: 'ಹಂಪೆ', desc: 'The ruined capital of the Vijayanagara empire.' },
-  { era: '1912', title: 'Mysore Palace', native: 'ಮೈಸೂರು ಅರಮನೆ', desc: 'The Wadiyar seat, still the state\'s best-known landmark.' },
-  { era: '1780s', title: 'Tipu Sultan', native: 'ಟಿಪ್ಪು ಸುಲ್ತಾನ್', desc: 'The Tiger of Mysore and his war against the Company.' },
-  { era: '1956', title: 'Karnataka formation', native: 'ಕರ್ನಾಟಕ ರಚನೆ', desc: 'Mysore State renamed Karnataka on 1 November.' },
-  { era: '2011', title: 'Namma Metro', native: 'ನಮ್ಮ ಮೆಟ್ರೊ', desc: 'Bengaluru gets its own rapid transit line.' },
-  { era: 'Today', title: 'Bengaluru', native: 'ಬೆಂಗಳೂರು', desc: 'A tech capital where every street still has a story.' },
 ];
 
 function Gandaberunda({ className = '' }: { className?: string }) {
@@ -113,13 +105,8 @@ export default function LandingPage() {
 
   return (
     <div className={`landing-ka min-h-screen ${bg} ${text} transition-colors duration-300`}>
-      {/* Animated Background */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
-        <div className={`absolute inset-0 ${darkMode ? 'bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950' : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'}`} />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#e41e20]/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#ffce00]/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#e41e20]/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
-      </div>
+      {/* Scroll-driven backdrop: Badami to Bengaluru */}
+      <LandingBackground darkMode={darkMode} />
 
       {/* Navbar */}
       <nav className={`sticky top-0 z-50 backdrop-blur-xl ${navBg} border-b transition-colors`}>
@@ -237,7 +224,7 @@ export default function LandingPage() {
       </section>
 
       {/* Categories */}
-      <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
+      <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-white/45'}`}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Report Anything</h2>
@@ -256,7 +243,7 @@ export default function LandingPage() {
       </section>
 
       {/* Heritage */}
-      <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
+      <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-white/45'}`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold mb-3">From Badami to Bengaluru</h2>
