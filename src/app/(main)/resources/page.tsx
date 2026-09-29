@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ExternalLink, Phone } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Phone, Home } from 'lucide-react';
 
 const officialResources = [
   { id: 'res-1', title: 'Bangalore Traffic Police', category: 'TRAFFIC', authority: 'Bangalore City Traffic Police', official_url: 'https://www.bangaloretrafficpolice.gov.in', official_phone: '080-22943400', description: 'For traffic-related complaints, accident reports, and challan inquiries.', last_verified_at: new Date().toISOString() },
@@ -29,6 +29,10 @@ export default function ResourcesPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold text-gray-900">Official Resources</h1>
+          <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
+            <Home size={16} />
+            <span className="text-xs font-medium">Home</span>
+          </button>
         </div>
       </header>
 

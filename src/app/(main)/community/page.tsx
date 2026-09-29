@@ -8,7 +8,7 @@ import { t } from '@/lib/translations';
 import { getDashboardStats } from '@/services/incident';
 import { IncidentStats } from '@/types';
 import { seedDemoData } from '@/lib/demo-store';
-import { ArrowLeft, BarChart3, MapPin } from 'lucide-react';
+import { ArrowLeft, BarChart3, MapPin, Home } from 'lucide-react';
 
 export default function CommunityPage() {
   const router = useRouter();
@@ -55,6 +55,10 @@ export default function CommunityPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold text-gray-900">{t('community.pulse', lang)}</h1>
+          <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
+            <Home size={16} />
+            <span className="text-xs font-medium">Home</span>
+          </button>
         </div>
       </header>
 

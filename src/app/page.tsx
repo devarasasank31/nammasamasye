@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Language } from '@/types';
 import { getStoredLanguage, setStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
 import { heritage } from '@/lib/heritage';
 import LandingBackground from '@/components/LandingBackground';
-import { Globe, Menu, X, FileSearch, Sparkles, ArrowRight, Shield, Mic, Paperclip, TrendingUp, Sun, Moon, Monitor } from 'lucide-react';
+import { Globe, Menu, X, FileSearch, Sparkles, ArrowRight, Shield, Mic, Paperclip, TrendingUp, Sun, Moon, Monitor, ChevronDown } from 'lucide-react';
 
 type ThemePref = 'system' | 'dark' | 'light';
 
@@ -52,6 +53,8 @@ export default function LandingPage() {
   const [darkMode, setDarkMode] = useState(true);
   const [themePref, setThemePref] = useState<ThemePref>('system');
   const [systemDark, setSystemDark] = useState(true);
+  // The heritage stop currently opened for reading.
+  const [openStop, setOpenStop] = useState<string | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -114,11 +117,13 @@ export default function LandingPage() {
       <nav className={`sticky top-0 z-50 backdrop-blur-xl ${navBg} border-b transition-colors`}>
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl ka-gradient-bg flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-[#e41e20]/30">NS</div>
-            <div className="flex flex-col">
-              <span className="font-bold text-lg leading-tight">ನಮ್ಮ ಸಮಸ್ಯೆ</span>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-60 leading-tight">Namma Samasye</span>
-            </div>
+            <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="flex items-center gap-3 text-left">
+              <div className="w-10 h-10 rounded-xl ka-gradient-bg flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-[#e41e20]/30">NS</div>
+              <div className="flex flex-col">
+                <span className="font-bold text-lg leading-tight">ನಮ್ಮ ಸಮಸ್ಯೆ</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] opacity-60 leading-tight">Namma Samasye</span>
+              </div>
+            </button>
           </div>
           <div className="hidden md:flex items-center gap-6 text-sm">
             <button onClick={() => setShowLangModal(true)} className="hover:text-primary flex items-center gap-1 transition">
@@ -251,25 +256,78 @@ export default function LandingPage() {
             <p className="text-lg font-semibold text-[#e41e20]">ಬಾದಾಮಿಯಿಂದ ಬೆಂಗಳೂರಿನವರೆಗೆ</p>
             <p className={`mt-2 ${textSecondary}`}>Seven stops that made the state this city stands in.</p>
           </div>
+          <p className={`text-center text-sm mb-6 ${textSecondary}`}>Tap a stop to open its story</p>
           <ol className="relative">
             <span className="ka-timeline-rail absolute left-[11px] top-3 bottom-3 w-0.5 rounded-full" aria-hidden="true" />
-            {heritage.map((h, i) => (
-              <li
-                key={h.title}
-                className={`relative pl-10 pb-8 last:pb-0 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                style={{ transitionDelay: `${i * 70}ms` }}
-              >
-                <span className="ka-timeline-dot absolute left-0 top-1.5 w-6 h-6 rounded-full" aria-hidden="true" />
-                <div className={`p-5 rounded-2xl ${cardBg} backdrop-blur-sm transition-all hover:scale-[1.02]`}>
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#e41e20] text-white text-[11px] font-bold uppercase tracking-wider">{h.era}</span>
-                    <h3 className="font-bold text-lg">{h.title}</h3>
-                    <span className={`text-sm ${textSecondary}`}>{h.native}</span>
+            {heritage.map((h, i) => {
+              const isOpen = openStop === h.title;
+              return (
+                <li
+                  key={h.title}
+                  className={`relative pl-8 sm:pl-10 pb-6 last:pb-0 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                  style={{ transitionDelay: `${i * 70}ms` }}
+                >
+                  <span className="ka-timeline-dot absolute left-0 top-5 w-6 h-6 rounded-full" aria-hidden="true" />
+                  <div className={`rounded-2xl ${cardBg} backdrop-blur-sm overflow-hidden transition-shadow ${isOpen ? 'ring-1 ring-[#e41e20]/50 shadow-xl' : ''}`}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenStop(isOpen ? null : h.title)}
+                      aria-expanded={isOpen}
+                      aria-controls={`heritage-${h.scene}`}
+                      className={`w-full text-left p-4 sm:p-5 flex items-start justify-between gap-3 transition ${darkMode ? 'hover:bg-white/5' : 'hover:bg-black/[0.03]'}`}
+                    >
+                      <span className="block min-w-0">
+                        <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                          <span className="px-2.5 py-0.5 rounded-full bg-[#e41e20] text-white text-[11px] font-bold uppercase tracking-wider">{h.era}</span>
+                          <span className="font-bold text-lg">{h.title}</span>
+                          <span className={`text-sm ${textSecondary}`}>{h.native}</span>
+                        </span>
+                        <span className={`block text-sm mt-2 ${textSecondary}`}>{h.desc}</span>
+                        <span className={`block text-xs mt-1.5 font-semibold ${isOpen ? 'text-[#e41e20]' : 'text-gray-400'}`}>
+                          {isOpen ? 'Close story' : 'Open story'}
+                        </span>
+                      </span>
+                      <ChevronDown
+                        size={18}
+                        className={`shrink-0 mt-1 transition-transform duration-300 ${isOpen ? 'rotate-180 text-[#e41e20]' : 'text-gray-400'}`}
+                      />
+                    </button>
+
+                    <div
+                      id={`heritage-${h.scene}`}
+                      className={`grid transition-all duration-500 ease-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+                    >
+                      <div className="overflow-hidden">
+                        <div className="px-4 sm:px-5 pb-5">
+                          <div className={`relative aspect-[16/10] w-full rounded-xl overflow-hidden ${darkMode ? 'bg-white/10' : 'bg-gray-100'}`}>
+                            <Image src={h.image} alt={h.alt} fill sizes="(max-width: 768px) 100vw, 640px" className="object-cover" />
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent p-3">
+                              <span className="text-white text-xs font-semibold drop-shadow">{h.title} · {h.era}</span>
+                            </div>
+                          </div>
+                          <p className={`text-[10px] mt-1.5 ${textSecondary}`}>{h.credit}</p>
+
+                          <div className="mt-4 space-y-3">
+                            {h.story.map((para, pi) => (
+                              <p key={pi} className={`text-sm leading-relaxed ${textSecondary}`}>{para}</p>
+                            ))}
+                          </div>
+
+                          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {h.facts.map(f => (
+                              <div key={f.label} className={`rounded-xl p-3 border ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
+                                <div className="text-[10px] uppercase tracking-wide text-gray-400">{f.label}</div>
+                                <div className={`text-xs font-semibold mt-0.5 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{f.value}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <p className={`text-sm mt-2 ${textSecondary}`}>{h.desc}</p>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ol>
         </div>
       </section>
@@ -295,14 +353,17 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className={`relative z-10 py-8 ${darkMode ? 'border-white/10' : 'border-gray-200 bg-white/60 backdrop-blur-sm'} border-t`}>
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
+          <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="flex items-center gap-2 text-left">
             <div className="w-7 h-7 rounded-lg ka-gradient-bg flex items-center justify-center text-white font-bold text-xs">NS</div>
             <div className="flex flex-col">
               <span className={`font-bold leading-tight ${textSecondary}`}>ನಮ್ಮ ಸಮಸ್ಯೆ</span>
               <span className="text-[9px] font-semibold uppercase tracking-[0.18em] opacity-60 leading-tight">Namma Samasye</span>
             </div>
+          </button>
+          <div className={`text-sm ${textSecondary}`}>
+            Made for Bengaluru with ❤️ ·{' '}
+            <button onClick={() => router.push('/')} className="font-semibold underline underline-offset-2 hover:text-primary transition">Home</button>
           </div>
-          <div className={`text-sm ${textSecondary}`}>Made for Bengaluru with ❤️</div>
         </div>
       </footer>
 

@@ -6,7 +6,7 @@ import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
 import { Language, Incident } from '@/types';
 import { getAllIncidents } from '@/services/incident';
-import { ArrowLeft, MessageSquare, Search } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Search, Home } from 'lucide-react';
 import { getStatusBadgeClass } from '@/lib/status-colors';
 
 export default function TrackPage() {
@@ -45,6 +45,10 @@ export default function TrackPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold text-gray-900">{t('track.title', lang)}</h1>
+          <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
+            <Home size={16} />
+            <span className="text-xs font-medium">Home</span>
+          </button>
         </div>
       </header>
 
@@ -73,7 +77,7 @@ export default function TrackPage() {
             <div className="text-center py-8 text-gray-400 text-sm">Loading...</div>
           ) : incidents.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-              <div className="text-4xl mb-3">📋</div>
+              <div className="text-4xl mb-3">ðŸ“‹</div>
               <p className="text-gray-500 text-sm">{t('track.no_incidents', lang)}</p>
               <button onClick={() => router.push('/report')} className="mt-4 px-6 py-2 rounded-xl gradient-bg text-white text-sm font-medium hover:opacity-90 transition">
                 {t('track.report_something', lang)}

@@ -17,7 +17,7 @@ const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
   ssr: false,
   loading: () => <div className="h-[420px] rounded-2xl bg-gray-100 animate-pulse" />,
 });
-import { Send, Mic, MicOff, ArrowLeft, Globe, ChevronRight, MapPin, X, Square, Link2, Plus, ShieldCheck, Paperclip, Check } from 'lucide-react';
+import { Send, Mic, MicOff, ArrowLeft, Globe, ChevronRight, MapPin, X, Square, Link2, Plus, ShieldCheck, Paperclip, Check, Home } from 'lucide-react';
 
 type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'review' | 'safety_review' | 'submitted';
 
@@ -29,42 +29,42 @@ interface ChatMessage {
 }
 
 const categoryButtons = [
-  { id: 'traffic_accident', icon: '🚗', label: 'Traffic / Accident' },
-  { id: 'traffic_pothole', icon: '🕳️', label: 'Pothole / Road Damage' },
-  { id: 'civic_garbage', icon: '🗑️', label: 'Garbage' },
-  { id: 'traffic_parking', icon: '🅿️', label: 'Illegal Parking' },
-  { id: 'civic_streetlight', icon: '💡', label: 'Streetlight' },
-  { id: 'civic_footpath', icon: '🚶', label: 'Footpath Issue' },
-  { id: 'civic_drainage', icon: '🚰', label: 'Drainage / Water Logging' },
-  { id: 'civic_parks', icon: '🌳', label: 'Parks & Gardens' },
-  { id: 'civic_water_supply', icon: '💧', label: 'Water Supply' },
-  { id: 'civic_stray_animals', icon: '🐕', label: 'Stray Animals' },
-  { id: 'traffic_interaction', icon: '👮', label: 'Police / Traffic Interaction' },
-  { id: 'civic_sense', icon: '🚨', label: 'Civic Sense / Violations' },
-  { id: 'bribes', icon: '💰', label: 'Bribes' },
-  { id: 'safety_harassment', icon: '🛡️', label: 'Safety / Harassment' },
-  { id: 'cybercrime', icon: '💻', label: 'Cybercrime' },
-  { id: 'housing_tenant', icon: '🏠', label: 'Tenant / Landlord' },
-  { id: 'env_noise', icon: '🔊', label: 'Noise Pollution' },
-  { id: 'util_power', icon: '⚡', label: 'Power Outage' },
-  { id: 'access_language', icon: '🌐', label: 'Language Barrier' },
-  { id: 'govt_service', icon: '📄', label: 'Government Service' },
-  { id: 'something_else', icon: '❓', label: 'Something Else' },
+  { id: 'traffic_accident', icon: 'ðŸš—', label: 'Traffic / Accident' },
+  { id: 'traffic_pothole', icon: 'ðŸ•³ï¸', label: 'Pothole / Road Damage' },
+  { id: 'civic_garbage', icon: 'ðŸ—‘ï¸', label: 'Garbage' },
+  { id: 'traffic_parking', icon: 'ðŸ…¿ï¸', label: 'Illegal Parking' },
+  { id: 'civic_streetlight', icon: 'ðŸ’¡', label: 'Streetlight' },
+  { id: 'civic_footpath', icon: 'ðŸš¶', label: 'Footpath Issue' },
+  { id: 'civic_drainage', icon: 'ðŸš°', label: 'Drainage / Water Logging' },
+  { id: 'civic_parks', icon: 'ðŸŒ³', label: 'Parks & Gardens' },
+  { id: 'civic_water_supply', icon: 'ðŸ’§', label: 'Water Supply' },
+  { id: 'civic_stray_animals', icon: 'ðŸ•', label: 'Stray Animals' },
+  { id: 'traffic_interaction', icon: 'ðŸ‘®', label: 'Police / Traffic Interaction' },
+  { id: 'civic_sense', icon: 'ðŸš¨', label: 'Civic Sense / Violations' },
+  { id: 'bribes', icon: 'ðŸ’°', label: 'Bribes' },
+  { id: 'safety_harassment', icon: 'ðŸ›¡ï¸', label: 'Safety / Harassment' },
+  { id: 'cybercrime', icon: 'ðŸ’»', label: 'Cybercrime' },
+  { id: 'housing_tenant', icon: 'ðŸ ', label: 'Tenant / Landlord' },
+  { id: 'env_noise', icon: 'ðŸ”Š', label: 'Noise Pollution' },
+  { id: 'util_power', icon: 'âš¡', label: 'Power Outage' },
+  { id: 'access_language', icon: 'ðŸŒ', label: 'Language Barrier' },
+  { id: 'govt_service', icon: 'ðŸ“„', label: 'Government Service' },
+  { id: 'something_else', icon: 'â“', label: 'Something Else' },
 ];
 
 const supportedPlatforms = [
-  { name: 'Google Drive', icon: '📁' },
-  { name: 'YouTube', icon: '🎥' },
-  { name: 'Imgur', icon: '📷' },
-  { name: 'Dropbox', icon: '🪣' },
-  { name: 'OneDrive', icon: '☁️' },
-  { name: 'MediaFire', icon: '🔥' },
+  { name: 'Google Drive', icon: 'ðŸ“' },
+  { name: 'YouTube', icon: 'ðŸŽ¥' },
+  { name: 'Imgur', icon: 'ðŸ“·' },
+  { name: 'Dropbox', icon: 'ðŸª£' },
+  { name: 'OneDrive', icon: 'â˜ï¸' },
+  { name: 'MediaFire', icon: 'ðŸ”¥' },
 ];
 
 const VOICE_LABELS: Record<string, string> = {
-  kn: 'ಕನ್ನಡ',
-  hi: 'हिन्दी',
-  te: 'తెలుగు',
+  kn: 'à²•à²¨à³à²¨à²¡',
+  hi: 'à¤¹à¤¿à¤¨à¥à¤¦à¥€',
+  te: 'à°¤à±†à°²à±à°—à±',
   en: 'English',
 };
 
@@ -245,7 +245,7 @@ export default function ReportPage() {
       'yes', 'yeah', 'yep', 'yup', 'sure', 'ok', 'okay',
       'haan', 'ha', 'han', 'haan ji', 'ha ji', 'ji haan', 'haanji',
       'houdu', 'avunu', 'geniga',
-        'ಹೌದು', 'हाँ', 'हां', 'हूँ', 'हूं', 'जी हाँ', 'అవును', 'ఔను',
+        'à²¹à³Œà²¦à³', 'à¤¹à¤¾à¤', 'à¤¹à¤¾à¤‚', 'à¤¹à¥‚à¤', 'à¤¹à¥‚à¤‚', 'à¤œà¥€ à¤¹à¤¾à¤', 'à°…à°µà±à°¨à±', 'à°”à°¨à±',
     ].includes(lower);
   };
 
@@ -353,14 +353,14 @@ export default function ReportPage() {
     setScenarioMatches(matches);
     if (matches.length > 0 && matches[0].confidence > 50) {
       let response = `${t('bot.scenario_match', replyLang)}:\n\n`;
-      matches.forEach((m, i) => { response += `${i + 1}. ${m.scenarioName} — ${m.confidence}%\n   ${m.reason}\n\n`; });
+      matches.forEach((m, i) => { response += `${i + 1}. ${m.scenarioName} â€” ${m.confidence}%\n   ${m.reason}\n\n`; });
       response += `\n${t('bot.disclaimer', replyLang)}\n\n${t('bot.select_scenario', replyLang)}`;
       addBotMessage(response);
       setStep('scenario_match');
       return;
     }
 
-    // Keyword match was too weak — the trained matcher also understands
+    // Keyword match was too weak â€” the trained matcher also understands
     // transliterated Hindi/Kannada and mixed-language phrasing, so give it a
     // shot before dropping the citizen back onto the raw category grid.
     const trained = matchTrainedScenario(text);
@@ -562,18 +562,26 @@ export default function ReportPage() {
       <header className="sticky top-0 z-50 glass border-b border-gray-200">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/')} className="text-gray-500 hover:text-gray-700"><ArrowLeft size={20} /></button>
-            <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center text-white font-bold text-xs">NS</div>
-            <span className="font-semibold text-gray-900">Namma Samasye</span>
+            <button onClick={() => router.push('/')} className="text-gray-500 hover:text-gray-700" aria-label="Back to homepage"><ArrowLeft size={20} /></button>
+            <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center text-white font-bold text-xs">NS</div>
+              <span className="font-semibold text-gray-900">Namma Samasye</span>
+            </button>
           </div>
-          <button onClick={() => setShowLangSwitch(!showLangSwitch)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"><Globe size={18} /></button>
+          <div className="flex items-center gap-1">
+            <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition">
+              <Home size={16} />
+              <span className="text-xs font-medium">Home</span>
+            </button>
+            <button onClick={() => setShowLangSwitch(!showLangSwitch)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"><Globe size={18} /></button>
+          </div>
         </div>
         {showLangSwitch && (
           <div className="border-t border-gray-100 px-4 py-2 flex gap-2 bg-white">
             {(['kn', 'en', 'hi', 'te'] as Language[]).map(l => (
               <button key={l} onClick={() => { setLang(l); setStoredLanguage(l); setVoiceOverride(speechLocale(l)); setShowLangSwitch(false); }}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition ${lang === l ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                {l === 'kn' ? 'ಕನ್ನಡ' : l === 'hi' ? 'हिन्दी' : l === 'te' ? 'తెలుగు' : 'English'}
+                {l === 'kn' ? 'à²•à²¨à³à²¨à²¡' : l === 'hi' ? 'à¤¹à¤¿à¤¨à¥à¤¦à¥€' : l === 'te' ? 'à°¤à±†à°²à±à°—à±' : 'English'}
               </button>
             ))}
           </div>
@@ -590,7 +598,7 @@ export default function ReportPage() {
           </div>
         ))}
 
-        {/* SELECT type options — show clickable buttons */}
+        {/* SELECT type options â€” show clickable buttons */}
         {step === 'workflow' && currentQuestion?.type === 'select' && currentQuestion.options && !showCustomInput && (
           <div className="grid grid-cols-2 gap-2">
             {currentQuestion.options.map(opt => (
@@ -612,7 +620,7 @@ export default function ReportPage() {
           </div>
         )}
 
-        {/* CUSTOM INPUT — when Other is selected */}
+        {/* CUSTOM INPUT â€” when Other is selected */}
         {step === 'workflow' && currentQuestion?.type === 'select' && showCustomInput && (
           <div className="flex gap-2">
             <input
@@ -649,12 +657,12 @@ export default function ReportPage() {
             </button>
             <button onClick={() => { setShowCustomInput(false); setCustomInputValue(''); }}
               className="px-3 py-3 rounded-xl bg-gray-100 text-gray-500 text-sm hover:bg-gray-200 transition">
-              ← Back
+              â† Back
             </button>
           </div>
         )}
 
-        {/* BOOLEAN type — show Yes/No buttons */}
+        {/* BOOLEAN type â€” show Yes/No buttons */}
         {step === 'workflow' && currentQuestion?.type === 'boolean' && (
           <div className="flex gap-2">
             <button onClick={() => {
@@ -686,7 +694,7 @@ export default function ReportPage() {
           </div>
         )}
 
-        {/* Location picker — map with search, current location and pin drop */}
+        {/* Location picker â€” map with search, current location and pin drop */}
         {showLocationPicker && step === 'workflow' && (
           <div className="mt-2">
             <LocationPicker
@@ -698,19 +706,19 @@ export default function ReportPage() {
           </div>
         )}
 
-        {/* INLINE Evidence Form — appears right after evidence question */}
+        {/* INLINE Evidence Form â€” appears right after evidence question */}
         {showEvidenceForm && step === 'workflow' && (
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-lg">📎</span>
+              <span className="text-lg">ðŸ“Ž</span>
               <span className="font-bold text-amber-900 text-sm">{t('evidence.add', lang)}</span>
             </div>
 
             {/* Evidence type badges */}
             <div className="flex flex-wrap gap-2">
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">📸 Photo</span>
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">🎥 Video</span>
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">📄 Document</span>
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">ðŸ“¸ Photo</span>
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">ðŸŽ¥ Video</span>
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">ðŸ“„ Document</span>
             </div>
 
             {/* Upload from device / gallery */}
@@ -719,7 +727,7 @@ export default function ReportPage() {
                 <span className="text-sm font-semibold text-gray-800">Upload from your device</span>
               </div>
               <FileUploader attachments={attachments} onChange={setAttachments} compact />
-              <p className="text-[10px] text-gray-400 mt-1.5">JPG, PNG or WebP up to 8 MB · MP4 / WebM up to 8 MB</p>
+              <p className="text-[10px] text-gray-400 mt-1.5">JPG, PNG or WebP up to 8 MB Â· MP4 / WebM up to 8 MB</p>
             </div>
 
             {/* Link input */}
@@ -754,21 +762,21 @@ export default function ReportPage() {
 
             {/* Supported platforms */}
             <div className="bg-white rounded-xl p-2.5 border border-amber-100">
-              <p className="text-[10px] text-amber-800 font-bold mb-1.5">📌 Supported:</p>
+              <p className="text-[10px] text-amber-800 font-bold mb-1.5">ðŸ“Œ Supported:</p>
               <div className="flex flex-wrap gap-x-3 gap-y-1">
                 {supportedPlatforms.map(p => (
                   <span key={p.name} className="text-[9px] text-gray-500">{p.icon} {p.name}</span>
                 ))}
               </div>
-              <p className="text-[9px] text-red-400 mt-1">❌ LinkedIn, Facebook, Twitter, Instagram not supported</p>
+              <p className="text-[9px] text-red-400 mt-1">âŒ LinkedIn, Facebook, Twitter, Instagram not supported</p>
             </div>
 
             {/* Done button */}
             <button onClick={handleDoneEvidence}
               className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 transition">
               {(evidenceLinks.length > 0 || attachments.length > 0)
-                ? `Continue — ${evidenceLinks.length} link(s), ${attachments.length} file(s)`
-                : 'Skip — No evidence'}
+                ? `Continue â€” ${evidenceLinks.length} link(s), ${attachments.length} file(s)`
+                : 'Skip â€” No evidence'}
             </button>
           </div>
         )}
@@ -835,7 +843,7 @@ export default function ReportPage() {
                 <FileUploader attachments={attachments} onChange={setAttachments} />
               ) : (
                 <p className="text-[11px] text-gray-400">
-                  {attachments.length === 0 ? 'No files attached yet — JPG, PNG or WebP up to 8 MB.' : `${attachments.length} file(s) attached.`}
+                  {attachments.length === 0 ? 'No files attached yet â€” JPG, PNG or WebP up to 8 MB.' : `${attachments.length} file(s) attached.`}
                 </p>
               )}
             </div>
@@ -853,7 +861,7 @@ export default function ReportPage() {
           </div>
         )}
 
-        {/* SAFETY FINAL REVIEW — required before the report is submitted */}
+        {/* SAFETY FINAL REVIEW â€” required before the report is submitted */}
         {step === 'safety_review' && (
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-sm">
             <div className="flex items-center gap-2">
@@ -861,9 +869,9 @@ export default function ReportPage() {
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">{lang === 'kn' ? 'ಸುರಕ್ಷಾ ಅಂತಿಮ ಪರಿಶೀಲನೆ' : lang === 'hi' ? 'सुरक्षा अंतिम समीक्षा' : lang === 'te' ? 'భద్రతా తుది సమీక్ష' : 'Safety Final Review'}</h3>
+                <h3 className="font-bold text-gray-900">{lang === 'kn' ? 'à²¸à³à²°à²•à³à²·à²¾ à²…à²‚à²¤à²¿à²® à²ªà²°à²¿à²¶à³€à²²à²¨à³†' : lang === 'hi' ? 'à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤…à¤‚à¤¤à¤¿à¤® à¤¸à¤®à¥€à¤•à¥à¤·à¤¾' : lang === 'te' ? 'à°­à°¦à±à°°à°¤à°¾ à°¤à±à°¦à°¿ à°¸à°®à±€à°•à±à°·' : 'Safety Final Review'}</h3>
                 <p className="text-[11px] text-gray-500">
-                  {lang === 'kn' ? 'ವರದಿ ಸಲ್ಲಿಸುವ ಮೊದಲು ಕೆಳಗಿನ ಮೂರು ಪಾಯಿಂಟ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ' : lang === 'hi' ? 'रिपोर्ट भेजने से पहले तीनों बिंदुओं की जाँच करें' : lang === 'te' ? 'నివేదిక పంపే ముందు మూడు అంశాలు తనిఖీ చేయండి' : 'Check all three before your report is submitted'}
+                  {lang === 'kn' ? 'à²µà²°à²¦à²¿ à²¸à²²à³à²²à²¿à²¸à³à²µ à²®à³Šà²¦à²²à³ à²•à³†à²³à²—à²¿à²¨ à²®à³‚à²°à³ à²ªà²¾à²¯à²¿à²‚à²Ÿà³â€Œà²—à²³à²¨à³à²¨à³ à²ªà²°à²¿à²¶à³€à²²à²¿à²¸à²¿' : lang === 'hi' ? 'à¤°à¤¿à¤ªà¥‹à¤°à¥à¤Ÿ à¤­à¥‡à¤œà¤¨à¥‡ à¤¸à¥‡ à¤ªà¤¹à¤²à¥‡ à¤¤à¥€à¤¨à¥‹à¤‚ à¤¬à¤¿à¤‚à¤¦à¥à¤“à¤‚ à¤•à¥€ à¤œà¤¾à¤à¤š à¤•à¤°à¥‡à¤‚' : lang === 'te' ? 'à°¨à°¿à°µà±‡à°¦à°¿à°• à°ªà°‚à°ªà±‡ à°®à±à°‚à°¦à± à°®à±‚à°¡à± à°…à°‚à°¶à°¾à°²à± à°¤à°¨à°¿à°–à±€ à°šà±‡à°¯à°‚à°¡à°¿' : 'Check all three before your report is submitted'}
                 </p>
               </div>
             </div>
@@ -872,21 +880,21 @@ export default function ReportPage() {
               {[
                 {
                   en: 'Photos and videos do not show my personal details (Aadhaar, bank card, phone number, address).',
-                  kn: 'ಚಿತ್ರ/ವೀಡಿಯೊಗಳಲ್ಲಿ ನನ್ನ ವೈಯಕ್ತಿಕ ವಿವರಗಳಿಲ್ಲ (ಆಧಾರ್, ಬ್ಯಾಂಕ್, ಫೋನ್).',
-                  hi: 'फोटो/वीडियो में मेरी निजी जानकारी नहीं है (आधार, बैंक, फ़ोन).',
-                  te: 'ఫోటో/వీడియోలో నా వ్యక్తిగత వివరాలు లేవు (ఆధార్, బ్యాంక్, ఫోన్).',
+                  kn: 'à²šà²¿à²¤à³à²°/à²µà³€à²¡à²¿à²¯à³Šà²—à²³à²²à³à²²à²¿ à²¨à²¨à³à²¨ à²µà³ˆà²¯à²•à³à²¤à²¿à²• à²µà²¿à²µà²°à²—à²³à²¿à²²à³à²² (à²†à²§à²¾à²°à³, à²¬à³à²¯à²¾à²‚à²•à³, à²«à³‹à²¨à³).',
+                  hi: 'à¤«à¥‹à¤Ÿà¥‹/à¤µà¥€à¤¡à¤¿à¤¯à¥‹ à¤®à¥‡à¤‚ à¤®à¥‡à¤°à¥€ à¤¨à¤¿à¤œà¥€ à¤œà¤¾à¤¨à¤•à¤¾à¤°à¥€ à¤¨à¤¹à¥€à¤‚ à¤¹à¥ˆ (à¤†à¤§à¤¾à¤°, à¤¬à¥ˆà¤‚à¤•, à¤«à¤¼à¥‹à¤¨).',
+                  te: 'à°«à±‹à°Ÿà±‹/à°µà±€à°¡à°¿à°¯à±‹à°²à±‹ à°¨à°¾ à°µà±à°¯à°•à±à°¤à°¿à°—à°¤ à°µà°¿à°µà°°à°¾à°²à± à°²à±‡à°µà± (à°†à°§à°¾à°°à±, à°¬à±à°¯à°¾à°‚à°•à±, à°«à±‹à°¨à±).',
                 },
                 {
-                  en: 'This report is true to the best of my knowledge — I have not exaggerated or invented anything.',
-                  kn: 'ಈ ವರದಿ ನನಗೆ ತಿಳಿದಂತೆ ಸತ್ಯ — ನಾನು ಏನನ್ನೂ ಅತಿಶಯೋಕ್ತಿ ಮಾಡಿಲ್ಲ.',
-                  hi: 'यह रिपोर्ट मेरी जानकारी के अनुसार सच है — मैंने कुछ भी बढ़ा-चढ़ाकर या गलत नहीं लिखा।',
-                  te: 'ఈ నివేదిక నాకు తెలిసినంత వరకు నిజం — ఏదీ అతిశయోక్తి లేదా అబద్ధం కాదు.',
+                  en: 'This report is true to the best of my knowledge â€” I have not exaggerated or invented anything.',
+                  kn: 'à²ˆ à²µà²°à²¦à²¿ à²¨à²¨à²—à³† à²¤à²¿à²³à²¿à²¦à²‚à²¤à³† à²¸à²¤à³à²¯ â€” à²¨à²¾à²¨à³ à²à²¨à²¨à³à²¨à³‚ à²…à²¤à²¿à²¶à²¯à³‹à²•à³à²¤à²¿ à²®à²¾à²¡à²¿à²²à³à²².',
+                  hi: 'à¤¯à¤¹ à¤°à¤¿à¤ªà¥‹à¤°à¥à¤Ÿ à¤®à¥‡à¤°à¥€ à¤œà¤¾à¤¨à¤•à¤¾à¤°à¥€ à¤•à¥‡ à¤…à¤¨à¥à¤¸à¤¾à¤° à¤¸à¤š à¤¹à¥ˆ â€” à¤®à¥ˆà¤‚à¤¨à¥‡ à¤•à¥à¤› à¤­à¥€ à¤¬à¤¢à¤¼à¤¾-à¤šà¤¢à¤¼à¤¾à¤•à¤° à¤¯à¤¾ à¤—à¤²à¤¤ à¤¨à¤¹à¥€à¤‚ à¤²à¤¿à¤–à¤¾à¥¤',
+                  te: 'à°ˆ à°¨à°¿à°µà±‡à°¦à°¿à°• à°¨à°¾à°•à± à°¤à±†à°²à°¿à°¸à°¿à°¨à°‚à°¤ à°µà°°à°•à± à°¨à°¿à°œà°‚ â€” à°à°¦à±€ à°…à°¤à°¿à°¶à°¯à±‹à°•à±à°¤à°¿ à°²à±‡à°¦à°¾ à°…à°¬à°¦à±à°§à°‚ à°•à°¾à°¦à±.',
                 },
                 {
                   en: 'I understand the evidence I attached will be reviewed by a human moderator.',
-                  kn: 'ನಾನು ಸಂಲಗ್ಳಿಸಿದ ಸಾಕ್ಷ್ಯವನ್ನು ಮಾನವ ಪರಿಶೀಲಕರು ನೋಡುತ್ತಾರೆ ಎಂದು ತಿಳಿದಿದೆ.',
-                  hi: 'मैं समझता/समझती हूँ कि मेरा सबूत एक इंसानी मॉडरेटर देखेगा।',
-                  te: 'నేను జోడించిన ఆధారాన్ని మానవ సమీక్షకుడు చూస్తాడని అర్థం చేసుకున్నాను.',
+                  kn: 'à²¨à²¾à²¨à³ à²¸à²‚à²²à²—à³à²³à²¿à²¸à²¿à²¦ à²¸à²¾à²•à³à²·à³à²¯à²µà²¨à³à²¨à³ à²®à²¾à²¨à²µ à²ªà²°à²¿à²¶à³€à²²à²•à²°à³ à²¨à³‹à²¡à³à²¤à³à²¤à²¾à²°à³† à²Žà²‚à²¦à³ à²¤à²¿à²³à²¿à²¦à²¿à²¦à³†.',
+                  hi: 'à¤®à¥ˆà¤‚ à¤¸à¤®à¤à¤¤à¤¾/à¤¸à¤®à¤à¤¤à¥€ à¤¹à¥‚à¤ à¤•à¤¿ à¤®à¥‡à¤°à¤¾ à¤¸à¤¬à¥‚à¤¤ à¤à¤• à¤‡à¤‚à¤¸à¤¾à¤¨à¥€ à¤®à¥‰à¤¡à¤°à¥‡à¤Ÿà¤° à¤¦à¥‡à¤–à¥‡à¤—à¤¾à¥¤',
+                  te: 'à°¨à±‡à°¨à± à°œà±‹à°¡à°¿à°‚à°šà°¿à°¨ à°†à°§à°¾à°°à°¾à°¨à±à°¨à°¿ à°®à°¾à°¨à°µ à°¸à°®à±€à°•à±à°·à°•à±à°¡à± à°šà±‚à°¸à±à°¤à°¾à°¡à°¨à°¿ à°…à°°à±à°¥à°‚ à°šà±‡à°¸à±à°•à±à°¨à±à°¨à°¾à°¨à±.',
                 },
               ].map((item, i) => {
                 const label = item[lang] || item.en;
@@ -912,15 +920,15 @@ export default function ReportPage() {
 
             {isEmergencyMessage(originalText || answers.what_happened || '') && (
               <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
-                ⚠️ {t('safety.emergency', lang)}
+                âš ï¸ {t('safety.emergency', lang)}
               </div>
             )}
 
             <div className="text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-2.5">
-              {attachments.length > 0 && <div className="mb-1">📎 {attachments.length} photo/video attached</div>}
-              {evidenceLinks.length > 0 && <div className="mb-1">🔗 {evidenceLinks.length} evidence link(s)</div>}
-              {Object.keys(answers).length > 0 && <div>📝 {Object.keys(answers).length} answer(s) provided</div>}
-              {!location && <div>📍 Location not provided (optional)</div>}
+              {attachments.length > 0 && <div className="mb-1">ðŸ“Ž {attachments.length} photo/video attached</div>}
+              {evidenceLinks.length > 0 && <div className="mb-1">ðŸ”— {evidenceLinks.length} evidence link(s)</div>}
+              {Object.keys(answers).length > 0 && <div>ðŸ“ {Object.keys(answers).length} answer(s) provided</div>}
+              {!location && <div>ðŸ“ Location not provided (optional)</div>}
             </div>
 
             <div className="flex gap-2">
@@ -928,7 +936,7 @@ export default function ReportPage() {
                 onClick={() => setStep('review')}
                 className="px-4 py-3 rounded-xl border border-gray-300 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
               >
-                ← Back
+                â† Back
               </button>
               <button
                 onClick={handleSubmit}
@@ -937,8 +945,8 @@ export default function ReportPage() {
               >
                 <ShieldCheck size={17} />
                 {safetyChecked.every(Boolean)
-                  ? (lang === 'kn' ? 'ವರದಿ ಸಲ್ಲಿಸಿ' : lang === 'hi' ? 'रिपोर्ट भेजें' : lang === 'te' ? 'నివేదిక పంపండి' : 'Submit Report')
-                  : (lang === 'kn' ? 'ಮೂರೂ ಪಾಯಿಂಟ್ ಪರಿಶೀಲಿಸಿ' : lang === 'hi' ? 'तीनों जाँचें' : lang === 'te' ? 'మూడు తనిఖీ చేయండి' : 'Confirm all 3 items')}
+                  ? (lang === 'kn' ? 'à²µà²°à²¦à²¿ à²¸à²²à³à²²à²¿à²¸à²¿' : lang === 'hi' ? 'à¤°à¤¿à¤ªà¥‹à¤°à¥à¤Ÿ à¤­à¥‡à¤œà¥‡à¤‚' : lang === 'te' ? 'à°¨à°¿à°µà±‡à°¦à°¿à°• à°ªà°‚à°ªà°‚à°¡à°¿' : 'Submit Report')
+                  : (lang === 'kn' ? 'à²®à³‚à²°à³‚ à²ªà²¾à²¯à²¿à²‚à²Ÿà³ à²ªà²°à²¿à²¶à³€à²²à²¿à²¸à²¿' : lang === 'hi' ? 'à¤¤à¥€à¤¨à¥‹à¤‚ à¤œà¤¾à¤à¤šà¥‡à¤‚' : lang === 'te' ? 'à°®à±‚à°¡à± à°¤à°¨à°¿à°–à±€ à°šà±‡à°¯à°‚à°¡à°¿' : 'Confirm all 3 items')}
               </button>
             </div>
           </div>
@@ -947,7 +955,7 @@ export default function ReportPage() {
         {/* Submitted */}
         {step === 'submitted' && (
           <div className="bg-white border border-green-200 rounded-2xl p-6 text-center shadow-sm">
-            <div className="text-4xl mb-3">✅</div>
+            <div className="text-4xl mb-3">âœ…</div>
             <h3 className="font-bold text-gray-900 text-lg mb-2">{t('report.report_submitted', lang)}</h3>
             <div className="text-2xl font-mono font-bold text-primary mb-2">{incidentId}</div>
             <p className="text-sm text-gray-500 mb-4">{t('report.save_id', lang)}</p>
@@ -967,7 +975,7 @@ export default function ReportPage() {
                     <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
                     <span className="text-xs text-red-600 font-medium">{t('bot.listening', lang)}</span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-medium">
-                      🎤 {voiceLabel(listeningLocale)}
+                      ðŸŽ¤ {voiceLabel(listeningLocale)}
                     </span>
                   </div>
                   <button onClick={handleVoiceInput}
@@ -985,8 +993,8 @@ export default function ReportPage() {
 
             {step === 'workflow' && currentQuestion?.type === 'location' && (
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-[10px] text-gray-400">📍 Location is optional — geo-tagged photos show location</span>
-                <button onClick={handleSkipQuestion} className="text-[10px] text-primary hover:underline font-medium">Skip →</button>
+                <span className="text-[10px] text-gray-400">ðŸ“ Location is optional â€” geo-tagged photos show location</span>
+                <button onClick={handleSkipQuestion} className="text-[10px] text-primary hover:underline font-medium">Skip â†’</button>
               </div>
             )}
 
@@ -1003,7 +1011,7 @@ export default function ReportPage() {
                       className="max-w-full truncate text-xs px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 hover:border-primary hover:text-primary transition"
                     >
                       {s.text}
-                      <span className="ml-1.5 text-[10px] font-semibold text-gray-400">×{s.count}</span>
+                      <span className="ml-1.5 text-[10px] font-semibold text-gray-400">Ã—{s.count}</span>
                     </button>
                   ))}
                 </div>

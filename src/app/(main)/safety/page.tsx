@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Phone } from 'lucide-react';
+import { ArrowLeft, Phone, Home } from 'lucide-react';
 
 const emergencyResources = [
   { name: 'Police / Fire / Ambulance', number: '112', description: 'Immediate emergency response' },
@@ -22,13 +22,17 @@ export default function SafetyPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold text-gray-900">Safety & Emergency</h1>
+          <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
+            <Home size={16} />
+            <span className="text-xs font-medium">Home</span>
+          </button>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         {/* Emergency Banner */}
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-          <div className="text-3xl mb-2">🚨</div>
+          <div className="text-3xl mb-2">ðŸš¨</div>
           <h2 className="font-bold text-red-800 text-lg mb-2">In Immediate Danger?</h2>
           <p className="text-sm text-red-700 mb-4">Call emergency services immediately.</p>
           <a href="tel:112" className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 transition">

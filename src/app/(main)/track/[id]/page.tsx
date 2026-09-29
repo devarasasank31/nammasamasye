@@ -6,7 +6,7 @@ import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
 import { Language, Incident, IncidentStatus, StatusHistory, Evidence, AdminNote } from '@/types';
 import { getAllIncidents, getStatusHistory, getIncidentEvidence, getIncidentById } from '@/services/incident';
-import { ArrowLeft, MessageSquare, Send } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Send, Home } from 'lucide-react';
 import { getStatusBadgeClass, getStatusDotClass } from '@/lib/status-colors';
 import AttachmentGallery from '@/components/AttachmentGallery';
 import dynamic from 'next/dynamic';
@@ -119,11 +119,17 @@ export default function TrackPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold text-gray-900">My Incidents</h1>
-          {hasNewNote && (
-            <span className="ml-auto flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium animate-pulse">
-              <MessageSquare size={12} /> New update
-            </span>
-          )}
+          <div className="ml-auto flex items-center gap-3">
+            {hasNewNote && (
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium animate-pulse">
+                <MessageSquare size={12} /> New update
+              </span>
+            )}
+            <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
+              <Home size={16} />
+              <span className="text-xs font-medium">Home</span>
+            </button>
+          </div>
         </div>
       </header>
 

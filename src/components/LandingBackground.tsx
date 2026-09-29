@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useEffect, useState } from 'react';
-import { heritage } from '@/lib/heritage';
+import { heritage, HeritageScene } from '@/lib/heritage';
 
 // Fixed, full-viewport backdrop that cross-fades through seven scenes of
 // Karnataka as the page is scrolled. Everything is inline SVG so nothing is
@@ -15,7 +15,7 @@ const PARTICLES = [
 ];
 
 interface SceneProps {
-  index: number;
+  scene: HeritageScene;
   tone: string;
   glow: string;
 }
@@ -236,7 +236,7 @@ function Today({ tone, glow }: { tone: string; glow: string }) {
   );
 }
 
-const Scene = memo(function Scene({ index, tone, glow }: SceneProps) {
+const Scene = memo(function Scene({ scene, tone, glow }: SceneProps) {
   return (
     <svg
       viewBox="0 0 1440 520"
@@ -246,13 +246,13 @@ const Scene = memo(function Scene({ index, tone, glow }: SceneProps) {
       aria-hidden="true"
       focusable="false"
     >
-      {index === 0 && <Badami tone={tone} />}
-      {index === 1 && <Hampi tone={tone} />}
-      {index === 2 && <MysorePalace tone={tone} />}
-      {index === 3 && <Tipu tone={tone} />}
-      {index === 4 && <Formation tone={tone} />}
-      {index === 5 && <Metro tone={tone} />}
-      {index === 6 && <Today tone={tone} glow={glow} />}
+      {scene === 'badami' && <Badami tone={tone} />}
+      {scene === 'hampi' && <Hampi tone={tone} />}
+      {scene === 'palace' && <MysorePalace tone={tone} />}
+      {scene === 'tipu' && <Tipu tone={tone} />}
+      {scene === 'formation' && <Formation tone={tone} />}
+      {scene === 'metro' && <Metro tone={tone} />}
+      {scene === 'today' && <Today tone={tone} glow={glow} />}
     </svg>
   );
 });
@@ -308,7 +308,7 @@ export default function LandingBackground({ darkMode }: { darkMode: boolean }) {
             style={{ opacity, transform: `translate3d(0, ${drift}vh, 0)` }}
           >
             <div className="absolute inset-0" style={{ background: darkMode ? stop.sky : stop.skyLight }} />
-            <Scene index={i} tone={tone} glow={stop.glow} />
+            <Scene scene={stop.scene} tone={tone} glow={stop.glow} />
             <div className="absolute inset-0 hidden md:flex items-start justify-end pr-[5vw] pt-[14vh]">
               <span
                 className="text-[11vw] font-extrabold leading-none tracking-tight select-none"

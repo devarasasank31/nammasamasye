@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Home } from 'lucide-react';
 
 export default function PrivacyPage() {
   const router = useRouter();
@@ -14,6 +14,10 @@ export default function PrivacyPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold text-gray-900">Privacy Policy</h1>
+          <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
+            <Home size={16} />
+            <span className="text-xs font-medium">Home</span>
+          </button>
         </div>
       </header>
 
