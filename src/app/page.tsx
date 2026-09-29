@@ -160,9 +160,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 pt-16 pb-24 md:pt-24 md:pb-32">
           <div className="max-w-3xl">
             <h1 className={`text-5xl md:text-7xl font-extrabold leading-tight transition-all duration-700 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <span className="ka-text-gradient bg-clip-text text-transparent">Namma</span>
-              <br />
-              <span className="ka-text-gradient-reverse bg-clip-text text-transparent">Samasye</span>
+              <span className="ka-text-gradient bg-clip-text text-transparent block">ನಮ್ಮ</span>
+              <span className="ka-text-gradient-reverse bg-clip-text text-transparent block">ಸಮಸ್ಯೆ</span>
+              <span className={`block mt-3 text-xl md:text-3xl font-bold tracking-wide ${darkMode ? 'text-white/75' : 'text-gray-800/75'}`}>Namma Samasye</span>
             </h1>
 
             <p className={`mt-4 text-xl md:text-2xl font-medium transition-all duration-700 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${textSecondary}`}>

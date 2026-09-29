@@ -3,7 +3,7 @@ import "./globals.css";
 import ClientLayout from "@/components/ClientLayout";
 
 export const metadata: Metadata = {
-  title: "Namma Samasye - ನಮ್ಮ ಸಮಸ್ಯೆ",
+  title: "ನಮ್ಮ ಸಮಸ್ಯೆ - Namma Samasye",
   description: "An anonymous citizen assistant for everyday problems in Bengaluru. Speak your language, report your problem, track your incident.",
   manifest: "/manifest.json",
   icons: { icon: "/favicon.ico" },

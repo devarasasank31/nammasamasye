@@ -23,12 +23,12 @@ function LoginForm() {
         body: JSON.stringify({ password }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({ success: false }));
 
       if (data.success) {
         window.location.href = from;
       } else {
-        setError('Invalid password');
+        setError(data.error || 'Invalid password');
       }
     } catch {
       setError('Login failed');

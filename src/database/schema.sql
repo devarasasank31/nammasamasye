@@ -245,3 +245,117 @@ CREATE TRIGGER trigger_update_incidents_updated_at
   BEFORE UPDATE ON incidents
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
+
+-- ============================================================================
+-- SECURITY — Row Level Security (the database firewall)
+-- ----------------------------------------------------------------------------
+-- Run this whole file in the Supabase SQL editor. With RLS enabled, the
+-- public anon key can no longer read or write tables it does not need, even
+-- if the key leaks out of the browser bundle.
+--
+-- Grants below match what the current code does with the anon key (citizens
+-- report anonymously, admins act through the browser). Every grant is the
+-- narrowest one that keeps the app working:
+--   * admin_users / audit_logs / notifications / community_clusters /
+--     area_statistics / ai_interpretations / language_metadata are left with
+--     no anon policy at all -> service role only.
+--   * column-level UPDATE grants mean a leaked anon key cannot rewrite
+--     history, only the one field each feature legitimately updates.
+-- When server routes switch to getSupabaseServiceClient(), drop the anon
+-- INSERT/UPDATE grants down to SELECT-only.
+-- ============================================================================
+
+-- 1. Turn RLS on for every table (deny by default)
+DO $$
+DECLARE t TEXT;
+BEGIN
+  FOR t IN
+    SELECT tablename FROM pg_tables
+    WHERE schemaname = 'public'
+      AND tablename IN (
+        'sessions','incidents','incident_answers','evidence','status_history',
+        'admin_users','admin_notes','community_clusters','official_resources',
+        'audit_logs','notifications','area_statistics','ai_interpretations',
+        'language_metadata','custom_problems'
+      )
+  LOOP
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
+    EXECUTE format('ALTER TABLE public.%I FORCE ROW LEVEL SECURITY', t);
+  END LOOP;
+END $$;
+
+-- 2. Revoke the wide default table grants Supabase gives to public roles
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
+
+-- 3. Citizens: read + file incidents (nothing else)
+GRANT SELECT, INSERT ON public.incidents TO anon;
+GRANT UPDATE (status) ON public.incidents TO anon;
+GRANT SELECT, INSERT ON public.incident_answers TO anon;
+GRANT SELECT, INSERT ON public.evidence TO anon;
+GRANT SELECT, INSERT ON public.status_history TO anon;
+GRANT SELECT, INSERT ON public.sessions TO anon;
+GRANT UPDATE (last_active) ON public.sessions TO anon;
+GRANT SELECT, INSERT ON public.admin_notes TO anon;
+GRANT SELECT ON public.official_resources TO anon;
+
+-- Shared "people also report" dictionary: everyone appends, nobody deletes
+GRANT SELECT, INSERT ON public.custom_problems TO anon;
+GRANT UPDATE (count, last_seen, language) ON public.custom_problems TO anon;
+
+-- Admin resources screen runs in the browser today (see
+-- src/app/admin/resources/page.tsx) until it is moved behind the service key.
+GRANT UPDATE, DELETE ON public.official_resources TO anon;
+
+-- 4. Policies (explicit, idempotent)
+DROP POLICY IF EXISTS "anon select incidents" ON public.incidents;
+CREATE POLICY "anon select incidents" ON public.incidents FOR SELECT USING (true);
+DROP POLICY IF EXISTS "anon insert incidents" ON public.incidents;
+CREATE POLICY "anon insert incidents" ON public.incidents FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "anon update incidents" ON public.incidents;
+CREATE POLICY "anon update incidents" ON public.incidents FOR UPDATE USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "anon select answers" ON public.incident_answers;
+CREATE POLICY "anon select answers" ON public.incident_answers FOR SELECT USING (true);
+DROP POLICY IF EXISTS "anon insert answers" ON public.incident_answers;
+CREATE POLICY "anon insert answers" ON public.incident_answers FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "anon select evidence" ON public.evidence;
+CREATE POLICY "anon select evidence" ON public.evidence FOR SELECT USING (true);
+DROP POLICY IF EXISTS "anon insert evidence" ON public.evidence;
+CREATE POLICY "anon insert evidence" ON public.evidence FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "anon select history" ON public.status_history;
+CREATE POLICY "anon select history" ON public.status_history FOR SELECT USING (true);
+DROP POLICY IF EXISTS "anon insert history" ON public.status_history;
+CREATE POLICY "anon insert history" ON public.status_history FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "anon select sessions" ON public.sessions;
+CREATE POLICY "anon select sessions" ON public.sessions FOR SELECT USING (true);
+DROP POLICY IF EXISTS "anon insert sessions" ON public.sessions;
+CREATE POLICY "anon insert sessions" ON public.sessions FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "anon update sessions" ON public.sessions;
+CREATE POLICY "anon update sessions" ON public.sessions FOR UPDATE USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "anon select notes" ON public.admin_notes;
+CREATE POLICY "anon select notes" ON public.admin_notes FOR SELECT USING (true);
+DROP POLICY IF EXISTS "anon insert notes" ON public.admin_notes;
+CREATE POLICY "anon insert notes" ON public.admin_notes FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "anon select resources" ON public.official_resources;
+CREATE POLICY "anon select resources" ON public.official_resources FOR SELECT USING (true);
+DROP POLICY IF EXISTS "anon write resources" ON public.official_resources;
+CREATE POLICY "anon write resources" ON public.official_resources FOR UPDATE USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "anon delete resources" ON public.official_resources;
+CREATE POLICY "anon delete resources" ON public.official_resources FOR DELETE USING (true);
+
+DROP POLICY IF EXISTS "anon select custom problems" ON public.custom_problems;
+CREATE POLICY "anon select custom problems" ON public.custom_problems FOR SELECT USING (true);
+DROP POLICY IF EXISTS "anon insert custom problems" ON public.custom_problems;
+CREATE POLICY "anon insert custom problems" ON public.custom_problems FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "anon update custom problems" ON public.custom_problems;
+CREATE POLICY "anon update custom problems" ON public.custom_problems FOR UPDATE USING (true) WITH CHECK (true);
+
+-- Everything with no policy above (admin_users, audit_logs, notifications,
+-- community_clusters, area_statistics, ai_interpretations, language_metadata)
+-- stays reachable only through the service role key, which bypasses RLS.
