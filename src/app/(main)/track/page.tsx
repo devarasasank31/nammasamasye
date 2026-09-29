@@ -77,7 +77,7 @@ export default function TrackPage() {
             <div className="text-center py-8 text-gray-400 text-sm">Loading...</div>
           ) : incidents.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-              <div className="text-4xl mb-3">ðŸ“‹</div>
+              <div className="text-4xl mb-3">📋</div>
               <p className="text-gray-500 text-sm">{t('track.no_incidents', lang)}</p>
               <button onClick={() => router.push('/report')} className="mt-4 px-6 py-2 rounded-xl gradient-bg text-white text-sm font-medium hover:opacity-90 transition">
                 {t('track.report_something', lang)}

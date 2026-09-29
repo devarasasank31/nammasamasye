@@ -32,7 +32,7 @@ export default function SafetyPage() {
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         {/* Emergency Banner */}
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-          <div className="text-3xl mb-2">ðŸš¨</div>
+          <div className="text-3xl mb-2">🚨</div>
           <h2 className="font-bold text-red-800 text-lg mb-2">In Immediate Danger?</h2>
           <p className="text-sm text-red-700 mb-4">Call emergency services immediately.</p>
           <a href="tel:112" className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 transition">
