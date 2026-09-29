@@ -178,13 +178,20 @@ export default function ReportPage() {
     setTimeout(() => setStep('category_select'), 500);
   }, [addBotMessage]);
 
+  const didInitRef = useRef(false);
+
   useEffect(() => {
-    const init = async () => {
-      await Promise.resolve();
-      setLang(getStoredLanguage());
-      await initSession();
-    };
-    void init();
+    // Guard against React StrictMode's double mount in dev: session + greeting
+    // must be created exactly once, otherwise the bot greets twice.
+    if (!didInitRef.current) {
+      didInitRef.current = true;
+      const init = async () => {
+        await Promise.resolve();
+        setLang(getStoredLanguage());
+        await initSession();
+      };
+      void init();
+    }
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.onend = null;
