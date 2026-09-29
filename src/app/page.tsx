@@ -19,29 +19,68 @@ const languages: { code: Language; label: string; native: string }[] = [
   { code: 'te', label: 'Telugu', native: 'తెలుగు' },
 ];
 
+type Localized = { en: string; kn?: string; hi?: string; te?: string };
+
+function L(v: Localized, lang: Language): string {
+  if (lang === 'kn' && v.kn) return v.kn;
+  if (lang === 'hi' && v.hi) return v.hi;
+  if (lang === 'te' && v.te) return v.te;
+  return v.en;
+}
+
 const features = [
-  { icon: Globe, title: 'Speak Your Language', desc: 'Kannada, English, Hindi, Telugu', color: '#e41e20', dark: false },
-  { icon: Shield, title: '100% Anonymous', desc: 'No login, no phone, no tracking', color: '#ffce00', dark: true },
-  { icon: Mic, title: 'Voice + Text', desc: 'Talk or type naturally', color: '#1a936f', dark: false },
-  { icon: Sparkles, title: 'AI-Powered', desc: 'Smart bot identifies your problem', color: '#e41e20', dark: false },
-  { icon: Paperclip, title: 'Evidence Support', desc: 'Attach photos, videos, docs', color: '#8b5cf6', dark: false },
-  { icon: TrendingUp, title: 'Track Progress', desc: 'Real-time status updates', color: '#ffce00', dark: true },
+  {
+    icon: Globe,
+    title: { en: 'Speak Your Language', kn: 'ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಮಾತನಾಡಿ', hi: 'अपनी भाषा में बोलें', te: 'మీ భాషలో మాట్లాడండి' },
+    desc: { en: 'Kannada, English, Hindi, Telugu', kn: 'ಕನ್ನಡ, ಇಂಗ್ಲಿಷ್, ಹಿಂದಿ, ತೆಲುಗು', hi: 'कन्नड़, अंग्रेज़ी, हिन्दी, तेलुगु', te: 'కన్నడ, ఇంగ్లీష్, హిందీ, తెలుగు' },
+    color: '#e41e20', dark: false,
+  },
+  {
+    icon: Shield,
+    title: { en: '100% Anonymous', kn: '100% ಅನಾಮಧ್ಯ', hi: '100% गुमनाम', te: '100% అనామకం' },
+    desc: { en: 'No login, no phone, no tracking', kn: 'ಲಾಗಿನ್ ಇಲ್ಲ, ಫೋನ್ ಇಲ್ಲ, ಟ್ರ್ಯಾಕಿಂಗ್ ಇಲ್ಲ', hi: 'न लॉगिन, न फ़ोन, न ट्रैकिंग', te: 'లాగిన్ లేదు, ఫోన్ లేదు, ట్రాకింగ్ లేదు' },
+    color: '#ffce00', dark: true,
+  },
+  {
+    icon: Mic,
+    title: { en: 'Voice + Text', kn: 'ಧ್ವನಿ + ಪಠ್ಯ', hi: 'वॉइस + टेक्स्ट', te: 'వాయిస్ + టెక్స్ట్' },
+    desc: { en: 'Talk or type naturally', kn: 'ಸಹಜವಾಗಿ ಮಾತನಾಡಿ ಅಥವಾ ಟೈಪ್ ಮಾಡಿ', hi: 'स्वाभाविक रूप से बोलें या टाइप करें', te: 'సహజంగా మాట్లాడండి లేదా టైప్ చేయండి' },
+    color: '#1a936f', dark: false,
+  },
+  {
+    icon: Sparkles,
+    title: { en: 'AI-Powered', kn: 'AI ಚಾಲಿತ', hi: 'AI-संचालित', te: 'AI-ఆధారిత' },
+    desc: { en: 'Smart bot identifies your problem', kn: 'ಸ್ಮಾರ್ಟ್ ಬಾಟ್ ನಿಮ್ಮ ಸಮಸ್ಯೆ ಗುರುತಿಸುತ್ತದೆ', hi: 'स्मार्ट बॉट आपकी समस्या पहचानता है', te: 'స్మార్ట్ బాట్ మీ సమస్యను గుర్తిస్తుంది' },
+    color: '#e41e20', dark: false,
+  },
+  {
+    icon: Paperclip,
+    title: { en: 'Evidence Support', kn: 'ಸಾಕ್ಷ್ಯ ಬೆಂಬಲ', hi: 'सबूत समर्थन', te: 'సాక్ష్య మద్దతు' },
+    desc: { en: 'Attach photos, videos, docs', kn: 'ಫೋಟೋ, ವೀಡಿಯೋ, ಡಾಕ್ಸ್ ಸೇರಿಸಿ', hi: 'फ़ोटो, वीडियो, दस्तावेज़ जोड़ें', te: 'ఫోటోలు, వీడియోలు, పత్రాలు జోడించండి' },
+    color: '#8b5cf6', dark: false,
+  },
+  {
+    icon: TrendingUp,
+    title: { en: 'Track Progress', kn: 'ಪ್ರಗತಿ ಟ್ರ್ಯಾಕ್', hi: 'प्रगति ट्रैक करें', te: 'పురోగతి ట్రాక్' },
+    desc: { en: 'Real-time status updates', kn: 'ನೈಜ ಸಮಯದ ಸ್ಥಿತಿ ನವೀಕರಣಗಳು', hi: 'रीयल-टाइम स्टेटस अपडेट', te: 'రియల్-టైమ్ స్థితి నవీకరణలు' },
+    color: '#ffce00', dark: true,
+  },
 ];
 
 const categories = [
-  { icon: '🚗', label: 'Traffic' },
-  { icon: '🕳️', label: 'Potholes' },
-  { icon: '🗑️', label: 'Garbage' },
-  { icon: '💡', label: 'Streetlights' },
-  { icon: '🚰', label: 'Drainage' },
-  { icon: '💧', label: 'Water' },
-  { icon: '👮', label: 'Police' },
-  { icon: '🚨', label: 'Civic Sense' },
-  { icon: '💰', label: 'Bribes' },
-  { icon: '🛡️', label: 'Safety' },
-  { icon: '💻', label: 'Cybercrime' },
-  { icon: '⚡', label: 'Power' },
-  { icon: '📄', label: 'Govt Service' },
+  { icon: '🚗', label: { en: 'Traffic', kn: 'ಸಂಚಾರ', hi: 'ट्रैफिक', te: 'ట్రాఫిక్' } },
+  { icon: '🕳️', label: { en: 'Potholes', kn: 'ಗುಂಡಿಗಳು', hi: 'गड्ढे', te: 'గుంతలు' } },
+  { icon: '🗑️', label: { en: 'Garbage', kn: 'ಕಸ', hi: 'कचरा', te: 'చెత్త' } },
+  { icon: '💡', label: { en: 'Streetlights', kn: 'ಬೀದಿ ದೀಪಗಳು', hi: 'स्ट्रीटलाइट', te: 'స్ట్రీట్ లైట్లు' } },
+  { icon: '🚰', label: { en: 'Drainage', kn: 'ಚರಂಡಿ', hi: 'नाली', te: 'డ్రైనేజీ' } },
+  { icon: '💧', label: { en: 'Water', kn: 'ನೀರು', hi: 'पानी', te: 'నీరు' } },
+  { icon: '👮', label: { en: 'Police', kn: 'ಪೊಲೀಸ್', hi: 'पुलिस', te: 'పోలీసు' } },
+  { icon: '🚨', label: { en: 'Civic Sense', kn: 'ಸಿವಿಕ್ ಸೆನ್ಸ್', hi: 'सिविक सेंस', te: 'సివిక్ సెన్స్' } },
+  { icon: '💰', label: { en: 'Bribes', kn: 'ಲಂಚ', hi: 'रिश्वत', te: 'లంచం' } },
+  { icon: '🛡️', label: { en: 'Safety', kn: 'ಸುರಕ್ಷತೆ', hi: 'सुरक्षा', te: 'భద్రత' } },
+  { icon: '💻', label: { en: 'Cybercrime', kn: 'ಸೈಬರ್ ಅಪರಾಧ', hi: 'साइबर अपराध', te: 'సైబర్ నేరం' } },
+  { icon: '⚡', label: { en: 'Power', kn: 'ವಿದ್ಯುತ್', hi: 'बिजली', te: 'కరెంటు' } },
+  { icon: '📄', label: { en: 'Govt Service', kn: 'ಸರ್ಕಾರಿ ಸೇವೆ', hi: 'सरकारी सेवा', te: 'ప్రభుత్వ సేవ' } },
 ];
 
 export default function LandingPage() {
@@ -132,8 +171,8 @@ export default function LandingPage() {
             <button onClick={toggleTheme} title={themeLabel} aria-label={themeLabel} className="p-2 rounded-lg hover:bg-white/10 transition">
               {themeIcon}
             </button>
-            <a href="/privacy" className="hover:text-primary transition">Privacy</a>
-            <a href="/safety" className="hover:text-primary transition">Safety</a>
+            <a href="/privacy" className="hover:text-primary transition">{t('nav.privacy', lang)}</a>
+            <a href="/safety" className="hover:text-primary transition">{t('nav.safety', lang)}</a>
           </div>
           <div className="flex items-center gap-2 md:hidden">
             <button onClick={toggleTheme} title={themeLabel} aria-label={themeLabel} className="p-2 rounded-lg hover:bg-white/10 transition">
@@ -145,12 +184,12 @@ export default function LandingPage() {
           </div>
         </div>
         {mobileMenuOpen && (
-          <div className={`md:hidden border-t ${darkMode ? 'border-white/10 bg-gray-900/90' : 'border-gray-200 bg-white/90'} backdrop-blur-xl px-4 py-4 space-y-3`}>
+          <div className={`md:hidden border-t ${darkMode ? 'border-white/10 bg-gray-900/90' : 'bg-white/90'} backdrop-blur-xl px-4 py-4 space-y-3`}>
             <button onClick={() => { setShowLangModal(true); setMobileMenuOpen(false); }} className="block w-full text-left py-2">
-              <Globe size={16} className="inline mr-2" />Language
+              <Globe size={16} className="inline mr-2" />{t('nav.language', lang)}
             </button>
-            <a href="/privacy" className="block py-2">Privacy</a>
-            <a href="/safety" className="block py-2">Safety</a>
+            <a href="/privacy" className="block py-2">{t('nav.privacy', lang)}</a>
+            <a href="/safety" className="block py-2">{t('nav.safety', lang)}</a>
           </div>
         )}
       </nav>
@@ -212,8 +251,8 @@ export default function LandingPage() {
       <section className="relative z-10 py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Why Namma Samasye?</h2>
-            <p className={textSecondary}>Built for Bengaluru. Built for you.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">{t('landing.why_title', lang)}</h2>
+            <p className={textSecondary}>{t('landing.why_subtitle', lang)}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((f, i) => (
@@ -221,8 +260,8 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-lg" style={{ background: `linear-gradient(135deg, ${f.color}, ${f.color}88)` }}>
                   <f.icon size={24} className={f.dark ? 'text-gray-900' : 'text-white'} />
                 </div>
-                <h3 className="font-bold text-lg mb-2">{f.title}</h3>
-                <p className={`text-sm ${textSecondary}`}>{f.desc}</p>
+                <h3 className="font-bold text-lg mb-2">{L(f.title, lang)}</h3>
+                <p className={`text-sm ${textSecondary}`}>{L(f.desc, lang)}</p>
               </div>
             ))}
           </div>
@@ -233,15 +272,15 @@ export default function LandingPage() {
       <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-white/35'}`}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Report Anything</h2>
-            <p className={textSecondary}>20+ categories — from potholes to cybercrime</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">{t('landing.categories_title', lang)}</h2>
+            <p className={textSecondary}>{t('landing.categories_subtitle', lang)}</p>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
             {categories.map((c, i) => (
               <button key={i} onClick={() => { setStoredLanguage(lang); router.push('/report'); }}
                 className={`group flex flex-col items-center p-4 rounded-2xl ${cardBg} hover:scale-105 transition-all cursor-pointer`}>
                 <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">{c.icon}</span>
-                <span className={`text-xs font-medium ${textSecondary}`}>{c.label}</span>
+                <span className={`text-xs font-medium ${textSecondary}`}>{L(c.label, lang)}</span>
               </button>
             ))}
           </div>
@@ -252,11 +291,11 @@ export default function LandingPage() {
       <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-white/35'}`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-3">From Badami to Bengaluru</h2>
-            <p className="text-lg font-semibold text-[#e41e20]">ಬಾದಾಮಿಯಿಂದ ಬೆಂಗಳೂರಿನವರೆಗೆ</p>
-            <p className={`mt-2 ${textSecondary}`}>Seven stops that made the state this city stands in.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-3">{t('landing.heritage_title', lang)}</h2>
+            {lang !== 'kn' && <p className="text-lg font-semibold text-[#e41e20]">ಬಾದಾಮಿಯಿಂದ ಬೆಂಗಳೂರಿನವರೆಗೆ</p>}
+            <p className={`mt-2 ${textSecondary}`}>{t('landing.heritage_subtitle', lang)}</p>
           </div>
-          <p className={`text-center text-sm mb-6 ${textSecondary}`}>Tap a stop to open its story</p>
+          <p className={`text-center text-sm mb-6 ${textSecondary}`}>{t('landing.tap_story', lang)}</p>
           <ol className="relative">
             <span className="ka-timeline-rail absolute left-[11px] top-3 bottom-3 w-0.5 rounded-full" aria-hidden="true" />
             {heritage.map((h, i) => {
@@ -284,7 +323,7 @@ export default function LandingPage() {
                         </span>
                         <span className={`block text-sm mt-2 ${textSecondary}`}>{h.desc}</span>
                         <span className={`block text-xs mt-1.5 font-semibold ${isOpen ? 'text-[#e41e20]' : 'text-gray-400'}`}>
-                          {isOpen ? 'Close story' : 'Open story'}
+                          {isOpen ? t('landing.close_story', lang) : t('landing.open_story', lang)}
                         </span>
                       </span>
                       <ChevronDown
@@ -336,15 +375,15 @@ export default function LandingPage() {
       <section className="relative z-10 py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className={`p-8 md:p-12 rounded-3xl ka-cta-bg ${darkMode ? 'border border-white/10' : 'border border-gray-200'}`}>
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Ready to make a change?</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">{t('landing.cta_title', lang)}</h2>
             <p className={`mb-8 max-w-xl mx-auto ${textSecondary}`}>
-              Your voice matters. Report an issue, track its progress, and help build a better Bengaluru.
+              {t('landing.cta_desc', lang)}
             </p>
             <button
               onClick={() => { setStoredLanguage(lang); router.push('/report'); }}
               className="ka-gradient-bg text-white px-10 py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-lg shadow-[#e41e20]/30 hover:shadow-xl hover:shadow-[#e41e20]/40 inline-flex items-center gap-2"
             >
-              Start Reporting <ArrowRight size={20} />
+              {t('landing.start_reporting', lang)} <ArrowRight size={20} />
             </button>
           </div>
         </div>
@@ -361,8 +400,8 @@ export default function LandingPage() {
             </div>
           </button>
           <div className={`text-sm ${textSecondary}`}>
-            Made for Bengaluru with ❤️ ·{' '}
-            <button onClick={() => router.push('/')} className="font-semibold underline underline-offset-2 hover:text-primary transition">Home</button>
+            {t('landing.made_for', lang)} ·{' '}
+            <button onClick={() => router.push('/')} className="font-semibold underline underline-offset-2 hover:text-primary transition">{t('nav.home', lang)}</button>
           </div>
         </div>
       </footer>
@@ -371,7 +410,7 @@ export default function LandingPage() {
       {showLangModal && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowLangModal(false)}>
           <div className={`${darkMode ? 'bg-gray-900 border-white/20' : 'bg-white border-gray-200'} border rounded-2xl p-6 w-full max-w-sm`} onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-lg mb-4">Choose Language</h3>
+            <h3 className="font-bold text-lg mb-4">{t('landing.choose_language', lang)}</h3>
             <div className="space-y-2">
               {languages.map(l => (
                 <button key={l.code} onClick={() => { handleLanguageChange(l.code); setShowLangModal(false); }}

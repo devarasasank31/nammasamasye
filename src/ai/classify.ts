@@ -1,6 +1,7 @@
 import { Language } from '@/types';
 import { scenarios, getScenarioName } from '@/data/scenarios';
 import { normalizeForMatch, guessLanguage } from '@/lib/ai/language';
+import { t } from '@/lib/translations';
 
 export interface ScenarioMatch {
   scenarioId: string;
@@ -101,7 +102,7 @@ export function classifyIncident(text: string, language: Language): ScenarioMatc
   if (results.length === 0) {
     results.push({
       scenarioId: 'traffic_accident',
-      scenarioName: 'General Incident',
+      scenarioName: t('general.incident', effectiveLanguage),
       confidence: 30,
       reason: FALLBACK_REASON[effectiveLanguage] || FALLBACK_REASON.en,
     });

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Language, IncidentCategory, AttachmentMeta } from '@/types';
 import { getStoredLanguage, setStoredLanguage, getOrCreateSession } from '@/services/session';
-import { getScenarioById } from '@/data/scenarios';
+import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { detectReplyLanguage, shouldAdoptLanguage, speechLocale, isLanguage } from '@/lib/ai/language';
@@ -29,28 +29,39 @@ interface ChatMessage {
 }
 
 const categoryButtons = [
-  { id: 'traffic_accident', icon: '🚗', label: 'Traffic / Accident' },
-  { id: 'traffic_pothole', icon: '🕳️', label: 'Pothole / Road Damage' },
-  { id: 'civic_garbage', icon: '🗑️', label: 'Garbage' },
-  { id: 'traffic_parking', icon: '🅿️', label: 'Illegal Parking' },
-  { id: 'civic_streetlight', icon: '💡', label: 'Streetlight' },
-  { id: 'civic_footpath', icon: '🚶', label: 'Footpath Issue' },
-  { id: 'civic_drainage', icon: '🚰', label: 'Drainage / Water Logging' },
-  { id: 'civic_parks', icon: '🌳', label: 'Parks & Gardens' },
-  { id: 'civic_water_supply', icon: '💧', label: 'Water Supply' },
-  { id: 'civic_stray_animals', icon: '🐕', label: 'Stray Animals' },
-  { id: 'traffic_interaction', icon: '👮', label: 'Police / Traffic Interaction' },
-  { id: 'civic_sense', icon: '🚨', label: 'Civic Sense / Violations' },
-  { id: 'bribes', icon: '💰', label: 'Bribes' },
-  { id: 'safety_harassment', icon: '🛡️', label: 'Safety / Harassment' },
-  { id: 'cybercrime', icon: '💻', label: 'Cybercrime' },
-  { id: 'housing_tenant', icon: '🏠', label: 'Tenant / Landlord' },
-  { id: 'env_noise', icon: '🔊', label: 'Noise Pollution' },
-  { id: 'util_power', icon: '⚡', label: 'Power Outage' },
-  { id: 'access_language', icon: '🌐', label: 'Language Barrier' },
-  { id: 'govt_service', icon: '📄', label: 'Government Service' },
+  { id: 'traffic_accident', icon: '🚗', label: 'Traffic / Accident', labelKn: 'ಸಂಚಾರ / ಅಪಘಾತ', labelHi: 'ट्रैफिक / दुर्घटना', labelTe: 'ట్రాఫిక్ / ప్రమాదం' },
+  { id: 'traffic_pothole', icon: '🕳️', label: 'Pothole / Road Damage', labelKn: 'ಗುಂಡಿ / ರಸ್ತೆ ಹಾನಿ', labelHi: 'गड्ढा / सड़क क्षति', labelTe: 'గుంత / రోడ్ నష్టం' },
+  { id: 'civic_garbage', icon: '🗑️', label: 'Garbage', labelKn: 'ಕಸ', labelHi: 'कचरा', labelTe: 'చెత్త' },
+  { id: 'traffic_parking', icon: '🅿️', label: 'Illegal Parking', labelKn: 'ಅಕ್ರಮ ಪಾರ್ಕಿಂಗ್', labelHi: 'अवैध पार्किंग', labelTe: 'చట్టవిరుద్ధ పార్కింగ్' },
+  { id: 'civic_streetlight', icon: '💡', label: 'Streetlight', labelKn: 'ಬೀದಿ ದೀಪ', labelHi: 'स्ट्रीटलाइट', labelTe: 'స్ట్రీట్ లైట్' },
+  { id: 'civic_footpath', icon: '🚶', label: 'Footpath Issue', labelKn: 'ಫುಟ್‌ಪಾತ್ ಸಮಸ್ಯೆ', labelHi: 'फुटपाथ समस्या', labelTe: 'ఫుట్‌పాత్ సమస్య' },
+  { id: 'civic_drainage', icon: '🚰', label: 'Drainage / Water Logging', labelKn: 'ಚರಂಡಿ / ನೀರು ನಿಲ್ಲುವಿಕೆ', labelHi: 'नाली / जलभराव', labelTe: 'డ్రైనేజీ / నీటి నిలుపుదల' },
+  { id: 'civic_parks', icon: '🌳', label: 'Parks & Gardens', labelKn: 'ಉದ್ಯಾನ ಮತ್ತು ತೋಟಗಳು', labelHi: 'पार्क और बगीचे', labelTe: 'పార్కులు మరియు తోటలు' },
+  { id: 'civic_water_supply', icon: '💧', label: 'Water Supply', labelKn: 'ನೀರು ಸರಬರಾಜು', labelHi: 'जल आपूर्ति', labelTe: 'నీటి సరఫరా' },
+  { id: 'civic_stray_animals', icon: '🐕', label: 'Stray Animals', labelKn: 'ಬೀದಿ ಪ್ರಾಣಿಗಳು', labelHi: 'आवारा जानवर', labelTe: 'వీధి జంతువులు' },
+  { id: 'traffic_interaction', icon: '👮', label: 'Police / Traffic Interaction', labelKn: 'ಪೊಲೀಸ್ / ಸಂಚಾರ ಸಂವಹನ', labelHi: 'पुलिस / ट्रैफिक', labelTe: 'పోలీసు / ట్రాఫిక్' },
+  { id: 'civic_sense', icon: '🚨', label: 'Civic Sense / Violations', labelKn: 'ಸಿವಿಕ್ ಸೆನ್ಸ್ / ಉಲ್ಲಂಘನೆಗಳು', labelHi: 'सिविक सेंस / उल्लंघन', labelTe: 'సివిక్ సెన్స్ / ఉల్లంఘనలు' },
+  { id: 'bribes', icon: '💰', label: 'Bribes', labelKn: 'ಲಂಚ', labelHi: 'रिश्वत', labelTe: 'లంచం' },
+  { id: 'safety_harassment', icon: '🛡️', label: 'Safety / Harassment', labelKn: 'ಸುರಕ್ಷತೆ / ಕಿರುಕುಳ', labelHi: 'सुरक्षा / उत्पीड़न', labelTe: 'భద్రత / వేధింపు' },
+  { id: 'cybercrime', icon: '💻', label: 'Cybercrime', labelKn: 'ಸೈಬರ್ ಅಪರಾಧ', labelHi: 'साइबर अपराध', labelTe: 'సైబర్ నేరం' },
+  { id: 'housing_tenant', icon: '🏠', label: 'Tenant / Landlord', labelKn: 'ಬಾಡಿಗೆದಾರ / ಮಾಲೀಕ', labelHi: 'किरायेदार / मकानमालिक', labelTe: 'అద్దెదారు / యజమాని' },
+  { id: 'env_noise', icon: '🔊', label: 'Noise Pollution', labelKn: 'ಶಬ್ದ ಮಾಲಿನ್ಯ', labelHi: 'ध्वनि प्रदूषण', labelTe: 'శబ్ద కాలుష్యం' },
+  { id: 'util_power', icon: '⚡', label: 'Power Outage', labelKn: 'ವಿದ್ಯುತ್ ವಿಚ್ಛೇದನ', labelHi: 'बिजली कटौती', labelTe: 'కరెంటు పోవడం' },
+  { id: 'access_language', icon: '🌐', label: 'Language Barrier', labelKn: 'ಭಾಷಾ ಅಡೆತಡೆ', labelHi: 'भाषा बाधा', labelTe: 'భాషా అడ్డంకి' },
+  { id: 'govt_service', icon: '📄', label: 'Government Service', labelKn: 'ಸರ್ಕಾರಿ ಸೇವೆ', labelHi: 'सरकारी सेवा', labelTe: 'ప్రభుత్వ సేవ' },
   { id: 'something_else', icon: '❓', label: 'Something Else' },
 ];
+
+function categoryLabel(
+  cb: { id: string; label: string; labelKn?: string; labelHi?: string; labelTe?: string },
+  lang: Language
+): string {
+  if (cb.id === 'something_else') return t('bot.something_else', lang);
+  if (lang === 'kn' && cb.labelKn) return cb.labelKn;
+  if (lang === 'hi' && cb.labelHi) return cb.labelHi;
+  if (lang === 'te' && cb.labelTe) return cb.labelTe;
+  return cb.label;
+}
 
 const supportedPlatforms = [
   { name: 'Google Drive', icon: '📁' },
@@ -242,7 +253,7 @@ export default function ReportPage() {
         addUserMessage(loc.address);
       }
     } else {
-      if (selectedScenario?.workflow[currentQuestionIdx]) addUserMessage('Skip');
+      if (selectedScenario?.workflow[currentQuestionIdx]) addUserMessage(t('report.skip_short', lang).replace(' →', ''));
     }
     setTimeout(() => moveToNextQuestion(), 250);
   };
@@ -300,7 +311,7 @@ export default function ReportPage() {
     const scenario = getScenarioById(scenarioId);
     if (scenario) {
       setIsCustomIssue(false);
-      startScenario(scenario, scenario.name);
+      startScenario(scenario, getScenarioName(scenario, lang));
     } else {
       setIsCustomIssue(true);
       addBotMessage(t('bot.describe_detail', lang));
@@ -412,7 +423,7 @@ export default function ReportPage() {
       ? getScenarioById(trained.scenario_id)
       : null;
     if (scenario) {
-      startScenario(scenario, scenario.name);
+      startScenario(scenario, getScenarioName(scenario, replyLang));
       return;
     }
 
@@ -422,7 +433,7 @@ export default function ReportPage() {
 
   const handleScenarioConfirm = (scenarioId: string) => {
     const scenario = getScenarioById(scenarioId);
-    if (scenario) startScenario(scenario, scenario.name);
+    if (scenario) startScenario(scenario, getScenarioName(scenario, lang));
   };
 
   const handleWorkflowAnswer = async () => {
@@ -468,7 +479,7 @@ export default function ReportPage() {
 
   const handleSkipQuestion = () => {
     if (!selectedScenario) return;
-    addUserMessage("Skip");
+    addUserMessage(t('report.skip_short', lang).replace(' →', ''));
     moveToNextQuestion();
   };
 
@@ -615,7 +626,7 @@ export default function ReportPage() {
           <div className="flex items-center gap-1">
             <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition">
               <Home size={16} />
-              <span className="text-xs font-medium">Home</span>
+              <span className="text-xs font-medium">{t('nav.home', lang)}</span>
             </button>
             <button onClick={() => setShowLangSwitch(!showLangSwitch)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"><Globe size={18} /></button>
           </div>
@@ -681,7 +692,7 @@ export default function ReportPage() {
                   moveToNextQuestion();
                 }
               }}
-              placeholder={currentQuestion.id === 'department' ? 'Type department name...' : 'Type your answer...'}
+              placeholder={currentQuestion.id === 'department' ? t('input.department', lang) : t('input.type_answer', lang)}
               className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition text-sm"
               autoFocus
             />
@@ -701,7 +712,7 @@ export default function ReportPage() {
             </button>
             <button onClick={() => { setShowCustomInput(false); setCustomInputValue(''); }}
               className="px-3 py-3 rounded-xl bg-gray-100 text-gray-500 text-sm hover:bg-gray-200 transition">
-              ← Back
+              {t('btn.back', lang)}
             </button>
           </div>
         )}
@@ -710,9 +721,10 @@ export default function ReportPage() {
         {step === 'workflow' && currentQuestion?.type === 'boolean' && (
           <div className="flex gap-2">
             <button onClick={() => {
-              addUserMessage('Yes');
+              const answer = t('btn.yes', lang);
+              addUserMessage(answer);
               const q = selectedScenario!.workflow[currentQuestionIdx];
-              setAnswers(prev => ({ ...prev, [q.id]: 'Yes' }));
+              setAnswers(prev => ({ ...prev, [q.id]: answer }));
               const evKeywords = ['photo', 'video', 'evidence', 'witness', 'screenshots', 'communication', 'documents', 'notices'];
               if (evKeywords.some(kw => q.id.toLowerCase().includes(kw))) {
                 setTimeout(() => {
@@ -724,16 +736,17 @@ export default function ReportPage() {
               moveToNextQuestion();
             }}
               className="flex-1 py-2.5 rounded-xl bg-green-50 border border-green-200 text-green-700 font-medium text-sm hover:bg-green-100 transition">
-              Yes
+              {t('btn.yes', lang)}
             </button>
             <button onClick={() => {
-              addUserMessage('No');
+              const answer = t('btn.no', lang);
+              addUserMessage(answer);
               const q = selectedScenario!.workflow[currentQuestionIdx];
-              setAnswers(prev => ({ ...prev, [q.id]: 'No' }));
+              setAnswers(prev => ({ ...prev, [q.id]: answer }));
               moveToNextQuestion();
             }}
               className="flex-1 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 font-medium text-sm hover:bg-red-100 transition">
-              No
+              {t('btn.no', lang)}
             </button>
           </div>
         )}
@@ -760,18 +773,18 @@ export default function ReportPage() {
 
             {/* Evidence type badges */}
             <div className="flex flex-wrap gap-2">
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">📸 Photo</span>
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">🎥 Video</span>
-              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">📄 Document</span>
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">📸 {t('evidence.photo', lang)}</span>
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">🎥 {t('evidence.video', lang)}</span>
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white border border-amber-200 text-[10px] font-medium text-amber-800">📄 {t('evidence.document', lang)}</span>
             </div>
 
             {/* Upload from device / gallery */}
             <div className="bg-white rounded-xl p-3 border border-amber-200">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-semibold text-gray-800">Upload from your device</span>
+                <span className="text-sm font-semibold text-gray-800">{t('evidence.upload_device', lang)}</span>
+                <FileUploader attachments={attachments} onChange={setAttachments} compact />
               </div>
-              <FileUploader attachments={attachments} onChange={setAttachments} compact />
-              <p className="text-[10px] text-gray-400 mt-1.5">JPG, PNG or WebP up to 8 MB · MP4 / WebM up to 8 MB</p>
+              <p className="text-[10px] text-gray-400 mt-1.5">{t('evidence.formats', lang)}</p>
             </div>
 
             {/* Link input */}
@@ -781,7 +794,7 @@ export default function ReportPage() {
                 value={evidenceInput}
                 onChange={e => setEvidenceInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleAddEvidenceLink()}
-                placeholder="Paste Google Drive / Imgur / YouTube link..."
+                placeholder={t('evidence.link_placeholder', lang)}
                 className="flex-1 px-3 py-2.5 rounded-xl border border-amber-200 text-sm focus:border-primary outline-none bg-white"
               />
               <button onClick={handleAddEvidenceLink}
@@ -806,21 +819,23 @@ export default function ReportPage() {
 
             {/* Supported platforms */}
             <div className="bg-white rounded-xl p-2.5 border border-amber-100">
-              <p className="text-[10px] text-amber-800 font-bold mb-1.5">📌 Supported:</p>
+              <p className="text-[10px] text-amber-800 font-bold mb-1.5">{t('evidence.supported', lang)}</p>
               <div className="flex flex-wrap gap-x-3 gap-y-1">
                 {supportedPlatforms.map(p => (
                   <span key={p.name} className="text-[9px] text-gray-500">{p.icon} {p.name}</span>
                 ))}
               </div>
-              <p className="text-[9px] text-red-400 mt-1">❌ LinkedIn, Facebook, Twitter, Instagram not supported</p>
+              <p className="text-[9px] text-red-400 mt-1">{t('evidence.blocked_platforms', lang)}</p>
             </div>
 
             {/* Done button */}
             <button onClick={handleDoneEvidence}
               className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 transition">
               {(evidenceLinks.length > 0 || attachments.length > 0)
-                ? `Continue — ${evidenceLinks.length} link(s), ${attachments.length} file(s)`
-                : 'Skip — No evidence'}
+                ? t('evidence.continue_with', lang)
+                    .replace('{links}', String(evidenceLinks.length))
+                    .replace('{files}', String(attachments.length))
+                : t('evidence.skip_none', lang)}
             </button>
           </div>
         )}
@@ -832,7 +847,7 @@ export default function ReportPage() {
               <button key={cb.id} onClick={() => handleCategorySelect(cb.id)}
                 className="flex items-center gap-2 p-3 rounded-xl bg-white border border-gray-200 hover:border-primary hover:shadow-md transition text-left text-sm">
                 <span className="text-xl">{cb.icon}</span>
-                <span className="text-gray-700 text-xs font-medium">{cb.label}</span>
+                <span className="text-gray-700 text-xs font-medium">{categoryLabel(cb, lang)}</span>
               </button>
             ))}
           </div>
@@ -846,7 +861,7 @@ export default function ReportPage() {
                 className="w-full flex items-center justify-between p-4 rounded-xl bg-white border border-gray-200 hover:border-primary hover:shadow-md transition">
                 <div className="text-left">
                   <div className="font-medium text-gray-900 text-sm">{m.scenarioName}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">{m.confidence}% confidence</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{t('match.confidence', lang).replace('{count}', String(m.confidence))}</div>
                 </div>
                 <ChevronRight size={18} className="text-gray-400" />
               </button>
@@ -861,12 +876,16 @@ export default function ReportPage() {
             {selectedScenario && <div className="text-sm text-gray-600"><span className="font-medium">{t('report.category', lang)}:</span> {selectedScenario.name}</div>}
             {originalText && <div className="text-sm text-gray-600"><span className="font-medium">{t('report.description', lang)}:</span> {originalText}</div>}
             {location && <div className="text-sm text-gray-600 flex items-center gap-1"><MapPin size={14} /> {location}</div>}
-            {Object.entries(answers).map(([k, v]) => (
-              <div key={k} className="text-sm text-gray-600"><span className="font-medium capitalize">{k.replace(/_/g, ' ')}:</span> {v}</div>
-            ))}
+            {Object.entries(answers).map(([k, v]) => {
+              const q = selectedScenario?.workflow.find(w => w.id === k);
+              const label = q ? (q.text[lang] || q.text.en).replace(/\?+$/, '') : k.replace(/_/g, ' ');
+              return (
+                <div key={k} className="text-sm text-gray-600"><span className="font-medium">{label}</span>: {v}</div>
+              );
+            })}
             {evidenceLinks.length > 0 && (
               <div className="text-sm text-gray-600">
-                <span className="font-medium">Evidence links ({evidenceLinks.length}):</span>
+                <span className="font-medium">{t('review.evidence_links', lang)} ({evidenceLinks.length}):</span>
                 <div className="mt-1 space-y-1">
                   {evidenceLinks.map((link, i) => (
                     <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="block text-xs text-primary hover:underline truncate">{link}</a>
@@ -878,16 +897,18 @@ export default function ReportPage() {
             {/* Photo / video attachments */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Photos & videos ({attachments.length})</span>
+                <span className="text-sm font-medium text-gray-700">{t('review.photos_videos', lang)} ({attachments.length})</span>
                 <button onClick={() => setShowEvidenceUploader(!showEvidenceUploader)} className="text-xs text-primary hover:underline flex items-center gap-1">
-                  <Paperclip size={12} /> {showEvidenceUploader ? 'Done' : 'Attach file'}
+                  <Paperclip size={12} /> {showEvidenceUploader ? t('btn.done', lang) : t('review.attach_file', lang)}
                 </button>
               </div>
               {showEvidenceUploader ? (
                 <FileUploader attachments={attachments} onChange={setAttachments} />
               ) : (
                 <p className="text-[11px] text-gray-400">
-                  {attachments.length === 0 ? 'No files attached yet — JPG, PNG or WebP up to 8 MB.' : `${attachments.length} file(s) attached.`}
+                  {attachments.length === 0
+                    ? t('review.no_files', lang)
+                    : t('review.files_attached', lang).replace('{count}', String(attachments.length))}
                 </p>
               )}
             </div>
@@ -900,7 +921,7 @@ export default function ReportPage() {
               }}
               className="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
             >
-              <ShieldCheck size={18} /> Continue to Safety Review
+              <ShieldCheck size={18} /> {t('review.continue_safety', lang)}
             </button>
           </div>
         )}
@@ -969,10 +990,10 @@ export default function ReportPage() {
             )}
 
             <div className="text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-2.5">
-              {attachments.length > 0 && <div className="mb-1">📎 {attachments.length} photo/video attached</div>}
-              {evidenceLinks.length > 0 && <div className="mb-1">🔗 {evidenceLinks.length} evidence link(s)</div>}
-              {Object.keys(answers).length > 0 && <div>📝 {Object.keys(answers).length} answer(s) provided</div>}
-              {!location && <div>📍 Location not provided (optional)</div>}
+              {attachments.length > 0 && <div className="mb-1">{t('safety.attached_count', lang).replace('{count}', String(attachments.length))}</div>}
+              {evidenceLinks.length > 0 && <div className="mb-1">{t('safety.links_count', lang).replace('{count}', String(evidenceLinks.length))}</div>}
+              {Object.keys(answers).length > 0 && <div>{t('safety.answers_count', lang).replace('{count}', String(Object.keys(answers).length))}</div>}
+              {!location && <div>{t('safety.no_location', lang)}</div>}
             </div>
 
             <div className="flex gap-2">
@@ -980,7 +1001,7 @@ export default function ReportPage() {
                 onClick={() => setStep('review')}
                 className="px-4 py-3 rounded-xl border border-gray-300 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
               >
-                ← Back
+                {t('btn.back', lang)}
               </button>
               <button
                 onClick={handleSubmit}
@@ -1024,7 +1045,7 @@ export default function ReportPage() {
                   </div>
                   <button onClick={handleVoiceInput}
                     className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition flex items-center gap-1.5">
-                    <Square size={10} fill="currentColor" /> Stop
+                    <Square size={10} fill="currentColor" /> {t('btn.stop', lang)}
                   </button>
                 </div>
                 {liveTranscript && (
@@ -1037,8 +1058,8 @@ export default function ReportPage() {
 
             {step === 'workflow' && currentQuestion?.type === 'location' && (
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-[10px] text-gray-400">📍 Location is optional — geo-tagged photos show location</span>
-                <button onClick={handleSkipQuestion} className="text-[10px] text-primary hover:underline font-medium">Skip →</button>
+                <span className="text-[10px] text-gray-400">{t('report.location_optional', lang)}</span>
+                <button onClick={handleSkipQuestion} className="text-[10px] text-primary hover:underline font-medium">{t('report.skip_short', lang)}</button>
               </div>
             )}
 
@@ -1079,7 +1100,7 @@ export default function ReportPage() {
                 placeholder={
                   step === 'free_text' ? t('bot.ask_what_happened', lang) :
                   step === 'workflow' && currentQuestion ? (currentQuestion.text[lang] || currentQuestion.text.en) :
-                  'Type a message...'
+                  t('input.type_message', lang)
                 }
                 className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition text-sm"
               />
