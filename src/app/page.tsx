@@ -215,26 +215,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className={`relative z-10 py-16 ${darkMode ? 'border-white/10' : 'border-gray-200'} border-y`}>
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { value: '20+', label: 'Categories', icon: '📋' },
-              { value: '4', label: 'Languages', icon: '🌍' },
-              { value: '1000+', label: 'AI Scenarios', icon: '🤖' },
-              { value: '24/7', label: 'Available', icon: '⚡' },
-            ].map((stat, i) => (
-              <div key={i} className="text-center">
-                <div className="text-3xl mb-2">{stat.icon}</div>
-                <div className="text-3xl md:text-4xl font-extrabold ka-text-gradient">{stat.value}</div>
-                <div className={`text-sm mt-1 ${textSecondary}`}>{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
       <section className="relative z-10 py-20">
         <div className="max-w-7xl mx-auto px-4">
