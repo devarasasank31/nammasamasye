@@ -1,10 +1,23 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home } from 'lucide-react';
+import { getStoredLanguage } from '@/services/session';
+import { t } from '@/lib/translations';
+import { Language } from '@/types';
 
 export default function TermsPage() {
   const router = useRouter();
+  const [lang, setLang] = useState<Language>('en');
+
+  useEffect(() => {
+    const init = async () => {
+      await Promise.resolve();
+      setLang(getStoredLanguage());
+    };
+    void init();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -13,10 +26,10 @@ export default function TermsPage() {
           <button onClick={() => router.push('/')} className="text-gray-500 hover:text-gray-700">
             <ArrowLeft size={20} />
           </button>
-          <h1 className="font-semibold text-gray-900">Terms of Use</h1>
+          <h1 className="font-semibold text-gray-900">{t('terms.title', lang)}</h1>
           <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
             <Home size={16} />
-            <span className="text-xs font-medium">Home</span>
+            <span className="text-xs font-medium">{t('nav.home', lang)}</span>
           </button>
         </div>
       </header>
@@ -24,53 +37,48 @@ export default function TermsPage() {
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-6">
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Terms of Use</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('terms.title', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              By using Namma Samasye, you agree to these terms. This platform helps citizens document
-              and navigate reported incidents. It is not a replacement for official channels.
+              {t('terms.p.tou', lang)}
             </p>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Not an Emergency Service</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('terms.h.emergency', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Namma Samasye is NOT an emergency-response service. If you are in immediate danger,
-              please call emergency services at 112.
+              {t('terms.p.emergency', lang)}
             </p>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Not Legal Advice</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('terms.h.legal', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Namma Samasye does not provide legal advice. AI outputs are advisory and do not constitute
-              legal conclusions. Consult a legal professional for legal matters.
+              {t('terms.p.legal', lang)}
             </p>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Not a Determination of Guilt</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('terms.h.guilt', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Namma Samasye does not determine guilt, corruption, or wrongdoing. Reports are community-submitted
-              and unverified unless explicitly stated otherwise by an authorized authority.
+              {t('terms.p.guilt', lang)}
             </p>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">User Responsibilities</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('terms.h.responsibilities', lang)}</h2>
             <ul className="text-sm text-gray-600 space-y-2 list-disc pl-5">
-              <li>Do not submit knowingly false reports</li>
-              <li>Do not use the platform for targeted harassment</li>
-              <li>Do not publish personal information of others</li>
-              <li>Do not submit fabricated evidence</li>
-              <li>Do not use the platform for threats or hate speech</li>
+              <li>{t('terms.l.res1', lang)}</li>
+              <li>{t('terms.l.res2', lang)}</li>
+              <li>{t('terms.l.res3', lang)}</li>
+              <li>{t('terms.l.res4', lang)}</li>
+              <li>{t('terms.l.res5', lang)}</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Community Reports</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('terms.h.community', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Community reports are not automatically verified facts. They are submitted by users and
-              reviewed by administrators. Display of community reports does not establish wrongdoing.
+              {t('terms.p.community', lang)}
             </p>
           </section>
         </div>
@@ -78,14 +86,14 @@ export default function TermsPage() {
         {/* Community Guidelines */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-6">
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Community Guidelines</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('terms.h.guidelines', lang)}</h2>
             <ul className="text-sm text-gray-600 space-y-2 list-disc pl-5">
-              <li>Be truthful and accurate in your reports</li>
-              <li>Do not target specific individuals publicly</li>
-              <li>Do not share others&apos; personal information</li>
-              <li>Do not submit revenge content or harassment</li>
-              <li>Do not fabricate evidence</li>
-              <li>Respect the privacy of others</li>
+              <li>{t('terms.l.g1', lang)}</li>
+              <li>{t('terms.l.g2', lang)}</li>
+              <li>{t('terms.l.g3', lang)}</li>
+              <li>{t('terms.l.g4', lang)}</li>
+              <li>{t('terms.l.g5', lang)}</li>
+              <li>{t('terms.l.g6', lang)}</li>
             </ul>
           </section>
         </div>
@@ -93,11 +101,9 @@ export default function TermsPage() {
         {/* Safety Disclaimer */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Safety Disclaimer</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('terms.h.safety', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Namma Samasye helps citizens document incidents and navigate available resources.
-              It does not guarantee resolution, does not dispatch emergency responders,
-              and does not replace official authorities. Your safety is your priority.
+              {t('terms.p.safety', lang)}
             </p>
           </section>
         </div>

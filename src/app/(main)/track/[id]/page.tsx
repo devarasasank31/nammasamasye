@@ -7,7 +7,14 @@ import { t } from '@/lib/translations';
 import { Language, Incident, IncidentStatus, StatusHistory, Evidence, AdminNote } from '@/types';
 import { getAllIncidents, getStatusHistory, getIncidentEvidence, getIncidentById } from '@/services/incident';
 import { ArrowLeft, MessageSquare, Send, Home } from 'lucide-react';
+import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { getStatusBadgeClass, getStatusDotClass } from '@/lib/status-colors';
+
+function subcategoryLabel(id: string, lang: Language): string {
+  const scn = getScenarioById(id);
+  if (scn) return getScenarioName(scn, lang);
+  return id.replace(/_/g, ' ');
+}
 import AttachmentGallery from '@/components/AttachmentGallery';
 import dynamic from 'next/dynamic';
 const StaticMap = dynamic(() => import('@/components/StaticMap'), { ssr: false, loading: () => <div className="h-[200px] rounded-xl bg-gray-100 animate-pulse" /> });
@@ -118,16 +125,16 @@ export default function TrackPage() {
           <button onClick={() => router.push('/')} className="text-gray-500 hover:text-gray-700">
             <ArrowLeft size={20} />
           </button>
-          <h1 className="font-semibold text-gray-900">My Incidents</h1>
+          <h1 className="font-semibold text-gray-900">{t('track.title', lang)}</h1>
           <div className="ml-auto flex items-center gap-3">
             {hasNewNote && (
               <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium animate-pulse">
-                <MessageSquare size={12} /> New update
+                <MessageSquare size={12} /> {t('track.new_update', lang)}
               </span>
             )}
             <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
               <Home size={16} />
-              <span className="text-xs font-medium">Home</span>
+              <span className="text-xs font-medium">{t('nav.home', lang)}</span>
             </button>
           </div>
         </div>
@@ -141,11 +148,11 @@ export default function TrackPage() {
             value={searchId}
             onChange={e => setSearchId(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Search by Incident ID (e.g., NS-8F42K)"
+            placeholder={t('track.search_placeholder', lang)}
             className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
           />
           <button onClick={handleSearch} className="px-6 py-3 rounded-xl gradient-bg text-white font-medium text-sm hover:opacity-90 transition">
-            Search
+            {t('track.search', lang)}
           </button>
         </div>
 
@@ -160,19 +167,19 @@ export default function TrackPage() {
             </div>
 
             <div className="text-sm text-gray-600">
-              <span className="font-medium">Category:</span> {selectedIncident.subcategory.replace(/_/g, ' ')}
+              <span className="font-medium">{t('track.category_label', lang)}</span> {subcategoryLabel(selectedIncident.subcategory, lang)}
             </div>
 
             {selectedIncident.original_text && (
               <div className="text-sm text-gray-600">
-                <span className="font-medium">Your report:</span>
+                <span className="font-medium">{t('track.your_report', lang)}</span>
                 <p className="mt-1 text-gray-700 bg-gray-50 p-3 rounded-lg">{selectedIncident.original_text}</p>
               </div>
             )}
 
             {selectedIncident.location && (
               <div className="text-sm text-gray-600">
-                <span className="font-medium">Location:</span> {selectedIncident.location}
+                <span className="font-medium">{t('track.location_label', lang)}</span> {selectedIncident.location}
               </div>
             )}
 
@@ -187,7 +194,7 @@ export default function TrackPage() {
               <div className="space-y-3">
                 <h3 className="font-medium text-gray-900 text-sm flex items-center gap-2">
                   <MessageSquare size={14} className="text-blue-500" />
-                  Updates from Admin
+                  {t('track.admin_notes', lang)}
                 </h3>
                 {adminNotes.map(note => {
                   const isRequestInfo = note.content.startsWith('📋 REQUEST INFO:');
@@ -199,7 +206,7 @@ export default function TrackPage() {
                       <div key={note.id} className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-4 space-y-3">
                         <div className="flex items-center gap-2">
                           <span className="text-sm">📋</span>
-                          <span className="text-xs font-bold text-purple-700">Information Requested</span>
+                          <span className="text-xs font-bold text-purple-700">{t('track.info_requested', lang)}</span>
                           <span className="text-[10px] text-purple-500">{new Date(note.created_at).toLocaleString()}</span>
                         </div>
                         <p className="text-sm text-purple-900 font-medium">{content}</p>
@@ -212,7 +219,7 @@ export default function TrackPage() {
                               value={replyText}
                               onChange={e => setReplyText(e.target.value)}
                               onKeyDown={e => e.key === 'Enter' && handleReply()}
-                              placeholder="Type your reply..."
+                              placeholder={t('track.reply_placeholder', lang)}
                               className="flex-1 px-3 py-2 rounded-xl border border-purple-200 text-sm focus:border-purple-500 outline-none"
                               autoFocus
                             />
@@ -225,7 +232,7 @@ export default function TrackPage() {
                         ) : (
                           <button onClick={() => setReplyingTo(note.id)}
                             className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 transition">
-                            Reply to this request
+                            {t('track.reply_request', lang)}
                           </button>
                         )}
                       </div>
@@ -236,7 +243,7 @@ export default function TrackPage() {
                     return (
                       <div key={note.id} className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-bold text-green-700">📩 Your Reply</span>
+                          <span className="text-xs font-bold text-green-700">{t('track.your_reply', lang)}</span>
                           <span className="text-[10px] text-green-500">{new Date(note.created_at).toLocaleString()}</span>
                         </div>
                         <p className="text-sm text-green-900">{content}</p>
@@ -247,7 +254,7 @@ export default function TrackPage() {
                   return (
                     <div key={note.id} className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold text-blue-700">📋 Admin Note</span>
+                          <span className="text-xs font-bold text-blue-700">📋 {t('track.admin_note', lang)}</span>
                         <span className="text-[10px] text-blue-500">{new Date(note.created_at).toLocaleString()}</span>
                       </div>
                       <p className="text-sm text-blue-900">{note.content}</p>
@@ -259,7 +266,7 @@ export default function TrackPage() {
 
             {/* Status Timeline */}
             <div className="space-y-3">
-              <h3 className="font-medium text-gray-900 text-sm">Status Timeline</h3>
+              <h3 className="font-medium text-gray-900 text-sm">{t('track.status_timeline', lang)}</h3>
               {statusHistory.map((h) => (
                 <div key={h.id} className="flex items-start gap-3">
                   {getStatusIcon(h.new_status)}
@@ -275,7 +282,7 @@ export default function TrackPage() {
             {/* Evidence */}
             {evidence.length > 0 && (
               <div>
-                <h3 className="font-medium text-gray-900 text-sm mb-2">Evidence</h3>
+                <h3 className="font-medium text-gray-900 text-sm mb-2">{t('track.evidence', lang)}</h3>
                 {evidence.map(ev => (
                   <a key={ev.id} href={ev.url} target="_blank" rel="noopener noreferrer"
                     className="block text-sm text-primary hover:underline truncate">{ev.url}</a>
@@ -285,7 +292,7 @@ export default function TrackPage() {
 
             <button onClick={() => { setSelectedIncident(null); setAdminNotes([]); setHasNewNote(false); }}
               className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 transition">
-              ← Back to all incidents
+              {t('track.back', lang)}
             </button>
           </div>
         )}
@@ -294,13 +301,13 @@ export default function TrackPage() {
         {!selectedIncident && (
           <div className="space-y-3">
             {loading ? (
-              <div className="text-center py-8 text-gray-400 text-sm">Loading...</div>
+              <div className="text-center py-8 text-gray-400 text-sm">{t('general.loading', lang)}</div>
             ) : incidents.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
                 <div className="text-4xl mb-3">📋</div>
-                <p className="text-gray-500 text-sm">No incidents yet. Start by reporting something.</p>
+                <p className="text-gray-500 text-sm">{t('track.no_incidents', lang)}</p>
                 <button onClick={() => router.push('/report')} className="mt-4 px-6 py-2 rounded-xl gradient-bg text-white text-sm font-medium hover:opacity-90 transition">
-                  Report Something
+                  {t('track.report_something', lang)}
                 </button>
               </div>
             ) : (
@@ -337,7 +344,7 @@ function IncidentCard({ inc, lang, onSelect }: {
             {inc.incident_id}
             {hasNotes && <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
           </div>
-          <div className="text-xs text-gray-500 mt-0.5 capitalize">{inc.subcategory.replace(/_/g, ' ')}</div>
+          <div className="text-xs text-gray-500 mt-0.5 capitalize">{subcategoryLabel(inc.subcategory, lang)}</div>
         </div>
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
           inc.status === 'PROCEEDING' ? 'bg-green-100 text-green-700' :
@@ -351,7 +358,7 @@ function IncidentCard({ inc, lang, onSelect }: {
       <div className="text-xs text-gray-400 mt-2">{new Date(inc.created_at).toLocaleString()}</div>
       {hasNotes && (
         <div className="mt-2 flex items-center gap-1 text-xs text-blue-600 font-medium">
-          <MessageSquare size={12} /> Admin has left a note
+          <MessageSquare size={12} /> {t('track.admin_left_note', lang)}
         </div>
       )}
     </div>

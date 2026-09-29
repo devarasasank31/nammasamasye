@@ -1,10 +1,23 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home } from 'lucide-react';
+import { getStoredLanguage } from '@/services/session';
+import { t } from '@/lib/translations';
+import { Language } from '@/types';
 
 export default function PrivacyPage() {
   const router = useRouter();
+  const [lang, setLang] = useState<Language>('en');
+
+  useEffect(() => {
+    const init = async () => {
+      await Promise.resolve();
+      setLang(getStoredLanguage());
+    };
+    void init();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -13,10 +26,10 @@ export default function PrivacyPage() {
           <button onClick={() => router.push('/')} className="text-gray-500 hover:text-gray-700">
             <ArrowLeft size={20} />
           </button>
-          <h1 className="font-semibold text-gray-900">Privacy Policy</h1>
+          <h1 className="font-semibold text-gray-900">{t('privacy.title', lang)}</h1>
           <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
             <Home size={16} />
-            <span className="text-xs font-medium">Home</span>
+            <span className="text-xs font-medium">{t('nav.home', lang)}</span>
           </button>
         </div>
       </header>
@@ -24,83 +37,74 @@ export default function PrivacyPage() {
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-6">
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Anonymous by Default</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('privacy.h.anonymous', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Namma Samasye is designed to be anonymous by default. We do not require your name, phone number,
-              email address, Aadhaar number, or any social media account to use the service.
+              {t('privacy.p.anonymous', lang)}
             </p>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">What We Collect</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('privacy.h.collect', lang)}</h2>
             <ul className="text-sm text-gray-600 space-y-2 list-disc pl-5">
-              <li>Anonymous session identifier (random, not linked to identity)</li>
-              <li>Incident reports you choose to submit</li>
-              <li>Evidence links you choose to attach</li>
-              <li>Language preference</li>
-              <li>Usage analytics (anonymized)</li>
+              <li>{t('privacy.l.collect1', lang)}</li>
+              <li>{t('privacy.l.collect2', lang)}</li>
+              <li>{t('privacy.l.collect3', lang)}</li>
+              <li>{t('privacy.l.collect4', lang)}</li>
+              <li>{t('privacy.l.collect5', lang)}</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">What We Do NOT Collect</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('privacy.h.not_collect', lang)}</h2>
             <ul className="text-sm text-gray-600 space-y-2 list-disc pl-5">
-              <li>Your real name</li>
-              <li>Phone number</li>
-              <li>Email address</li>
-              <li>Aadhaar or government ID</li>
-              <li>Social media accounts</li>
-              <li>Location data beyond what you voluntarily provide</li>
+              <li>{t('privacy.l.not1', lang)}</li>
+              <li>{t('privacy.l.not2', lang)}</li>
+              <li>{t('privacy.l.not3', lang)}</li>
+              <li>{t('privacy.l.not4', lang)}</li>
+              <li>{t('privacy.l.not5', lang)}</li>
+              <li>{t('privacy.l.not6', lang)}</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Evidence Handling</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('privacy.h.evidence', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Evidence is stored as external links (e.g., Google Drive). We do not host or store media files
-              directly in MVP. You are responsible for managing sharing permissions on your external links.
-              Evidence is only accessible to authorized administrators for review purposes.
+              {t('privacy.p.evidence', lang)}
             </p>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Admin Access</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('privacy.h.admin', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Authorized administrators can view incident reports and evidence for review purposes.
-              All admin actions are logged in an audit trail. Public users can never see another user&apos;s
-              identity or private information.
+              {t('privacy.p.admin', lang)}
             </p>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">AI Processing</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('privacy.h.ai', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              AI is used to understand and classify reports. AI output is advisory only and does not
-              determine facts or guilt. AI does not make accusations or legal conclusions.
+              {t('privacy.p.ai', lang)}
             </p>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Community Aggregation</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('privacy.h.agg', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Community-level statistics are shown as aggregated, anonymized data. We never publicly
-              expose individual reports with identifying details. Area-level aggregation is used.
+              {t('privacy.p.agg', lang)}
             </p>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Data Retention</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('privacy.h.retention', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Incident data is retained for the purpose of tracking and community analytics.
-              You may request deletion of your anonymous session data by contacting the administrators.
+              {t('privacy.p.retention', lang)}
             </p>
           </section>
 
           <section>
-            <h2 className="font-bold text-gray-900 text-lg mb-3">Limitations</h2>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">{t('privacy.h.limitations', lang)}</h2>
             <p className="text-sm text-gray-600 leading-relaxed">
-              While we design for privacy, we cannot guarantee that official government authorities
-              will accept anonymous submissions. Official channels may have their own identity requirements.
+              {t('privacy.p.limitations', lang)}
             </p>
           </section>
         </div>

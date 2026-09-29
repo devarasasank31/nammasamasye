@@ -7,7 +7,14 @@ import { t } from '@/lib/translations';
 import { Language, Incident } from '@/types';
 import { getAllIncidents } from '@/services/incident';
 import { ArrowLeft, MessageSquare, Search, Home } from 'lucide-react';
+import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { getStatusBadgeClass } from '@/lib/status-colors';
+
+function subcategoryLabel(id: string, lang: Language): string {
+  const scn = getScenarioById(id);
+  if (scn) return getScenarioName(scn, lang);
+  return id.replace(/_/g, ' ');
+}
 
 export default function TrackPage() {
   const router = useRouter();
@@ -47,7 +54,7 @@ export default function TrackPage() {
           <h1 className="font-semibold text-gray-900">{t('track.title', lang)}</h1>
           <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
             <Home size={16} />
-            <span className="text-xs font-medium">Home</span>
+            <span className="text-xs font-medium">{t('nav.home', lang)}</span>
           </button>
         </div>
       </header>
@@ -74,7 +81,7 @@ export default function TrackPage() {
         {/* Incidents List */}
         <div className="space-y-3">
           {loading ? (
-            <div className="text-center py-8 text-gray-400 text-sm">Loading...</div>
+            <div className="text-center py-8 text-gray-400 text-sm">{t('general.loading', lang)}</div>
           ) : incidents.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
               <div className="text-4xl mb-3">📋</div>
@@ -118,7 +125,7 @@ function IncidentCard({ inc, lang, onClick }: { inc: Incident; lang: Language; o
             {inc.incident_id}
             {hasNotes && <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
           </div>
-          <div className="text-xs text-gray-500 mt-0.5 capitalize">{inc.subcategory.replace(/_/g, ' ')}</div>
+          <div className="text-xs text-gray-500 mt-0.5 capitalize">{subcategoryLabel(inc.subcategory, lang)}</div>
         </div>
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(inc.status)}`}>
           {t(`status.${inc.status}`, lang)}

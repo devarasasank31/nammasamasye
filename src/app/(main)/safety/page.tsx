@@ -1,18 +1,31 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Phone, Home } from 'lucide-react';
+import { getStoredLanguage } from '@/services/session';
+import { t } from '@/lib/translations';
+import { Language } from '@/types';
 
 const emergencyResources = [
-  { name: 'Police / Fire / Ambulance', number: '112', description: 'Immediate emergency response' },
-  { name: 'Women Helpline', number: '181', description: '24x7 women safety helpline' },
-  { name: 'Cyber Crime Helpline', number: '1930', description: 'Report cybercrime' },
-  { name: 'Bangalore Traffic Police', number: '080-22943400', description: 'Traffic-related emergencies' },
-  { name: 'Karnataka State Police', number: '100', description: 'General police assistance' },
+  { number: '112', nameKey: 'safety.r1.name', descKey: 'safety.r1.desc' },
+  { number: '181', nameKey: 'safety.r2.name', descKey: 'safety.r2.desc' },
+  { number: '1930', nameKey: 'safety.r3.name', descKey: 'safety.r3.desc' },
+  { number: '080-22943400', nameKey: 'safety.r4.name', descKey: 'safety.r4.desc' },
+  { number: '100', nameKey: 'safety.r5.name', descKey: 'safety.r5.desc' },
 ];
 
 export default function SafetyPage() {
   const router = useRouter();
+  const [lang, setLang] = useState<Language>('en');
+
+  useEffect(() => {
+    const init = async () => {
+      await Promise.resolve();
+      setLang(getStoredLanguage());
+    };
+    void init();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -21,10 +34,10 @@ export default function SafetyPage() {
           <button onClick={() => router.push('/')} className="text-gray-500 hover:text-gray-700">
             <ArrowLeft size={20} />
           </button>
-          <h1 className="font-semibold text-gray-900">Safety & Emergency</h1>
+          <h1 className="font-semibold text-gray-900">{t('safety.title', lang)}</h1>
           <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
             <Home size={16} />
-            <span className="text-xs font-medium">Home</span>
+            <span className="text-xs font-medium">{t('nav.home', lang)}</span>
           </button>
         </div>
       </header>
@@ -33,23 +46,23 @@ export default function SafetyPage() {
         {/* Emergency Banner */}
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
           <div className="text-3xl mb-2">🚨</div>
-          <h2 className="font-bold text-red-800 text-lg mb-2">In Immediate Danger?</h2>
-          <p className="text-sm text-red-700 mb-4">Call emergency services immediately.</p>
+          <h2 className="font-bold text-red-800 text-lg mb-2">{t('safety.danger_title', lang)}</h2>
+          <p className="text-sm text-red-700 mb-4">{t('safety.danger_desc', lang)}</p>
           <a href="tel:112" className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 transition">
-            <Phone size={20} /> Call 112
+            <Phone size={20} /> {t('safety.call_112', lang)}
           </a>
         </div>
 
         {/* Emergency Resources */}
         <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-          <h2 className="font-bold text-gray-900 mb-4">Emergency Resources</h2>
+          <h2 className="font-bold text-gray-900 mb-4">{t('safety.resources_title', lang)}</h2>
           <div className="space-y-3">
             {emergencyResources.map(r => (
               <a key={r.number} href={`tel:${r.number}`}
                 className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-primary hover:shadow-md transition">
                 <div>
-                  <div className="font-medium text-gray-900 text-sm">{r.name}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">{r.description}</div>
+                  <div className="font-medium text-gray-900 text-sm">{t(r.nameKey, lang)}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{t(r.descKey, lang)}</div>
                 </div>
                 <div className="flex items-center gap-2 text-primary font-bold">{r.number}</div>
               </a>
@@ -59,18 +72,17 @@ export default function SafetyPage() {
 
         {/* Important Notice */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="font-bold text-gray-900">Important Notice</h2>
+          <h2 className="font-bold text-gray-900">{t('safety.notice_title', lang)}</h2>
           <div className="text-sm text-gray-600 space-y-3 leading-relaxed">
             <p>
-              <strong>Namma Samasye is NOT an emergency-response service.</strong> We do not dispatch
-              police, ambulances, or fire services.
+              <strong>{t('safety.notice_strong', lang)}</strong>{' '}
+              {t('safety.notice_rest', lang)}
             </p>
             <p>
-              If you are in immediate danger, please call <strong>112</strong> directly.
+              {t('safety.notice_call_a', lang)} <strong>112</strong> {t('safety.notice_call_b', lang)}
             </p>
             <p>
-              Namma Samasye helps you document and track incidents. It does not guarantee resolution
-              or replace official channels.
+              {t('safety.notice_3', lang)}
             </p>
           </div>
         </div>

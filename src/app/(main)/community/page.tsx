@@ -35,16 +35,9 @@ export default function CommunityPage() {
     void init();
   }, []);
 
-  const categoryLabels: Record<string, string> = {
-    TRAFFIC: 'Traffic',
-    CIVIC: 'Civic',
-    PUBLIC_SAFETY: 'Public Safety',
-    GOVERNMENT: 'Government',
-    HOUSING: 'Housing',
-    ENVIRONMENT: 'Environment',
-    UTILITIES: 'Utilities',
-    DIGITAL: 'Digital',
-    ACCESS_INTEGRATION: 'Access',
+  const categoryLabel = (cat: string) => {
+    const label = t(`category.${cat}`, lang);
+    return label === `category.${cat}` ? cat.replace(/_/g, ' ') : label;
   };
 
   return (
@@ -57,27 +50,27 @@ export default function CommunityPage() {
           <h1 className="font-semibold text-gray-900">{t('community.pulse', lang)}</h1>
           <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
             <Home size={16} />
-            <span className="text-xs font-medium">Home</span>
+            <span className="text-xs font-medium">{t('nav.home', lang)}</span>
           </button>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {loading ? (
-          <div className="text-center py-12 text-gray-400 text-sm">Loading community data...</div>
+          <div className="text-center py-12 text-gray-400 text-sm">{t('community.loading', lang)}</div>
         ) : stats ? (
           <>
             {/* Total Reports */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
               <div className="text-4xl font-bold text-primary">{stats.total}</div>
-              <div className="text-sm text-gray-500 mt-1">Total Community Reports</div>
+              <div className="text-sm text-gray-500 mt-1">{t('community.total', lang)}</div>
             </div>
 
             {/* By Category */}
             {Object.keys(stats.byCategory).length > 0 && (
               <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
                 <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <BarChart3 size={18} /> Reports by Category
+                  <BarChart3 size={18} /> {t('community.by_category', lang)}
                 </h2>
                 <div className="space-y-3">
                   {Object.entries(stats.byCategory)
@@ -86,7 +79,7 @@ export default function CommunityPage() {
                       <div key={cat} className="flex items-center gap-3">
                         <div className="flex-1">
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-700">{categoryLabels[cat] || cat}</span>
+                            <span className="text-gray-700">{categoryLabel(cat)}</span>
                             <span className="text-gray-500">{count}</span>
                           </div>
                           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -106,7 +99,7 @@ export default function CommunityPage() {
             {Object.keys(stats.byArea).length > 0 && (
               <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
                 <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <MapPin size={18} /> Reports by Area
+                  <MapPin size={18} /> {t('community.by_area', lang)}
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {Object.entries(stats.byArea)
@@ -130,7 +123,7 @@ export default function CommunityPage() {
             </div>
           </>
         ) : (
-          <div className="text-center py-12 text-gray-400 text-sm">No data available yet.</div>
+          <div className="text-center py-12 text-gray-400 text-sm">{t('community.no_data', lang)}</div>
         )}
       </main>
     </div>
