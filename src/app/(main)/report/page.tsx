@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Language, IncidentCategory, AttachmentMeta } from '@/types';
-import { getStoredLanguage, setStoredLanguage, getOrCreateSession } from '@/services/session';
+import { getStoredLanguage, setStoredLanguage, getOrCreateSession, LANGUAGE_EVENT } from '@/services/session';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
@@ -212,6 +212,22 @@ export default function ReportPage() {
       }
     };
   }, [initSession]);
+
+  // The language can change while this page is open — from the AI bot adopting
+  // the citizen's language, or another tab. Follow it immediately.
+  useEffect(() => {
+    const sync = () => {
+      const next = getStoredLanguage();
+      setLang(next);
+      setVoiceOverride(speechLocale(next));
+    };
+    window.addEventListener(LANGUAGE_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(LANGUAGE_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
 
   const moveToNextQuestion = () => {
     if (!selectedScenario) return;

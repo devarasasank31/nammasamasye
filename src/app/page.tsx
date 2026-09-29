@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Language } from '@/types';
-import { getStoredLanguage, setStoredLanguage } from '@/services/session';
+import { getStoredLanguage, setStoredLanguage, LANGUAGE_EVENT } from '@/services/session';
 import { t } from '@/lib/translations';
 import { heritage } from '@/lib/heritage';
 import LandingBackground from '@/components/LandingBackground';
@@ -118,6 +118,18 @@ export default function LandingPage() {
     apply();
     media.addEventListener('change', apply);
     return () => media.removeEventListener('change', apply);
+  }, []);
+
+  // Keep the landing page in step when the language changes anywhere else —
+  // the report switcher, or the AI bot adopting the citizen's language.
+  useEffect(() => {
+    const sync = () => setLang(getStoredLanguage());
+    window.addEventListener(LANGUAGE_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(LANGUAGE_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
   }, []);
 
   const toggleTheme = () => {

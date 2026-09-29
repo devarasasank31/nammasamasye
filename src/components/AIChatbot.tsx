@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, Send, Bot, ChevronRight, Sparkles } from 'lucide-react';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
-import { getStoredLanguage, setStoredLanguage } from '@/services/session';
+import { getStoredLanguage, setStoredLanguage, LANGUAGE_EVENT } from '@/services/session';
 import { Language } from '@/types';
 
 function asLanguage(value: unknown, fallback: Language): Language {
@@ -43,11 +43,33 @@ export default function AIChatbot() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    let alive = true;
+    // Follow the chosen language for as long as the widget is mounted — the
+    // language can change from the landing modal, the report switcher, or the
+    // bot itself, and none of them should need a refresh to take effect here.
+    const apply = (next: Language) => {
+      if (!alive) return;
+      setLang(next);
+      // A fresh chat still shows only the greeting — re-render it in the new
+      // language. Real conversation history is left untouched.
+      setMessages(prev => (prev.length === 1 && prev[0].id === 'welcome'
+        ? [{ ...prev[0], text: WELCOME[next] || WELCOME.en }]
+        : prev));
+    };
     const init = async () => {
       await Promise.resolve();
-      setLang(getStoredLanguage());
+      apply(getStoredLanguage());
     };
     void init();
+    const onLanguage = (e: Event) => apply(asLanguage((e as CustomEvent).detail, getStoredLanguage()));
+    const onStorage = (e: StorageEvent) => { if (e.key === 'ns_language') apply(getStoredLanguage()); };
+    window.addEventListener(LANGUAGE_EVENT, onLanguage);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      alive = false;
+      window.removeEventListener(LANGUAGE_EVENT, onLanguage);
+      window.removeEventListener('storage', onStorage);
+    };
   }, []);
 
   useEffect(() => {
@@ -101,7 +123,7 @@ export default function AIChatbot() {
       if (result.type === 'chat' || (!result.type && result.reply)) {
         setMessages(prev => [...prev, { id: `${Date.now()}-b`, role: 'bot', text: result.reply }]);
         if (result.action === 'open_report') {
-          localStorage.setItem('ns_language', rl);
+          setStoredLanguage(rl);
           setTimeout(() => { router.push('/report'); setIsOpen(false); }, 700);
         } else if (result.action === 'open_track') {
           setTimeout(() => { router.push('/track'); setIsOpen(false); }, 700);
@@ -148,7 +170,7 @@ export default function AIChatbot() {
   };
 
   const handleReportWithAI = (scenarioId: string) => {
-    localStorage.setItem('ns_language', lang);
+    setStoredLanguage(lang);
     router.push(`/report?scenario=${scenarioId}`);
     setIsOpen(false);
   };

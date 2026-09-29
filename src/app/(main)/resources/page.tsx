@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ExternalLink, Phone, Home } from 'lucide-react';
-import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
-import { Language } from '@/types';
+import { useLanguage } from '@/hooks/useLanguage';
 
 const officialResources = [
   { id: 'res-1', title: 'Bangalore Traffic Police', category: 'TRAFFIC', authority: 'Bangalore City Traffic Police', official_url: 'https://www.bangaloretrafficpolice.gov.in', official_phone: '080-22943400', descKey: 'resources.res1.desc', last_verified_at: new Date().toISOString() },
@@ -20,15 +19,7 @@ const officialResources = [
 export default function ResourcesPage() {
   const router = useRouter();
   const [filter, setFilter] = useState('ALL');
-  const [lang, setLang] = useState<Language>('en');
-
-  useEffect(() => {
-    const init = async () => {
-      await Promise.resolve();
-      setLang(getStoredLanguage());
-    };
-    void init();
-  }, []);
+  const lang = useLanguage();
 
   const categories = ['ALL', ...new Set(officialResources.map(r => r.category))];
   const filtered = filter === 'ALL' ? officialResources : officialResources.filter(r => r.category === filter);

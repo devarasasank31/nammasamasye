@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Language } from '@/types';
-import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
+import { useLanguage } from '@/hooks/useLanguage';
 import { getDashboardStats } from '@/services/incident';
 import { IncidentStats } from '@/types';
 import { seedDemoData } from '@/lib/demo-store';
@@ -12,7 +11,7 @@ import { ArrowLeft, BarChart3, MapPin, Home } from 'lucide-react';
 
 export default function CommunityPage() {
   const router = useRouter();
-  const [lang, setLang] = useState<Language>('en');
+  const lang = useLanguage();
   const [stats, setStats] = useState<IncidentStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,10 +25,6 @@ export default function CommunityPage() {
   useEffect(() => {
     const init = async () => {
       seedDemoData();
-      // Defer hydration-dependent state to a microtask so React finishes
-      // its initial effect flush before we push localStorage values.
-      await Promise.resolve();
-      setLang(getStoredLanguage());
       await loadStats();
     };
     void init();

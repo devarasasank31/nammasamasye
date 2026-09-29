@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
+import { useLanguage } from '@/hooks/useLanguage';
 import { Language, Incident } from '@/types';
 import { getAllIncidents } from '@/services/incident';
 import { ArrowLeft, MessageSquare, Search, Home } from 'lucide-react';
@@ -18,7 +18,7 @@ function subcategoryLabel(id: string, lang: Language): string {
 
 export default function TrackPage() {
   const router = useRouter();
-  const [lang, setLang] = useState<Language>('en');
+  const lang = useLanguage();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [searchId, setSearchId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -32,8 +32,6 @@ export default function TrackPage() {
 
   useEffect(() => {
     const init = async () => {
-      await Promise.resolve();
-      setLang(getStoredLanguage());
       await loadIncidents();
     };
     void init();

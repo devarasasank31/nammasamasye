@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
+import { useLanguage } from '@/hooks/useLanguage';
 import { Language, Incident, IncidentStatus, StatusHistory, Evidence, AdminNote } from '@/types';
 import { getAllIncidents, getStatusHistory, getIncidentEvidence, getIncidentById } from '@/services/incident';
 import { ArrowLeft, MessageSquare, Send, Home } from 'lucide-react';
@@ -32,7 +32,7 @@ async function getPublicNotes(incidentId: string): Promise<AdminNote[]> {
 
 export default function TrackPage() {
   const router = useRouter();
-  const [lang, setLang] = useState<Language>('en');
+  const lang = useLanguage();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [searchId, setSearchId] = useState('');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
@@ -63,8 +63,6 @@ export default function TrackPage() {
 
   useEffect(() => {
     const init = async () => {
-      await Promise.resolve();
-      setLang(getStoredLanguage());
       await loadIncidents();
     };
     void init();

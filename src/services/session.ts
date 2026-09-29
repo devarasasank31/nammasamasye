@@ -65,6 +65,10 @@ export async function getOrCreateSession(): Promise<Session> {
   return data;
 }
 
+// Fired on the same window whenever the chosen language changes, so mounted
+// components (the AI bot, landing, report) can follow without a refresh.
+export const LANGUAGE_EVENT = 'ns:language-changed';
+
 export function getStoredLanguage(): Language {
   if (typeof window === 'undefined') return 'en';
   return (localStorage.getItem('ns_language') as Language) || 'en';
@@ -72,7 +76,11 @@ export function getStoredLanguage(): Language {
 
 export function setStoredLanguage(lang: Language) {
   if (typeof window === 'undefined') return;
+  const previous = localStorage.getItem('ns_language');
   localStorage.setItem('ns_language', lang);
+  if (previous !== lang) {
+    window.dispatchEvent(new CustomEvent(LANGUAGE_EVENT, { detail: lang }));
+  }
 }
 
 export function clearSession() {

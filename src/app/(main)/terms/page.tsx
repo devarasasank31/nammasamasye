@@ -1,23 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home } from 'lucide-react';
-import { getStoredLanguage } from '@/services/session';
 import { t } from '@/lib/translations';
-import { Language } from '@/types';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export default function TermsPage() {
   const router = useRouter();
-  const [lang, setLang] = useState<Language>('en');
-
-  useEffect(() => {
-    const init = async () => {
-      await Promise.resolve();
-      setLang(getStoredLanguage());
-    };
-    void init();
-  }, []);
+  const lang = useLanguage();
 
   return (
     <div className="min-h-screen bg-gray-50">
