@@ -225,7 +225,7 @@ export default function LandingPage() {
       </section>
 
       {/* Categories */}
-      <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-white/45'}`}>
+      <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-white/35'}`}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Report Anything</h2>
@@ -244,7 +244,7 @@ export default function LandingPage() {
       </section>
 
       {/* Heritage */}
-      <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-white/45'}`}>
+      <section className={`relative z-10 py-20 ${darkMode ? 'bg-white/5' : 'bg-white/35'}`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold mb-3">From Badami to Bengaluru</h2>
@@ -293,7 +293,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className={`relative z-10 py-8 ${darkMode ? 'border-white/10' : 'border-gray-200'} border-t`}>
+      <footer className={`relative z-10 py-8 ${darkMode ? 'border-white/10' : 'border-gray-200 bg-white/60 backdrop-blur-sm'} border-t`}>
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg ka-gradient-bg flex items-center justify-center text-white font-bold text-xs">NS</div>

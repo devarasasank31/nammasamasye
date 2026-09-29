@@ -17,7 +17,7 @@ export const heritage: HeritageStop[] = [
     native: 'ಬಾದಾಮಿ',
     desc: 'Chalukyan rock-cut caves above the Agastya lake.',
     sky: 'linear-gradient(180deg,#1e0d05 0%,#5d2410 42%,#b45f28 76%,#e8a76b 100%)',
-    skyLight: 'linear-gradient(180deg,#cfe7f5 0%,#f7e4cb 45%,#efc79b 75%,#e0a87a 100%)',
+    skyLight: 'linear-gradient(180deg,#9ed8f5 0%,#ffd9a6 42%,#f2954e 74%,#c8501f 100%)',
     glow: '#e0813c',
   },
   {
@@ -26,7 +26,7 @@ export const heritage: HeritageStop[] = [
     native: 'ಹಂಪೆ',
     desc: 'The ruined capital of the Vijayanagara empire.',
     sky: 'linear-gradient(180deg,#170d02 0%,#54300a 42%,#ab761c 76%,#f0c15a 100%)',
-    skyLight: 'linear-gradient(180deg,#d6ecf7 0%,#f9edcd 45%,#f4d99c 75%,#e8c078 100%)',
+    skyLight: 'linear-gradient(180deg,#8ecdf5 0%,#ffe89b 42%,#f9b93c 74%,#dd7a1c 100%)',
     glow: '#f0c15a',
   },
   {
@@ -35,7 +35,7 @@ export const heritage: HeritageStop[] = [
     native: 'ಮೈಸೂರು ಅರಮನೆ',
     desc: "The Wadiyar seat, still the state's best-known landmark.",
     sky: 'linear-gradient(180deg,#130a20 0%,#3a1a4d 42%,#7b3a6b 76%,#d98a5a 100%)',
-    skyLight: 'linear-gradient(180deg,#e7ddf5 0%,#f8e7ef 45%,#f6dac8 75%,#efc39e 100%)',
+    skyLight: 'linear-gradient(180deg,#cbb6f5 0%,#ffd0e2 42%,#f9a86a 74%,#d96a3c 100%)',
     glow: '#e0a15c',
   },
   {
@@ -44,7 +44,7 @@ export const heritage: HeritageStop[] = [
     native: 'ಟಿಪ್ಪು ಸುಲ್ತಾನ್',
     desc: 'The Tiger of Mysore and his war against the Company.',
     sky: 'linear-gradient(180deg,#04120b 0%,#0f3521 42%,#2c6b3a 76%,#a8bf54 100%)',
-    skyLight: 'linear-gradient(180deg,#d9f0e3 0%,#eef7da 45%,#dfedb3 75%,#cbdfa3 100%)',
+    skyLight: 'linear-gradient(180deg,#9fe0c4 0%,#dff0a8 42%,#93c65c 74%,#4b8f42 100%)',
     glow: '#c9b04a',
   },
   {
@@ -53,7 +53,7 @@ export const heritage: HeritageStop[] = [
     native: 'ಕರ್ನಾಟಕ ರಚನೆ',
     desc: 'Mysore State renamed Karnataka on 1 November.',
     sky: 'linear-gradient(180deg,#260708 0%,#6b0f11 42%,#c21f22 74%,#ffce00 100%)',
-    skyLight: 'linear-gradient(180deg,#fff1c6 0%,#ffe18d 45%,#ffb9a6 75%,#f58f8a 100%)',
+    skyLight: 'linear-gradient(180deg,#ffe07a 0%,#ffd24d 42%,#ff8a5c 74%,#d21f22 100%)',
     glow: '#ffce00',
   },
   {
@@ -62,7 +62,7 @@ export const heritage: HeritageStop[] = [
     native: 'ನಮ್ಮ ಮೆಟ್ರೊ',
     desc: 'Bengaluru gets its own rapid transit line.',
     sky: 'linear-gradient(180deg,#03081a 0%,#0c1a3c 42%,#1e3a6e 76%,#4a76b8 100%)',
-    skyLight: 'linear-gradient(180deg,#d5ebfb 0%,#e9f3fd 45%,#d1e3f8 75%,#b9d4f1 100%)',
+    skyLight: 'linear-gradient(180deg,#8ecdf5 0%,#bcdcff 42%,#5e9ede 74%,#2a5fae 100%)',
     glow: '#5aa2e8',
   },
   {
@@ -71,7 +71,7 @@ export const heritage: HeritageStop[] = [
     native: 'ಬೆಂಗಳೂರು',
     desc: 'A tech capital where every street still has a story.',
     sky: 'linear-gradient(180deg,#02030a 0%,#080e20 42%,#141f42 76%,#2c4273 100%)',
-    skyLight: 'linear-gradient(180deg,#dbeafe 0%,#ebf3fc 45%,#d8e7f6 75%,#bfd5ee 100%)',
+    skyLight: 'linear-gradient(180deg,#9ecdf7 0%,#ffd08a 42%,#ff8f5e 74%,#c9452a 100%)',
     glow: '#ffce00',
   },
 ];

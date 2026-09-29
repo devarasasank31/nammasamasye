@@ -284,15 +284,19 @@ export default function LandingBackground({ darkMode }: { darkMode: boolean }) {
 
   const last = heritage.length - 1;
   const pos = progress * last;
-  const tone = darkMode ? 'rgba(3,3,7,0.66)' : 'rgba(30,19,12,0.58)';
-  // The dark scenes are night skies, the light ones are their daytime twins —
-  // both need only a gentle veil so the backdrop stays readable in either mode.
+  const tone = darkMode ? 'rgba(3,3,7,0.66)' : 'rgba(32,15,5,0.72)';
+  // Night skies in dark mode, full-colour daytime skies in light mode — only a
+  // thin veil in light mode so the colours stay as strong as the dark theme.
   const scrim = darkMode
     ? 'linear-gradient(180deg, rgba(5,5,9,0.45) 0%, rgba(5,5,9,0.55) 45%, rgba(5,5,9,0.72) 100%)'
-    : 'linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.26) 45%, rgba(255,255,255,0.48) 100%)';
+    : 'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0.40) 100%)';
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div
+      className="fixed inset-0 z-0 overflow-hidden pointer-events-none"
+      aria-hidden="true"
+      style={darkMode ? undefined : { filter: 'saturate(1.18) contrast(1.04)' }}
+    >
       {heritage.map((stop, i) => {
         const opacity = Math.max(0, 1 - Math.abs(pos - i));
         if (opacity <= 0.001) return null;
@@ -308,7 +312,7 @@ export default function LandingBackground({ darkMode }: { darkMode: boolean }) {
             <div className="absolute inset-0 hidden md:flex items-start justify-end pr-[5vw] pt-[14vh]">
               <span
                 className="text-[11vw] font-extrabold leading-none tracking-tight select-none"
-                style={{ color: darkMode ? stop.glow : 'rgba(58,36,20,0.85)', opacity: darkMode ? 0.1 : 0.12 }}
+                style={{ color: darkMode ? stop.glow : 'rgba(45,25,10,0.92)', opacity: darkMode ? 0.1 : 0.16 }}
               >
                 {stop.native}
               </span>
@@ -327,7 +331,7 @@ export default function LandingBackground({ darkMode }: { darkMode: boolean }) {
             background: i % 3 === 0
               ? (darkMode ? '#ffce00' : '#b45309')
               : '#e41e20',
-            opacity: darkMode ? 0.5 : 0.35,
+            opacity: darkMode ? 0.5 : 0.45,
             animationDelay: `${p.d}s`,
           }}
         />
