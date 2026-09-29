@@ -489,6 +489,21 @@ export const scenarios: IncidentCategory[] = [
       { id: 'additional', text: { en: 'Additional information?', kn: 'ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'अतिरिक्त जानकारी?', te: 'అదనపు సమాచారం?' }, type: 'text', required: false },
     ],
   },
+  {
+    id: 'custom_issue',
+    parent: 'OTHER',
+    name: 'Something Else',
+    nameKn: 'ಬೇರೇನಾದರೂ',
+    nameHi: 'कुछ और',
+    nameTe: 'మరొకటి',
+    icon: '❓',
+    workflow: [
+      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
+      { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
+      { id: 'evidence', text: { en: 'Any evidence (photo/video)?', kn: 'ಯಾವುದಾದರೂ ಸಾಕ್ಷ್ಯ (ಫೋಟೋ/ವೀಡಿಯೋ)?', hi: 'कोई सबूत (फ़ोटो/वीडियो)?', te: 'ఏదైనా సాక్ష్యం (ఫోటో/వీడియో)?' }, type: 'evidence', required: false },
+      { id: 'additional', text: { en: 'Anything else to add?', kn: 'ಬೇರೇನಾದರೂ ಸೇರಿಸಲು ಇದೆಯೇ?', hi: 'कुछ और जोड़ना है?', te: 'మరేదైనా చేర్చాలా?' }, type: 'text', required: false },
+    ],
+  },
 ];
 
 export function getScenarioById(id: string): IncidentCategory | undefined {

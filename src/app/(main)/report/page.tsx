@@ -128,6 +128,7 @@ export default function ReportPage() {
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
   const [location, setLocation] = useState('');
   const [scenarioMatches, setScenarioMatches] = useState<{ scenarioId: string; scenarioName: string; confidence: number; reason: string }[]>([]);
+  const [isCustomIssue, setIsCustomIssue] = useState(false);
   const [incidentId, setIncidentId] = useState('');
   const [originalText, setOriginalText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -273,31 +274,38 @@ export default function ReportPage() {
     }
   };
 
-  const loadCustomSuggestions = () => {
-    void fetch('/api/custom-problems')
-      .then(r => (r.ok ? r.json() : { suggestions: [] }))
-      .then((d: { suggestions?: { text: string; count: number }[] }) => {
-        setCustomSuggestions(Array.isArray(d.suggestions) ? d.suggestions : []);
-      })
-      .catch(() => {});
+  const loadCustomSuggestions = async (): Promise<{ text: string; count: number }[]> => {
+    try {
+      const res = await fetch('/api/custom-problems?limit=8');
+      if (!res.ok) return customSuggestions;
+      const d = (await res.json()) as { suggestions?: { text: string; count: number }[] };
+      const list = Array.isArray(d.suggestions) ? d.suggestions : [];
+      setCustomSuggestions(list);
+      return list;
+    } catch {
+      return customSuggestions;
+    }
   };
 
   const handleCategorySelect = (scenarioId: string) => {
     if (scenarioId === 'something_else') {
       addUserMessage(t('bot.something_else', lang));
       addBotMessage(t('bot.describe_detail', lang));
+      setIsCustomIssue(true);
       setStep('free_text');
       // Show what others typed here so it is a tap instead of a retyping job.
-      loadCustomSuggestions();
+      void loadCustomSuggestions();
       return;
     }
     const scenario = getScenarioById(scenarioId);
     if (scenario) {
+      setIsCustomIssue(false);
       startScenario(scenario, scenario.name);
     } else {
+      setIsCustomIssue(true);
       addBotMessage(t('bot.describe_detail', lang));
       setStep('free_text');
-      loadCustomSuggestions();
+      void loadCustomSuggestions();
     }
   };
 
@@ -333,11 +341,17 @@ export default function ReportPage() {
     addUserMessage(heard);
 
     // Keep it in the database so the next person sees it as a suggestion.
-    void fetch('/api/custom-problems', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: heard, language: lang }),
-    }).then(() => loadCustomSuggestions()).catch(() => {});
+    let reportCount = 1;
+    try {
+      const res = await fetch('/api/custom-problems', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: heard, language: lang }),
+      });
+      const saved = (await res.json()) as { count?: number };
+      if (typeof saved.count === 'number' && saved.count > 0) reportCount = saved.count;
+    } catch {}
+    const freshSuggestions = await loadCustomSuggestions();
 
     let text = heard;
     if (voiceTextRef.current) {
@@ -356,6 +370,29 @@ export default function ReportPage() {
     }
 
     if (isEmergencyMessage(text)) addBotMessage(t('safety.emergency', replyLang));
+
+    // "Something Else" means the citizen already looked at every category and
+    // none fit — take their words as the incident instead of asking them to
+    // pick the most relevant scenario again.
+    if (isCustomIssue) {
+      const custom = getScenarioById('custom_issue');
+      if (custom) {
+        const countLine = reportCount > 1
+          ? t('bot.custom_saved_count', replyLang).replace('{count}', String(reportCount))
+          : t('bot.custom_saved_first', replyLang);
+        let reply = `${t('bot.custom_saved', replyLang)} ${countLine}`;
+        const others = freshSuggestions
+          .filter(s => s.text.trim().toLowerCase() !== heard.trim().toLowerCase())
+          .slice(0, 3);
+        if (others.length > 0) {
+          reply += `\n\n${t('bot.also_reported_before', replyLang)}\n${others.map(s => `${s.text} ×${s.count}`).join('\n')}`;
+        }
+        addBotMessage(reply);
+        startScenario(custom);
+        return;
+      }
+    }
+
     const matches = classifyIncident(text, replyLang);
     setScenarioMatches(matches);
     if (matches.length > 0 && matches[0].confidence > 50) {
