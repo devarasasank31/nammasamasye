@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home, Flag, MapPin, Users, ShieldAlert } from 'lucide-react';
 import { t } from '@/lib/translations';
 import { useLanguage } from '@/hooks/useLanguage';
-import { Language, PublicIncident } from '@/types';
-import { getPublicFeed, supportIncident, flagIncident } from '@/services/incident';
+import { Language, PublicIncident, Incident } from '@/types';
+import { getPublicFeed, supportIncident, flagIncident, getAllIncidents } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
+import { buildDailySeries, getCivicPulse } from '@/lib/analytics';
 import { getScenarioById, getScenarioName, getAllCategories } from '@/data/scenarios';
 import { getStatusBadgeClass } from '@/lib/status-colors';
 
@@ -28,15 +29,22 @@ export default function FeedPage() {
   const router = useRouter();
   const lang = useLanguage();
   const [items, setItems] = useState<PublicIncident[]>([]);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState('');
   const [sort, setSort] = useState<'priority' | 'support'>('priority');
   const [category, setCategory] = useState('all');
   const [showFlagNote, setShowFlagNote] = useState<string | null>(null);
 
-  const load = async () => {
-    setLoading(true);
-    seedDemoData();
-    setItems(await getPublicFeed());
+  const load = async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      seedDemoData();
+    }
+    const [feed, all] = await Promise.all([getPublicFeed(), getAllIncidents()]);
+    setItems(feed);
+    setIncidents(all);
+    setLastUpdated(new Date().toLocaleTimeString());
     setLoading(false);
   };
 
@@ -45,7 +53,30 @@ export default function FeedPage() {
       await load();
     };
     void init();
+
+    // Numbers on this page stay live: quiet refresh every 10 seconds, on tab
+    // focus, and when another tab files a report.
+    const refresh = () => void load(true);
+    const timer = window.setInterval(refresh, 10000);
+    const onVisibility = () => {
+      if (!document.hidden) refresh();
+    };
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'ns_incidents') refresh();
+    };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('storage', onStorage);
+    };
   }, []);
+
+  const daily = buildDailySeries(incidents);
+  const pulse = getCivicPulse(incidents);
 
   const categories: string[] = [...getAllCategories()];
 
@@ -83,6 +114,18 @@ export default function FeedPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold text-gray-900">{t('feed.title', lang)}</h1>
+
+          {/* Always-visible live counter, even while scrolling the feed */}
+          <span
+            data-testid="feed-header-registered-today"
+            className="flex items-center gap-1.5 text-xs text-gray-500 bg-white border border-gray-200 rounded-full px-2.5 py-1 ml-1"
+            title={t('track.registered_today', lang)}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <b className="text-gray-900 tabular-nums">{!loading ? pulse.reportsToday : '–'}</b>
+            <span className="hidden sm:inline">{t('track.registered_today', lang)}</span>
+          </span>
+
           <button
             onClick={() => router.push('/')}
             title="Go to homepage"
@@ -97,6 +140,69 @@ export default function FeedPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-4">
         <p className="text-xs text-gray-500 leading-relaxed">{t('feed.subtitle', lang)}</p>
+
+        {/* Live counter: how many reports were registered today */}
+        {!loading && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm" data-testid="feed-registered-today">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                {t('track.registered_today', lang)}
+              </span>
+              <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                {t('track.live', lang)}
+                {lastUpdated && (
+                  <span>· {t('track.updated_at', lang).replace('{time}', lastUpdated)}</span>
+                )}
+              </span>
+            </div>
+            <div className="flex items-end justify-between gap-3 mt-1">
+              <div>
+                <div
+                  key={pulse.reportsToday}
+                  className="text-5xl font-black text-blue-600 leading-none tabular-nums"
+                  data-testid="feed-registered-today-count"
+                >
+                  {pulse.reportsToday}
+                </div>
+                <div className="text-[11px] text-gray-500 mt-1.5">
+                  {t('track.day_reports', lang)} · {pulse.today}
+                </div>
+              </div>
+              <span className="text-lg" role="img" aria-label="registered today">📝</span>
+            </div>
+          </div>
+        )}
+
+        {/* Registered each day — just the numbers, rolls forward on its own */}
+        {!loading && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+            <h2 className="font-bold text-gray-900 text-sm mb-3">{t('track.registered_by_day', lang)}</h2>
+            <div className="flex gap-2 overflow-x-auto pb-1" data-testid="feed-registered-by-day">
+              {daily.map(d => {
+                const isToday = d.date === pulse.today;
+                return (
+                  <div
+                    key={d.date}
+                    className={`shrink-0 min-w-[56px] rounded-xl border px-2 py-2 text-center ${
+                      isToday ? 'border-blue-300 bg-blue-50' : 'border-gray-100 bg-gray-50'
+                    }`}
+                  >
+                    <div className={`text-xl font-bold tabular-nums ${isToday ? 'text-blue-700' : 'text-gray-900'}`}>
+                      {d.reports}
+                    </div>
+                    <div className="text-[10px] font-mono text-gray-400 mt-0.5">{d.date.slice(5)}</div>
+                    {isToday && (
+                      <div className="text-[9px] font-semibold text-blue-500 uppercase mt-0.5">
+                        {t('track.pulse_today', lang)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2">
