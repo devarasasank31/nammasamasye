@@ -63,6 +63,25 @@ const supported: string[] = loadFromStorage<string[]>('ns_supported', []);
 const flagged: string[] = loadFromStorage<string[]>('ns_flagged', []);
 
 /**
+ * Re-read everything from localStorage. A different tab writing to this
+ * browser does not touch this module's in-memory copy, and the `storage`
+ * event is the only signal it gets — without this, live counters like
+ * "registered today" would never move while another tab files a report.
+ */
+function reloadFromStorage(): void {
+  sessions = loadFromStorage<Session[]>('ns_sessions', sessions);
+  incidents = loadFromStorage<DemoIncident[]>('ns_incidents', incidents);
+  idCounter = loadFromStorage<number>('ns_id_counter', idCounter);
+  customProblems = loadFromStorage<CustomProblem[]>('ns_custom_problems', customProblems);
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e: StorageEvent) => {
+    if (e.key === null || e.key.startsWith('ns_')) reloadFromStorage();
+  });
+}
+
+/**
  * Re-derives everything that depends on the whole collection: cluster
  * membership (N citizens, same ward, same issue) and the priority level,
  * which can rise by one when enough citizens report or support the same

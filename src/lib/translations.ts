@@ -135,6 +135,11 @@ const translations: Record<string, Record<Language, string>> = {
   'track.day_registered': { en: 'Registered', kn: 'ದಾಖಲಾಗಿದೆ', hi: 'दर्ज', te: 'నమోదైనవి' },
   'track.day_header': { en: 'Day by day — registered and resolved', kn: 'ದಿನದಿಂದ ದಿನಕ್ಕೆ — ದಾಖಲಾದವು ಮತ್ತು ಪರಿಹರಿಸಿದವು', hi: 'दिन-प्रतिदिन — दर्ज और हल', te: 'రోజువారీ — నమోదైనవి మరియు పరిష్కరించబడినవి' },
   'track.day_date': { en: 'Date', kn: 'ದಿನಾಂಕ', hi: 'तारीख़', te: 'తేదీ' },
+  'track.registered_today': { en: 'Registered today', kn: 'ಇಂದು ದಾಖಲಾದವು', hi: 'आज दर्ज', te: 'ఈరోజు నమోదైనవి' },
+  'track.registered_by_day': { en: 'Registered each day', kn: 'ಪ್ರತಿ ದಿನ ದಾಖಲಾದವು', hi: 'हर दिन दर्ज', te: 'ప్రతిరోజూ నమోదైనవి' },
+  'track.live': { en: 'Live', kn: 'ಲೈವ್', hi: 'लाइव', te: 'లైవ్' },
+  'track.updated_at': { en: 'Updated {time}', kn: '{time} ಗೆ ನವೀಕರಿಸಲಾಗಿದೆ', hi: '{time} को अपडेट', te: '{time} కి నవీకరించబడింది' },
+  'track.day_new': { en: 'new', kn: 'ಹೊಸ', hi: 'नए', te: 'కొత్త' },
 
   // Tracking page
   'track.title': { en: 'My Incidents', kn: 'ನನ್ನ ಘಟನೆಗಳು', hi: 'मेरी घटनाएँ', te: 'నా సంఘటనలు' },

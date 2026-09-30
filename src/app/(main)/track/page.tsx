@@ -26,19 +26,43 @@ export default function TrackPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [searchId, setSearchId] = useState('');
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState('');
 
+  // Quiet pull: never flips the loading state, so live refreshes do not flash.
   const loadIncidents = async () => {
-    setLoading(true);
     const allInc = await getAllIncidents();
     setIncidents(allInc);
+    setLastUpdated(new Date().toLocaleTimeString());
     setLoading(false);
   };
 
   useEffect(() => {
+    // `loading` already starts as true, so the first pull can be silent and
+    // never sets state synchronously inside the effect.
     const init = async () => {
       await loadIncidents();
     };
     void init();
+
+    // Every number here stays live: quiet refresh every 10 seconds, on tab
+    // focus, and when another tab files a report.
+    const refresh = () => void loadIncidents();
+    const timer = window.setInterval(refresh, 10000);
+    const onVisibility = () => {
+      if (!document.hidden) refresh();
+    };
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'ns_incidents') refresh();
+    };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('storage', onStorage);
+    };
   }, []);
 
   const handleSearch = () => {
@@ -90,6 +114,69 @@ export default function TrackPage() {
             {t('track.search', lang)}
           </button>
         </div>
+
+        {/* Live counter: how many reports were registered today */}
+        {!loading && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm" data-testid="registered-today">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                {t('track.registered_today', lang)}
+              </span>
+              <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                {t('track.live', lang)}
+                {lastUpdated && (
+                  <span>· {t('track.updated_at', lang).replace('{time}', lastUpdated)}</span>
+                )}
+              </span>
+            </div>
+            <div className="flex items-end justify-between gap-3 mt-1">
+              <div>
+                <div
+                  key={pulse.reportsToday}
+                  className="text-5xl font-black text-blue-600 leading-none tabular-nums"
+                  data-testid="registered-today-count"
+                >
+                  {pulse.reportsToday}
+                </div>
+                <div className="text-[11px] text-gray-500 mt-1.5">
+                  {t('track.day_reports', lang)} · {pulse.today}
+                </div>
+              </div>
+              <span className="text-lg" role="img" aria-label="registered today">📝</span>
+            </div>
+          </div>
+        )}
+
+        {/* Registered each day — just the numbers, rolls forward on its own */}
+        {!loading && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+            <h2 className="font-bold text-gray-900 text-sm mb-3">{t('track.registered_by_day', lang)}</h2>
+            <div className="flex gap-2 overflow-x-auto pb-1" data-testid="registered-by-day">
+              {daily.map(d => {
+                const isToday = d.date === pulse.today;
+                return (
+                  <div
+                    key={d.date}
+                    className={`shrink-0 min-w-[56px] rounded-xl border px-2 py-2 text-center ${
+                      isToday ? 'border-blue-300 bg-blue-50' : 'border-gray-100 bg-gray-50'
+                    }`}
+                  >
+                    <div className={`text-xl font-bold tabular-nums ${isToday ? 'text-blue-700' : 'text-gray-900'}`}>
+                      {d.reports}
+                    </div>
+                    <div className="text-[10px] font-mono text-gray-400 mt-0.5">{d.date.slice(5)}</div>
+                    {isToday && (
+                      <div className="text-[9px] font-semibold text-blue-500 uppercase mt-0.5">
+                        {t('track.pulse_today', lang)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Bengaluru Civic Pulse — today's real numbers */}
         {!loading && (
