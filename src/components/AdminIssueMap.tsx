@@ -46,10 +46,10 @@ export default function AdminIssueMap({ points, hotspots }: { points: MapPoint[]
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { scrollWheelZoom: true }).setView([12.9716, 77.5946], 12);
+    const map = L.map(containerRef.current, { scrollWheelZoom: true, attributionControl: false, zoomControl: true }).setView([12.9716, 77.5946], 12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors',
+      attribution: '',
     }).addTo(map);
     const layer = L.layerGroup().addTo(map);
     layerRef.current = layer;
