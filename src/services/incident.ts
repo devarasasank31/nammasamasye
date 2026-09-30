@@ -1,6 +1,7 @@
 ﻿import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta, IncidentStats, PublicIncident } from '@/types';
 import { isDemoMode } from '@/lib/supabase';
 import { demoStore } from '@/lib/demo-store';
+import { buildExportRows, CivicPulse, DayPoint, ExportRow, SimilarMatch } from '@/lib/analytics';
 
 export async function createIncident(data: {
   session_id: string;
@@ -297,7 +298,8 @@ export async function getPublicFeed(): Promise<PublicIncident[]> {
   return [];
 }
 
-export async function supportIncident(incidentId: string): Promise<number | null> {
+/** Toggle citizen support — the same control withdraws it. */
+export async function supportIncident(incidentId: string): Promise<{ count: number; supported: boolean } | null> {
   if (isDemoMode) return demoStore.supportIncident(incidentId);
   return null;
 }
@@ -305,4 +307,30 @@ export async function supportIncident(incidentId: string): Promise<number | null
 export async function flagIncident(incidentId: string): Promise<number | null> {
   if (isDemoMode) return demoStore.flagIncident(incidentId);
   return null;
+}
+
+/** Would this submission duplicate an existing report? ("similar issue") */
+export async function findSimilarIssues(input: {
+  lat?: number; lng?: number; wardNumber?: number; subcategory: string; text: string;
+}): Promise<SimilarMatch[]> {
+  if (isDemoMode) return demoStore.findSimilarIssues(input);
+  return [];
+}
+
+/** Registered vs resolved, per day, for the citizen and admin dashboards. */
+export async function getDailySeries(days = 14): Promise<DayPoint[]> {
+  if (isDemoMode) return demoStore.getDailySeries(days);
+  return [];
+}
+
+/** Bengaluru Civic Pulse — today's reports, resolutions and open cases. */
+export async function getCivicPulse(): Promise<CivicPulse> {
+  if (isDemoMode) return demoStore.getCivicPulse();
+  return { today: new Date().toISOString().split('T')[0], reportsToday: 0, resolvedToday: 0, open: 0, resolved: 0, total: 0 };
+}
+
+/** Full admin export: every field, answers, evidence links and history. */
+export async function exportAllData(): Promise<ExportRow[]> {
+  if (isDemoMode) return buildExportRows(demoStore.getExportData());
+  return [];
 }

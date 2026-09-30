@@ -63,6 +63,7 @@ export default function FeedPage() {
   };
 
   const handleSupport = async (incidentId: string) => {
+    // Same button toggles — support it, then click again to withdraw.
     await supportIncident(incidentId);
     setItems(await getPublicFeed());
   };
@@ -177,10 +178,11 @@ export default function FeedPage() {
                 <div className="mt-3 flex items-center gap-2">
                   <button
                     onClick={() => void handleSupport(item.incident_id)}
-                    disabled={item.supported}
+                    aria-pressed={item.supported}
+                    title={t('feed.support_hint', lang)}
                     className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition ${
                       item.supported
-                        ? 'bg-primary/10 border-primary/40 text-primary cursor-default'
+                        ? 'bg-primary/10 border-primary/40 text-primary hover:bg-primary/15'
                         : 'bg-white border-gray-200 text-gray-700 hover:border-primary hover:text-primary'
                     }`}
                   >

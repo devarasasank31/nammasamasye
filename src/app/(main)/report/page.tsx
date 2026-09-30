@@ -12,7 +12,8 @@ import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { detectReplyLanguage, shouldAdoptLanguage, speechLocale, isLanguage } from '@/lib/ai/language';
 import { t } from '@/lib/translations';
-import { createIncident } from '@/services/incident';
+import { createIncident, findSimilarIssues, supportIncident } from '@/services/incident';
+import type { SimilarMatch } from '@/lib/analytics';
 import FileUploader from '@/components/FileUploader';
 import dynamic from 'next/dynamic';
 import type { PickedLocation } from '@/components/LocationPicker';
@@ -22,7 +23,7 @@ const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
 });
 import { Send, Mic, MicOff, ArrowLeft, Globe, ChevronRight, MapPin, X, Square, Link2, Plus, ShieldCheck, Paperclip, Check, Home } from 'lucide-react';
 
-type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'review' | 'safety_review' | 'submitted';
+type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'review' | 'safety_review' | 'similar' | 'submitted';
 
 interface ChatMessage {
   id: string;
@@ -174,6 +175,10 @@ export default function ReportPage() {
   } | null>(null);
   // What other citizens typed under "Something else", with how many used it.
   const [customSuggestions, setCustomSuggestions] = useState<{ text: string; count: number }[]>([]);
+  // Existing report this submission would duplicate — support it instead.
+  const [similarMatch, setSimilarMatch] = useState<SimilarMatch | null>(null);
+  const [similarSupported, setSimilarSupported] = useState(false);
+  const [similarCount, setSimilarCount] = useState(1);
 
   useEffect(() => {
     if (chatRef.current) {
@@ -554,8 +559,30 @@ export default function ReportPage() {
     moveToNextQuestion();
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (forceNew = false) => {
     if (!selectedScenario || !sessionId) return;
+
+    // One problem → many citizens. If the same issue was already reported
+    // nearby, show it instead of creating a second complaint.
+    if (!forceNew) {
+      const text = originalText || answers.what_happened || Object.values(answers).join(' ');
+      const matches = await findSimilarIssues({
+        lat: pickedLocation?.lat,
+        lng: pickedLocation?.lng,
+        wardNumber: locationInfo?.wardNumber,
+        subcategory: selectedScenario.id,
+        text,
+      });
+      if (matches.length > 0) {
+        setSimilarMatch(matches[0]);
+        setSimilarCount(matches[0].incident.cluster_citizens || 1);
+        setSimilarSupported(false);
+        addBotMessage(t('report.similar_found', lang));
+        setStep('similar');
+        return;
+      }
+    }
+
     const incident = await createIncident({
       session_id: sessionId,
       category_id: selectedScenario.parent,
@@ -590,6 +617,15 @@ export default function ReportPage() {
       });
       addBotMessage(`${t('bot.report_created', lang)}\n\n${t('bot.track_id', lang)}: ${incident.incident_id}`);
       setStep('submitted');
+    }
+  };
+
+  const handleSupportSimilar = async () => {
+    if (!similarMatch) return;
+    const res = await supportIncident(similarMatch.incident.incident_id);
+    if (res) {
+      setSimilarCount(res.count);
+      setSimilarSupported(res.supported);
     }
   };
 
@@ -1102,7 +1138,7 @@ export default function ReportPage() {
                 {t('btn.back', lang)}
               </button>
               <button
-                onClick={handleSubmit}
+                onClick={() => void handleSubmit()}
                 disabled={!safetyChecked.every(Boolean)}
                 className="flex-1 gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
@@ -1158,10 +1194,79 @@ export default function ReportPage() {
             </div>
           </div>
         )}
+        {/* Similar issue nearby — support it instead of filing a duplicate */}
+        {step === 'similar' && similarMatch && (
+          <div className="bg-white border border-amber-300 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-start gap-2">
+              <span className="text-xl">⚠️</span>
+              <div>
+                <h3 className="font-bold text-amber-900 text-sm">{t('report.similar_title', lang)}</h3>
+                <p className="text-xs text-gray-600 mt-1 leading-relaxed">{t('report.similar_found', lang)}</p>
+              </div>
+            </div>
+
+            <div className="mt-3 border border-amber-200 bg-amber-50/60 rounded-xl p-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold text-sm text-gray-900">
+                  {getScenarioName(getScenarioById(similarMatch.incident.subcategory) || selectedScenario!, lang)}
+                  {' — '}
+                  {similarMatch.incident.ward || similarMatch.incident.location_area || ''}
+                </span>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full border border-amber-400 text-amber-700">
+                  {similarMatch.incident.priority}
+                </span>
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
+                <span className="font-semibold text-indigo-700">
+                  {t('report.similar_citizens', lang).replace('{count}', String(similarCount))}
+                </span>
+                {similarMatch.distanceKm !== null && (
+                  <span>{t('report.similar_distance', lang).replace('{km}', String(similarMatch.distanceKm))}</span>
+                )}
+                <span className="font-mono text-gray-400">{similarMatch.incident.incident_id}</span>
+              </div>
+
+              <button
+                onClick={() => void handleSupportSimilar()}
+                title={t('report.support_hint', lang)}
+                className={`mt-3 w-full px-4 py-2.5 rounded-xl text-sm font-bold transition ${
+                  similarSupported
+                    ? 'bg-indigo-100 border border-indigo-300 text-indigo-700 hover:bg-indigo-150'
+                    : 'gradient-bg text-white hover:opacity-90'
+                }`}
+              >
+                {similarSupported ? t('report.supported_done', lang) : t('report.support_this', lang)}
+                <span className="ml-2 font-black">{similarCount}</span>
+              </button>
+              <div className="mt-2 flex items-center justify-between text-xs">
+                <button onClick={() => router.push('/feed')} className="text-primary hover:underline">
+                  {t('report.view_issue', lang)}
+                </button>
+                <span className="text-gray-400">
+                  {similarMatch.incident.sla_days
+                    ? `${t('report.sla', lang)}: ${similarMatch.incident.sla_days} ${t('report.days', lang)}`
+                    : ''}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-2">
+              <button
+                onClick={() => void handleSubmit(true)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition"
+              >
+                {t('report.report_anyway', lang)}
+              </button>
+              <button onClick={() => setStep('review')} className="w-full text-xs text-gray-500 hover:text-primary underline underline-offset-2">
+                {t('btn.back', lang)}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input Area */}
-      {step !== 'submitted' && step !== 'review' && step !== 'safety_review' && !showEvidenceForm && !showLocationPicker && (
+      {step !== 'submitted' && step !== 'review' && step !== 'similar' && step !== 'safety_review' && !showEvidenceForm && !showLocationPicker && (
         <div className="sticky bottom-0 glass border-t border-gray-200">
           <div className="max-w-2xl mx-auto px-4 py-3">
             {isRecording && (

@@ -12,40 +12,12 @@ import { getStatusBadgeClass } from '@/lib/status-colors';
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from 'recharts';
+import { buildDailySeries, getCivicPulse } from '@/lib/analytics';
 
 function subcategoryLabel(id: string, lang: Language): string {
   const scn = getScenarioById(id);
   if (scn) return getScenarioName(scn, lang);
   return id.replace(/_/g, ' ');
-}
-
-interface DayPoint {
-  date: string;
-  reports: number;
-  resolved: number;
-}
-
-/** Last 14 days: how many I reported vs how many were resolved. */
-function buildDailySeries(incidents: Incident[]): DayPoint[] {
-  const days: DayPoint[] = [];
-  const today = new Date();
-  for (let i = 13; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    days.push({ date: d.toISOString().split('T')[0], reports: 0, resolved: 0 });
-  }
-  const index = new Map(days.map((d, i) => [d.date, i]));
-  for (const inc of incidents) {
-    const created = new Date(inc.created_at).toISOString().split('T')[0];
-    const at = index.get(created);
-    if (at !== undefined) days[at].reports += 1;
-    if (inc.resolved_at) {
-      const day = new Date(inc.resolved_at).toISOString().split('T')[0];
-      const r = index.get(day);
-      if (r !== undefined) days[r].resolved += 1;
-    }
-  }
-  return days;
 }
 
 export default function TrackPage() {
@@ -75,6 +47,7 @@ export default function TrackPage() {
   };
 
   const daily = buildDailySeries(incidents);
+  const pulse = getCivicPulse(incidents);
   const resolvedCount = incidents.filter(i => i.status === 'RESOLVED' || i.status === 'CLOSED').length;
   const openCount = incidents.length - resolvedCount;
 
@@ -118,6 +91,32 @@ export default function TrackPage() {
           </button>
         </div>
 
+        {/* Bengaluru Civic Pulse — today's real numbers */}
+        {!loading && (
+          <div className="bg-gradient-to-r from-slate-900 to-gray-800 text-white rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-bold text-sm">{t('track.pulse_title', lang)}</h2>
+              <span className="text-[10px] uppercase tracking-widest bg-white/10 px-2 py-1 rounded-full">
+                {t('track.pulse_today', lang)} · {pulse.today}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mt-3">
+              <div className="bg-white/10 rounded-xl px-3 py-2.5">
+                <div className="text-2xl font-bold">{pulse.reportsToday}</div>
+                <div className="text-[11px] text-gray-300">{t('track.day_reports', lang)}</div>
+              </div>
+              <div className="bg-white/10 rounded-xl px-3 py-2.5">
+                <div className="text-2xl font-bold text-green-400">{pulse.resolvedToday}</div>
+                <div className="text-[11px] text-gray-300">{t('track.resolved', lang)}</div>
+              </div>
+              <div className="bg-white/10 rounded-xl px-3 py-2.5">
+                <div className="text-2xl font-bold text-amber-400">{pulse.open}</div>
+                <div className="text-[11px] text-gray-300">{t('track.open', lang)}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* My dashboard: totals + day-by-day reports vs resolved */}
         {!loading && incidents.length > 0 && (
           <>
@@ -145,6 +144,28 @@ export default function TrackPage() {
                     <Line dataKey="resolved" name={t('track.day_resolved', lang)} stroke="#16a34a" strokeWidth={2} dot={{ r: 2 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
+              </div>
+
+              <h2 className="font-bold text-gray-900 text-sm mt-4 mb-2">{t('track.day_header', lang)}</h2>
+              <div className="max-h-52 overflow-y-auto rounded-xl border border-gray-100">
+                <table className="w-full text-xs">
+                  <thead className="bg-gray-50 text-gray-500 sticky top-0">
+                    <tr>
+                      <th className="text-left font-medium px-3 py-2">{t('track.day_date', lang)}</th>
+                      <th className="text-right font-medium px-3 py-2">{t('track.day_registered', lang)}</th>
+                      <th className="text-right font-medium px-3 py-2">{t('track.day_resolved', lang)}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...daily].reverse().map(d => (
+                      <tr key={d.date} className="border-t border-gray-100">
+                        <td className="px-3 py-1.5 font-mono text-gray-600">{d.date.slice(5)}</td>
+                        <td className="px-3 py-1.5 text-right font-semibold text-gray-900">{d.reports}</td>
+                        <td className="px-3 py-1.5 text-right font-semibold text-green-600">{d.resolved}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </>

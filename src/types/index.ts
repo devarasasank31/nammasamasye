@@ -102,6 +102,10 @@ export interface Incident {
   cluster_key?: string;
   cluster_citizens?: number;
   resolved_at?: string;
+  /** Moderation triage only (src/lib/spam.ts) — never a ban or auto-delete. */
+  risk_score?: number;
+  risk_level?: 'clean' | 'review' | 'high' | 'critical';
+  risk_flags?: string[];
 }
 
 /**

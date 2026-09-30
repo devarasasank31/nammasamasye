@@ -5,14 +5,24 @@ import { useRouter } from 'next/navigation';
 import {
   BarChart3, FileText, AlertCircle, Clock, CheckCircle, XCircle, TrendingUp, Eye,
   Shield, Users, LogOut, Flag, UsersRound, MapPinned, Layers,
+  ShieldAlert, FileJson, FileSpreadsheet, AlertTriangle,
 } from 'lucide-react';
-import { getAllIncidents } from '@/services/incident';
+import { getAllIncidents, exportAllData } from '@/services/incident';
+import { exportRowsToCsv, exportRowsToJson, downloadTextFile, getCivicPulse } from '@/lib/analytics';
 import { seedDemoData } from '@/lib/demo-store';
 import { DashboardStats, Incident, PriorityLevel } from '@/types';
 import { buildClusters, IssueCluster } from '@/lib/clusters';
-import { WARDS, wardIndex } from '@/data/wards';
+import { WARDS, haversineKm } from '@/data/wards';
 import { getAllCategories } from '@/data/scenarios';
 import { isOverdue, PRIORITY_ORDER, SLA_DAYS } from '@/lib/priority';
+import dynamic from 'next/dynamic';
+import type { MapPoint, MapHotspot } from '@/components/AdminIssueMap';
+
+const AdminIssueMap = dynamic(() => import('@/components/AdminIssueMap'), {
+  ssr: false,
+  loading: () => <div className="w-full rounded-xl bg-gray-100 animate-pulse" style={{ height: 440 }} />,
+});
+
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   Legend, PieChart, Pie, Cell, BarChart as RBarChart,
@@ -62,8 +72,9 @@ export default function AdminDashboard() {
   const [clusters, setClusters] = useState<IssueCluster[]>([]);
   const [users, setUsers] = useState<UserSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const [heatCategory, setHeatCategory] = useState<string>('all');
-  const [hoverWard, setHoverWard] = useState<number | null>(null);
+  // Empty = show every category on the map.
+  const [mapCats, setMapCats] = useState<string[]>([]);
+  const [exporting, setExporting] = useState(false);
 
   const loadStats = async () => {
     setLoading(true);
@@ -200,48 +211,109 @@ export default function AdminDashboard() {
 
   const flaggedItems = useMemo(() => incidents.filter(i => (i.flag_count || 0) > 0), [incidents]);
 
-  // --- Ward heatmap -------------------------------------------------------
-  const heatRows = useMemo(() => {
-    const filtered = heatCategory === 'all' ? incidents : incidents.filter(i => i.category_id === heatCategory);
-    const byWard = new Map<number, { count: number; heat: number; p1: number; name: string; zone: string }>();
-    const idx = wardIndex();
-    filtered.forEach(i => {
-      if (typeof i.ward_number !== 'number') return;
-      const rec = idx.get(i.ward_number);
-      const prev = byWard.get(i.ward_number) || { count: 0, heat: 0, p1: 0, name: rec?.name || '', zone: rec?.zone || '' };
-      const w = i.priority === 'P1' ? 4 : i.priority === 'P2' ? 3 : i.priority === 'P4' ? 1 : 2;
-      prev.count += 1;
-      prev.heat += w;
-      if (i.priority === 'P1') prev.p1 += 1;
-      byWard.set(i.ward_number, prev);
-    });
-    return byWard;
-  }, [incidents, heatCategory]);
+  // --- Zoomable map: every report + recurring hotspots --------------------
+  const humanize = (id: string) =>
+    id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-  const heatMax = useMemo(() => Math.max(1, ...Array.from(heatRows.values()).map(v => v.heat)), [heatRows]);
+  const mapPoints = useMemo<MapPoint[]>(() => {
+    return incidents
+      .filter(i => typeof i.location_lat === 'number' && typeof i.location_lng === 'number')
+      .filter(i => mapCats.length === 0 || mapCats.includes(i.category_id))
+      .map(i => ({
+        id: i.incident_id,
+        lat: i.location_lat as number,
+        lng: i.location_lng as number,
+        title: i.subcategory || i.category_id,
+        category: humanize(i.category_id),
+        priority: i.priority || 'P3',
+        citizens: Math.max(1, i.cluster_citizens || 1),
+        createdAt: i.created_at,
+      }));
+  }, [incidents, mapCats]);
 
-  const heatPoints = useMemo(() => {
-    const lngs = WARDS.map(w => w.lng);
-    const lats = WARDS.map(w => w.lat);
-    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-    return WARDS.map(w => {
-      const row = heatRows.get(w.ward);
-      const intensity = row ? row.heat / heatMax : 0;
-      return {
-        ward: w.ward,
-        name: w.name,
-        zone: w.zone,
-        x: ((w.lng - minLng) / (maxLng - minLng)) * 100,
-        y: ((maxLat - w.lat) / (maxLat - minLat)) * 100,
-        count: row?.count || 0,
-        heat: row?.heat || 0,
-        p1: row?.p1 || 0,
-        intensity,
-        label: row ? `${w.name} (Ward ${w.ward})` : w.name,
-      };
+  const mapHotspots = useMemo<MapHotspot[]>(() => {
+    const out: MapHotspot[] = [];
+    clusters.forEach(c => {
+      if (mapCats.length > 0 && !mapCats.includes(c.category)) return;
+      const members = incidents.filter(
+        i => c.incidentIds.includes(i.incident_id) && typeof i.location_lat === 'number'
+      );
+      const wardRec = c.wardNumber != null ? WARDS.find(w => w.ward === c.wardNumber) : undefined;
+      const lat = members.length
+        ? members.reduce((s, i) => s + (i.location_lat as number), 0) / members.length
+        : wardRec?.lat;
+      const lng = members.length
+        ? members.reduce((s, i) => s + (i.location_lng as number), 0) / members.length
+        : wardRec?.lng;
+      if (typeof lat !== 'number' || typeof lng !== 'number') return;
+      out.push({
+        id: c.key,
+        lat,
+        lng,
+        label: `${humanize(c.subcategory)} — ${c.ward || c.area || 'Bengaluru'}`,
+        count: c.reportCount,
+        p1: members.filter(i => i.priority === 'P1').length,
+      });
     });
-  }, [heatRows, heatMax]);
+    return out;
+  }, [clusters, incidents, mapCats]);
+
+  // --- Officer action center ---------------------------------------------
+  const actionCenter = useMemo(() => {
+    const isOpen = (i: Incident) => !['RESOLVED', 'CLOSED', 'INVALID'].includes(i.status);
+    const open = incidents.filter(isOpen);
+    const critical = open.filter(i => i.priority === 'P1').length;
+    const high = open.filter(i => i.priority === 'P2').length;
+    const normal = open.filter(i => !i.priority || i.priority === 'P3' || i.priority === 'P4').length;
+    const breach = incidents.filter(i =>
+      isOverdue((i.priority || 'P3') as PriorityLevel, i.created_at, i.resolved_at)
+    ).length;
+    const duplicates = clusters.reduce((s, c) => s + Math.max(0, c.reportCount - 1), 0);
+
+    // "Nearby" = open reports around the busiest live hotspot (5 km radius).
+    const located = open.filter(
+      i => typeof i.location_lat === 'number' && typeof i.location_lng === 'number'
+    );
+    let nearby = 0;
+    if (located.length > 0) {
+      let best = 1;
+      for (const seed of located.slice(0, 50)) {
+        const count = located.filter(
+          o =>
+            haversineKm(
+              seed.location_lat as number, seed.location_lng as number,
+              o.location_lat as number, o.location_lng as number
+            ) <= 5
+        ).length;
+        if (count > best) best = count;
+      }
+      nearby = best;
+    }
+
+    return { critical, high, normal, breach, duplicates, nearby };
+  }, [incidents, clusters]);
+
+  const riskyCount = useMemo(
+    () => incidents.filter(i => i.risk_level === 'high' || i.risk_level === 'critical').length,
+    [incidents]
+  );
+
+  const pulse = getCivicPulse(incidents);
+
+  const handleExport = async (fmt: 'csv' | 'json') => {
+    setExporting(true);
+    try {
+      const rows = await exportAllData();
+      const stamp = new Date().toISOString().slice(0, 10);
+      if (fmt === 'csv') {
+        downloadTextFile(`namma-samasye-export-${stamp}.csv`, exportRowsToCsv(rows), 'text/csv;charset=utf-8');
+      } else {
+        downloadTextFile(`namma-samasye-export-${stamp}.json`, exportRowsToJson(rows), 'application/json');
+      }
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const kpiCards = stats ? [
     { label: 'Total Reports', value: stats.total, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -252,6 +324,7 @@ export default function AdminDashboard() {
     { label: 'Citizen Supports', value: incidents.reduce((s, i) => s + (i.support_count || 0), 0), icon: UsersRound, color: 'text-pink-600', bg: 'bg-pink-50' },
     { label: 'Duplicate Clusters', value: clusters.length, icon: Layers, color: 'text-violet-600', bg: 'bg-violet-50' },
     { label: 'Needs Better Description', value: flaggedItems.length, icon: Flag, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Spam / Risk Watch', value: riskyCount, icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50' },
   ] : [];
 
   const navItems = [
@@ -314,11 +387,76 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
+              {/* Officer action center */}
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                    <ShieldAlert size={18} /> Officer Action Center
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => void handleExport('csv')}
+                      disabled={exporting}
+                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg border border-green-300 text-green-700 bg-green-50 hover:bg-green-100 transition disabled:opacity-50"
+                    >
+                      <FileSpreadsheet size={14} /> {exporting ? 'Exporting…' : 'Export CSV'}
+                    </button>
+                    <button
+                      onClick={() => void handleExport('json')}
+                      disabled={exporting}
+                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg border border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100 transition disabled:opacity-50"
+                    >
+                      <FileJson size={14} /> Export JSON
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+                  <div className="rounded-xl bg-red-50 border border-red-100 p-3">
+                    <div className="text-[11px] text-red-700 font-medium">🔴 Critical (P1 open)</div>
+                    <div className="text-2xl font-bold text-red-700">{actionCenter.critical}</div>
+                  </div>
+                  <div className="rounded-xl bg-orange-50 border border-orange-100 p-3">
+                    <div className="text-[11px] text-orange-700 font-medium">🟠 High (P2 open)</div>
+                    <div className="text-2xl font-bold text-orange-700">{actionCenter.high}</div>
+                  </div>
+                  <div className="rounded-xl bg-amber-50 border border-amber-100 p-3">
+                    <div className="text-[11px] text-amber-700 font-medium">🟡 Normal (P3 / P4)</div>
+                    <div className="text-2xl font-bold text-amber-700">{actionCenter.normal}</div>
+                  </div>
+                  <div className="rounded-xl bg-rose-50 border border-rose-100 p-3">
+                    <div className="text-[11px] text-rose-700 font-medium">⚠ SLA breach</div>
+                    <div className="text-2xl font-bold text-rose-700">{actionCenter.breach}</div>
+                  </div>
+                  <div className="rounded-xl bg-sky-50 border border-sky-100 p-3">
+                    <div className="text-[11px] text-sky-700 font-medium">📍 Nearby (5 km)</div>
+                    <div className="text-2xl font-bold text-sky-700">{actionCenter.nearby}</div>
+                  </div>
+                  <div className="rounded-xl bg-violet-50 border border-violet-100 p-3">
+                    <div className="text-[11px] text-violet-700 font-medium">🔁 Duplicates</div>
+                    <div className="text-2xl font-bold text-violet-700">{actionCenter.duplicates}</div>
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-4 text-[11px] text-gray-500">
+                  <span>SLA breach = report older than its {PRIORITY_ORDER.map(p => `${SLA_DAYS[p]}d`).join(' / ')} target</span>
+                  <span>· Duplicates = repeat reports merged into clusters</span>
+                </div>
+              </div>
+
               {/* Daily trend: reports vs resolved */}
               <div className="bg-white rounded-2xl border border-gray-200 p-5">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <TrendingUp size={18} /> Daily reports vs resolved (last 14 days)
                 </h3>
+
+                {/* Bengaluru Civic Pulse — today, real numbers only */}
+                <div className="bg-slate-900 text-white rounded-xl px-4 py-3 mb-4 flex flex-wrap items-center gap-6">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-gray-300">
+                    Bengaluru Civic Pulse · TODAY · {pulse.today}
+                  </span>
+                  <span className="text-sm"><b className="text-2xl">{pulse.reportsToday}</b> Reports</span>
+                  <span className="text-sm"><b className="text-2xl text-green-400">{pulse.resolvedToday}</b> Resolved</span>
+                  <span className="text-sm"><b className="text-2xl text-amber-400">{pulse.open}</b> Open</span>
+                </div>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={dailySeries} margin={{ top: 4, right: 8, bottom: 0, left: -24 }}>
@@ -331,6 +469,28 @@ export default function AdminDashboard() {
                       <Line dataKey="resolved" name="Resolved" stroke="#16a34a" strokeWidth={2} dot={{ r: 2 }} />
                     </ComposedChart>
                   </ResponsiveContainer>
+                </div>
+
+                <h4 className="font-bold text-gray-900 mt-5 mb-2 text-sm">Registered vs resolved — day by day</h4>
+                <div className="max-h-64 overflow-y-auto rounded-xl border border-gray-100">
+                  <table className="w-full text-xs">
+                    <thead className="bg-gray-50 text-gray-500 sticky top-0">
+                      <tr>
+                        <th className="text-left font-medium px-3 py-2">Date</th>
+                        <th className="text-right font-medium px-3 py-2">Registered</th>
+                        <th className="text-right font-medium px-3 py-2">Resolved</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...dailySeries].reverse().map(d => (
+                        <tr key={d.date} className="border-t border-gray-100">
+                          <td className="px-3 py-1.5 font-mono text-gray-600">{d.date}</td>
+                          <td className="px-3 py-1.5 text-right font-semibold text-gray-900">{d.reports}</td>
+                          <td className="px-3 py-1.5 text-right font-semibold text-green-600">{d.resolved}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
@@ -392,77 +552,64 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Ward heatmap */}
+              {/* Zoomable map of every problem + recurring hotspots */}
               <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                   <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <MapPinned size={18} /> Ward heatmap — where problems concentrate
+                    <MapPinned size={18} /> Bengaluru problem map - zoom, filter, inspect
                   </h3>
-                  <select
-                    value={heatCategory}
-                    onChange={e => setHeatCategory(e.target.value)}
-                    className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white outline-none focus:border-blue-500"
-                  >
-                    <option value="all">All categories</option>
-                    {getAllCategories().map(c => (
-                      <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>
-                    ))}
-                  </select>
+                  <span className="text-xs text-gray-500">
+                    {mapPoints.length} pinned report(s) · {mapHotspots.length} recurring hotspot(s)
+                  </span>
                 </div>
 
-                <div className="relative w-full rounded-xl overflow-hidden border border-gray-100" style={{ background: 'linear-gradient(160deg,#0f172a 0%,#1e293b 55%,#0b1120 100%)' }}>
-                  <svg viewBox="0 0 100 100" className="w-full" style={{ height: 420 }} role="img" aria-label="Ward heatmap of Bengaluru">
-                    {heatPoints.map(p => {
-                      const r = p.count === 0 ? 1.1 : 1.6 + Math.sqrt(p.count) * 1.35;
-                      const fill = p.count === 0
-                        ? '#334155'
-                        : p.p1 > 0
-                          ? '#ef4444'
-                          : p.intensity > 0.66
-                            ? '#f97316'
-                            : p.intensity > 0.33
-                              ? '#f59e0b'
-                              : '#facc15';
-                      return (
-                        <g key={p.ward} onMouseEnter={() => setHoverWard(p.ward)} onMouseLeave={() => setHoverWard(null)}>
-                          <circle
-                            cx={p.x}
-                            cy={p.y}
-                            r={r}
-                            fill={fill}
-                            fillOpacity={p.count === 0 ? 0.35 : 0.82}
-                            stroke={hoverWard === p.ward ? '#ffffff' : 'rgba(255,255,255,0.35)'}
-                            strokeWidth={hoverWard === p.ward ? 0.6 : 0.2}
-                          >
-                            <title>{`${p.label} — ${p.count} report(s)${p.p1 ? `, ${p.p1} P1` : ''}`}</title>
-                          </circle>
-                        </g>
-                      );
-                    })}
-                    {hoverWard !== null && (() => {
-                      const p = heatPoints.find(x => x.ward === hoverWard);
-                      if (!p) return null;
-                      return (
-                        <g>
-                          <rect x={Math.min(p.x + 3, 66)} y={Math.max(p.y - 8, 2)} width={32} height={9} rx={2} fill="rgba(15,23,42,0.92)" stroke="rgba(255,255,255,0.25)" strokeWidth={0.2} />
-                          <text x={Math.min(p.x + 4.5, 67.5)} y={Math.max(p.y - 3.5, 5.5)} fill="#e2e8f0" fontSize={3.1}>
-                            {`Ward ${p.ward} · ${p.count} · P1:${p.p1}`}
-                          </text>
-                        </g>
-                      );
-                    })()}
-                  </svg>
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <button
+                    onClick={() => setMapCats([])}
+                    className={`text-xs px-2.5 py-1.5 rounded-lg border transition ${
+                      mapCats.length === 0
+                        ? 'bg-blue-50 border-blue-300 text-blue-700 font-semibold'
+                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    All categories
+                  </button>
+                  {getAllCategories().map(c => {
+                    const active = mapCats.includes(c);
+                    return (
+                      <label
+                        key={c}
+                        className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border cursor-pointer transition ${
+                          active
+                            ? 'bg-blue-50 border-blue-300 text-blue-700 font-semibold'
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={active}
+                          onChange={() =>
+                            setMapCats(prev => (active ? prev.filter(x => x !== c) : [...prev, c]))
+                          }
+                          className="accent-blue-600"
+                        />
+                        {humanize(c)}
+                      </label>
+                    );
+                  })}
                 </div>
+
+                <AdminIssueMap points={mapPoints} hotspots={mapHotspots} />
 
                 <div className="flex flex-wrap items-center gap-4 mt-3 text-[11px] text-gray-500">
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#334155' }} /> No reports</span>
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#facc15' }} /> Low</span>
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#f97316' }} /> High</span>
-                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#ef4444' }} /> Contains P1</span>
-                  <span className="ml-auto">Circle size = report volume · {heatRows.size} ward(s) with data</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#ef4444' }} /> P1</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#f97316' }} /> P2</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#f59e0b' }} /> P3</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full" style={{ background: '#38bdf8' }} /> P4</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full border-2 border-dashed" style={{ borderColor: '#f97316' }} /> Recurring hotspot (click for detail)</span>
+                  <span className="ml-auto">Dashed ring = the same problem reported again and again in one place</span>
                 </div>
               </div>
-
               {/* Priority queue + clusters */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">

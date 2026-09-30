@@ -137,6 +137,7 @@ export default function AdminReportsPage() {
                     <th className="text-left px-4 py-3 font-medium text-gray-600">ID</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Category</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Priority</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Risk</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Ward / Area</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Created</th>
@@ -145,9 +146,9 @@ export default function AdminReportsPage() {
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={7} className="text-center py-8 text-gray-400">Loading...</td></tr>
+                    <tr><td colSpan={8} className="text-center py-8 text-gray-400">Loading...</td></tr>
                   ) : filtered.length === 0 ? (
-                    <tr><td colSpan={7} className="text-center py-8 text-gray-400">No reports found.</td></tr>
+                    <tr><td colSpan={8} className="text-center py-8 text-gray-400">No reports found.</td></tr>
                   ) : (
                     filtered.map(inc => (
                       <tr key={inc.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -160,6 +161,20 @@ export default function AdminReportsPage() {
                             : inc.priority === 'P3' ? 'bg-amber-50 text-amber-800 border-amber-200'
                             : 'bg-gray-50 text-gray-600 border-gray-200'
                           }`}>{inc.priority || 'P3'}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-bold border ${
+                              inc.risk_level === 'critical' ? 'bg-red-50 text-red-700 border-red-200'
+                              : inc.risk_level === 'high' ? 'bg-orange-50 text-orange-700 border-orange-200'
+                              : inc.risk_level === 'review' ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-green-50 text-green-700 border-green-200'
+                            }`}
+                            title={(inc.risk_flags || []).join(', ') || 'No moderation signals'}
+                          >
+                            {(inc.risk_level || 'clean').toUpperCase()}
+                            {typeof inc.risk_score === 'number' ? ` ${inc.risk_score}` : ''}
+                          </span>
                         </td>
                         <td className="px-4 py-3 text-gray-500">{inc.ward || inc.location_area || '-'}</td>
                         <td className="px-4 py-3">

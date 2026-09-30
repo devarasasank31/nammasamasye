@@ -260,6 +260,37 @@ export default function AdminIncidentDetailPage() {
               </div>
             </div>
 
+            {/* Spam / abuse moderation score */}
+            <div className={`rounded-xl border p-4 ${
+              incident.risk_level === 'critical' ? 'bg-red-50 border-red-200'
+              : incident.risk_level === 'high' ? 'bg-orange-50 border-orange-200'
+              : incident.risk_level === 'review' ? 'bg-amber-50 border-amber-200'
+              : 'bg-green-50 border-green-200'
+            }`}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-bold text-sm">
+                  Moderation risk: {(incident.risk_level || 'clean').toUpperCase()}
+                </span>
+                <span className="text-xs text-gray-600">
+                  Score {incident.risk_score ?? 0} / 100 · review 25-49 · high 50-74 · critical 75+
+                </span>
+              </div>
+              {(incident.risk_flags || []).length > 0 ? (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {incident.risk_flags!.map(f => (
+                    <span key={f} className="text-[11px] px-2 py-0.5 rounded-full bg-white/70 border border-gray-300 text-gray-700 font-medium">
+                      {f.replace(/_/g, ' ')}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-600 mt-2">No spam or abuse signals detected.</p>
+              )}
+              <p className="text-[11px] text-gray-500 mt-2">
+                Risk only highlights a report for a human look. Nothing is auto-blocked or auto-banned.
+              </p>
+            </div>
+
             {incident.original_text && (
               <div>
                 <h3 className="font-medium text-gray-500 text-xs mb-1">Original User Statement</h3>

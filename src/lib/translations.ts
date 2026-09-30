@@ -91,6 +91,17 @@ const translations: Record<string, Record<Language, string>> = {
   'report.priority_medium': { en: 'Routine civic issue — target 21 days.', kn: 'ಸಾಮಾನ್ಯ ನಾಗರಿಕ ಸಮಸ್ಯೆ — ಗುರಿ 21 ದಿನಗಳು.', hi: 'सामान्य नागरिक समस्या — लक्ष्य 21 दिन।', te: 'సాధారణ పౌర సమస్య — లక్ష్యం 21 రోజులు.' },
   'report.priority_low': { en: 'Low impact — target 30 days.', kn: 'ಕಡಿಮೆ ಪರಿಣಾಮ — ಗುರಿ 30 ದಿನಗಳು.', hi: 'कम प्रभाव — लक्ष्य 30 दिन।', te: 'తక్కువ ప్రభావం — లక్ష్యం 30 రోజులు.' },
   'report.see_public_feed': { en: 'See what the city is reporting →', kn: 'ನಗರ ಏನು ವರದಿ ಮಾಡುತ್ತಿದೆ ನೋಡಿ →', hi: 'देखें शहर क्या रिपोर्ट कर रहा है →', te: 'నగరం ఏమి నివేదిస్తోందో చూడండి →' },
+
+  // Similar issue nearby — one problem, many citizens (no duplicate ticket)
+  'report.similar_found': { en: '⚠ Similar issue nearby. Your neighbours already reported this — support that report instead of filing a duplicate.', kn: '⚠ ಹತ್ತಿರದಲ್ಲಿ ಸಮಾನ ಸಮಸ್ಯೆ ಇದೆ. ಸುತ್ತಮುತ್ತಲಿನವರು ಈಗಾಗಲೇ ವರದಿ ಮಾಡಿದ್ದಾರೆ — ಪುನರಾವರ್ತನೆಯ ಬದಲು ಅದನ್ನು ಬೆಂಬಲಿಸಿ.', hi: '⚠ आस-पास समान समस्या है। आस-पास के लोग इसे पहले से दर्ज कर चुके हैं — दोहराव के बजाय उसी का समर्थन करें।', te: '⚠ సమీపంలో అదే సమస్య ఉంది. మీ చుట్టుపక్కల వారు ఇప్పటికే నివేదించారు — పునరావృతం కాకుండా దానికి మద్దతు ఇవ్వండి.' },
+  'report.similar_title': { en: 'Similar issue nearby', kn: 'ಹತ್ತಿರದ ಸಮಾನ ಸಮಸ್ಯೆ', hi: 'आस-पास समान समस्या', te: 'సమీపంలో అదే సమస్య' },
+  'report.similar_citizens': { en: 'Reported by {count} citizens', kn: '{count} ಪೌರರು ವರದಿ ಮಾಡಿದ್ದಾರೆ', hi: '{count} नागरिकों ने दर्ज किया', te: '{count} పౌరులు నివేదించారు' },
+  'report.similar_distance': { en: '{km} km away', kn: '{km} ಕಿ.ಮೀ ದೂರದಲ್ಲಿ', hi: '{km} कि.मी. दूर', te: '{km} కి.మీ దూరంలో' },
+  'report.support_this': { en: 'SUPPORT THIS ISSUE', kn: 'ಈ ಸಮಸ್ಯೆಗೆ ಬೆಂಬಲಿಸಿ', hi: 'इस समस्या का समर्थन करें', te: 'ఈ సమస్యకు మద్దతు ఇవ్వండి' },
+  'report.supported_done': { en: 'SUPPORTED ✓', kn: 'ಬೆಂಬಲಿಸಲಾಗಿದೆ ✓', hi: 'समर्थित ✓', te: 'మద్దతు ఇచ్చాం ✓' },
+  'report.support_hint': { en: 'Click again to withdraw your support', kn: 'ಬೆಂಬಲ ಹಿಂಪಡೆಯಲು ಮತ್ತೆ ಕ್ಲಿಕ್ ಮಾಡಿ', hi: 'अपना समर्थन वापस लेने के लिए फिर से क्लिक करें', te: 'మీ మద్దతును ఉపసంహరించుకోవడానికి మళ్లీ క్లిక్ చేయండి' },
+  'report.report_anyway': { en: 'Report as a separate new issue', kn: 'ಬೇರೆ ಹೊಸ ಸಮಸ್ಯೆ ಎಂದು ವರದಿ ಮಾಡಿ', hi: 'अलग नई शिकायत के रूप में दर्ज करें', te: 'వేరే కొత్త సమస్యగా నివేదించండి' },
+  'report.view_issue': { en: 'View issue', kn: 'ಸಮಸ್ಯೆ ನೋಡಿ', hi: 'समस्या देखें', te: 'సమస్య చూడండి' },
   'nav.feed': { en: 'City feed', kn: 'ನಗರ ಫೀಡ್', hi: 'शहर फ़ीड', te: 'నగర ఫీడ్' },
 
   // Public issue feed (support / flag)
@@ -100,6 +111,7 @@ const translations: Record<string, Record<Language, string>> = {
   'feed.empty': { en: 'No public issues yet — be the first to report one.', kn: 'ಇನ್ನೂ ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆಗಳಿಲ್ಲ — ನೀವೇ ಮೊದಲಿಗರಾಗಿ ವರದಿ ಮಾಡಿ.', hi: 'अभी कोई सार्वजनिक समस्या नहीं — पहली रिपोर्ट आप करें।', te: 'ఇంకా పబ్లిక్ సమస్యలు లేవు — మీరే మొదటిగా నివేదించండి.' },
   'feed.support': { en: 'Support', kn: 'ಬೆಂಬಲ', hi: 'समर्थन', te: 'మద్దతు' },
   'feed.supported': { en: 'Supported', kn: 'ಬೆಂಬಲಿಸಲಾಗಿದೆ', hi: 'समर्थित', te: 'మద్దతు ఇచ్చారు' },
+  'feed.support_hint': { en: 'Click again to withdraw your support', kn: 'ಬೆಂಬಲ ಹಿಂಪಡೆಯಲು ಮತ್ತೆ ಕ್ಲಿಕ್ ಮಾಡಿ', hi: 'अपना समर्थन वापस लेने के लिए फिर से क्लिक करें', te: 'మీ మద్దతును ఉపసంహరించుకోవడానికి మళ్లీ క్లిక్ చేయండి' },
   'feed.flag': { en: 'Flag unclear description', kn: 'ಸ್ಪಷ್ಟವಾಗಿಲ್ಲ ಎಂದು ಗುರುತಿಸಿ', hi: 'अस्पष्ट विवरण बताएँ', te: 'స్పష్టంగా లేదని గుర్తించండి' },
   'feed.flagged': { en: 'Flagged for clarity', kn: 'ಸ್ಪಷ್ಟತೆಗಾಗಿ ಗುರುತಿಸಲಾಗಿದೆ', hi: 'स्पष्टता के लिए चिह्नित', te: 'స్పష్టత కోసం గుర్తించబడింది' },
   'feed.all': { en: 'All', kn: 'ಎಲ್ಲಾ', hi: 'सभी', te: 'అన్నీ' },
@@ -118,6 +130,11 @@ const translations: Record<string, Record<Language, string>> = {
   'track.day_reports': { en: 'Reports', kn: 'ವರದಿಗಳು', hi: 'रिपोर्ट', te: 'నివేదికలు' },
   'track.day_resolved': { en: 'Resolved', kn: 'ಪರಿಹರಿಸಲಾಗಿದೆ', hi: 'हल हुई', te: 'పరిష్కరించబడింది' },
   'track.no_chart_data': { en: 'The day-by-day chart appears once you file a report.', kn: 'ವರದಿ ಸಲ್ಲಿಸಿದ ನಂತರ ದೈನಂದಿನ ಚಾರ್ಟ್ ಕಾಣಿಸುತ್ತದೆ.', hi: 'रिपोर्ट दर्ज करने के बाद रोज़ाना चार्ट दिखेगा।', te: 'నివేదిక నమోదు చేసిన తర్వాత రోజువారీ చార్ట్ కనిపిస్తుంది.' },
+  'track.pulse_title': { en: 'Bengaluru Civic Pulse', kn: 'ಬೆಂಗಳೂರು ನಾಗರಿಕ ಪಲ್ಸ್', hi: 'बेंगलुरु सिविल पल्स', te: 'బెంగళూరు సివిల్ పల్స్' },
+  'track.pulse_today': { en: 'TODAY', kn: 'ಇಂದು', hi: 'आज', te: 'ఈరోజు' },
+  'track.day_registered': { en: 'Registered', kn: 'ದಾಖಲಾಗಿದೆ', hi: 'दर्ज', te: 'నమోదైనవి' },
+  'track.day_header': { en: 'Day by day — registered and resolved', kn: 'ದಿನದಿಂದ ದಿನಕ್ಕೆ — ದಾಖಲಾದವು ಮತ್ತು ಪರಿಹರಿಸಿದವು', hi: 'दिन-प्रतिदिन — दर्ज और हल', te: 'రోజువారీ — నమోదైనవి మరియు పరిష్కరించబడినవి' },
+  'track.day_date': { en: 'Date', kn: 'ದಿನಾಂಕ', hi: 'तारीख़', te: 'తేదీ' },
 
   // Tracking page
   'track.title': { en: 'My Incidents', kn: 'ನನ್ನ ಘಟನೆಗಳು', hi: 'मेरी घटनाएँ', te: 'నా సంఘటనలు' },

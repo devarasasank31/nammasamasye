@@ -4,6 +4,13 @@
 } from '@/types';
 import { computePriority, severityFor } from '@/lib/priority';
 import { buildClusters } from '@/lib/clusters';
+import { assessRisk, RiskLevel } from '@/lib/spam';
+import {
+  buildDailySeries as buildSeries,
+  getCivicPulse as getTodaysPulse,
+  findSimilarIssues as findSimilar,
+  CivicPulse, DayPoint, SimilarMatch, ExportInput,
+} from '@/lib/analytics';
 
 // ============================================================
 // PERSISTENT DEMO STORE — uses localStorage to survive restarts
@@ -224,6 +231,24 @@ export const demoStore = {
       adminNotes: [],
     };
 
+    // Moderation score at creation time. Volume alone never trips it: only
+    // identical resubmissions, impossible coordinates, abuse or junk media do.
+    const normalizedReport = (s: string) =>
+      (s || '').toLowerCase().replace(/[\p{P}\p{S}]/gu, ' ').replace(/\s+/g, ' ').trim();
+    const risk = assessRisk({
+      text: `${data.original_text} ${Object.values(data.answers || {}).join(' ')}`,
+      lat: data.location_lat,
+      lng: data.location_lng,
+      evidenceLinks: data.evidence_links,
+      attachments: data.attachments,
+      recentBySession: incidents
+        .filter(r => r.session_id === data.session_id)
+        .map(r => ({ created_at: r.created_at, normalized: normalizedReport(r.original_text) })),
+    });
+    incident.risk_score = risk.score;
+    incident.risk_level = risk.level as RiskLevel;
+    incident.risk_flags = risk.flags.map(f => `${f.code}: ${f.detail}`);
+
     incidents.push(incident);
     // Clusters first (they can raise priority), then the derived fields.
     recomputeDerived();
@@ -386,17 +411,25 @@ export const demoStore = {
       );
   },
 
-  /** Upvote a report; one per browser. Returns the new count or null. */
-  supportIncident(incidentId: string): number | null {
+  /**
+   * Toggle citizen support — the same button withdraws it. One vote per
+   * browser; returns the fresh count plus whether this browser now supports it.
+   */
+  supportIncident(incidentId: string): { count: number; supported: boolean } | null {
     const inc = incidents.find(i => i.incident_id === incidentId);
     if (!inc) return null;
-    if (supported.includes(incidentId)) return inc.support_count || 0;
-    supported.push(incidentId);
-    inc.support_count = (inc.support_count || 0) + 1;
+    const at = supported.indexOf(incidentId);
+    if (at >= 0) {
+      supported.splice(at, 1);
+      inc.support_count = Math.max(0, (inc.support_count || 0) - 1);
+    } else {
+      supported.push(incidentId);
+      inc.support_count = (inc.support_count || 0) + 1;
+    }
     saveToStorage('ns_supported', supported);
     recomputeDerived();
     const after = incidents.find(i => i.incident_id === incidentId);
-    return after?.support_count ?? 0;
+    return { count: after?.support_count ?? 0, supported: supported.includes(incidentId) };
   },
 
   /** Report a poor/inaccurate description so an admin can improve it. */
@@ -422,6 +455,40 @@ export const demoStore = {
   /** All clusters with 2+ independent citizens — admin "same issue" view. */
   getClusters() {
     return buildClusters(incidents).clusters;
+  },
+
+  /**
+   * Reports this submission would duplicate, best match first — used to show
+   * "Similar issue nearby … Reported by N citizens" instead of a new ticket.
+   */
+  findSimilarIssues(input: { lat?: number; lng?: number; wardNumber?: number; subcategory: string; text: string }): SimilarMatch[] {
+    return findSimilar(incidents, input);
+  },
+
+  /** Registered vs resolved for each of the last N days. */
+  getDailySeries(days = 14): DayPoint[] {
+    return buildSeries(incidents, days);
+  },
+
+  /** Bengaluru Civic Pulse — today's real numbers. */
+  getCivicPulse(): CivicPulse {
+    return getTodaysPulse(incidents);
+  },
+
+  /** Everything an admin export needs, including answers, links and history. */
+  getExportData(): ExportInput[] {
+    return incidents.map(inc => ({
+      incident: this.toPublicIncident(inc),
+      answers: inc.answers,
+      evidenceUrls: (inc.evidence || []).map(e => e.url),
+      attachmentNames: (inc.attachments || []).map(a => a.name),
+      statusHistory: (inc.statusHistory || []).map(s => ({
+        new_status: s.new_status,
+        timestamp: s.timestamp,
+        admin_note: s.admin_note,
+      })),
+      adminNotes: (inc.adminNotes || []).map(n => ({ content: n.content, created_at: n.created_at })),
+    }));
   },
 
   toPublicIncident(inc: DemoIncident): Incident {
