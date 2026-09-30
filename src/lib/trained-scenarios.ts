@@ -658,8 +658,10 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['animal cruelty', 'animal abuse', 'animal torture'], scenario_id: 'civic_stray_animals', confidence: 80, reason: 'Animal cruelty' },
   { keywords: ['heritage building issue', 'monument damage', 'heritage conservation'], scenario_id: 'govt_service', confidence: 70, reason: 'Heritage issue' },
   { keywords: ['tourism issue', 'tourist problem', 'tourist safety'], scenario_id: 'govt_service', confidence: 65, reason: 'Tourism issue' },
-  { keywords: ['public transport issue', 'bus problem', 'metro issue', 'auto fare issue'], scenario_id: 'govt_service', confidence: 70, reason: 'Public transport' },
-  { keywords: ['BMTC issue', 'bus pass problem', 'bus timing issue'], scenario_id: 'govt_service', confidence: 75, reason: 'BMTC issue' },
+  { keywords: ['public transport issue', 'bus problem'], scenario_id: 'bmtc_service', confidence: 80, reason: 'BMTC bus service issue' },
+  { keywords: ['metro issue', 'auto fare issue'], scenario_id: 'govt_service', confidence: 70, reason: 'Public transport' },
+  { keywords: ['BMTC issue', 'bus timing issue'], scenario_id: 'bmtc_service', confidence: 85, reason: 'BMTC service issue' },
+  { keywords: ['bus pass problem', 'buspass issue'], scenario_id: 'bmtc_fare_ticket', confidence: 85, reason: 'BMTC pass issue' },
   { keywords: ['metro construction issue', 'metro delay', 'metro station problem'], scenario_id: 'govt_service', confidence: 70, reason: 'Metro issue' },
   { keywords: ['cab issue', 'Ola problem', 'Uber complaint', 'taxi fare issue'], scenario_id: 'govt_service', confidence: 65, reason: 'Cab issue' },
   { keywords: ['petrol price issue', 'diesel price problem', 'fuel price hike'], scenario_id: 'govt_service', confidence: 60, reason: 'Fuel price' },
@@ -681,6 +683,44 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['Ujjwala scheme issue', 'LPG connection problem', 'gas connection'], scenario_id: 'govt_service', confidence: 70, reason: 'Ujjwala issue' },
   { keywords: ['Ayushman Bharat issue', 'health card problem', 'medical insurance scheme'], scenario_id: 'govt_service', confidence: 70, reason: 'Health scheme' },
   { keywords: ['Housing scheme issue', 'PM Awas problem', 'affordable housing'], scenario_id: 'govt_service', confidence: 70, reason: 'Housing scheme' },
+
+  // ============================================
+  // BMTC CITY BUS (40+ examples: English, Kanglish, Hinglish, native script)
+  // ============================================
+  // Service — the bus itself
+  { keywords: ['bus did not come', 'bus never came', 'bus not coming', 'no bus came', 'bus delayed', 'bus is late'], scenario_id: 'bmtc_service', confidence: 90, reason: 'Bus did not come' },
+  { keywords: ['bus broke down', 'bus breakdown', 'bus stopped mid way', 'bus not starting', 'bus engine failed'], scenario_id: 'bmtc_service', confidence: 90, reason: 'Bus breakdown' },
+  { keywords: ['bus overcrowded', 'too crowded in bus', 'no seat in bus', 'standing full in bus', 'bus full'], scenario_id: 'bmtc_service', confidence: 85, reason: 'Bus overcrowding' },
+  { keywords: ['bus did not stop', 'bus skipped the stop', 'bus passed without stopping', 'never stopped at the stop'], scenario_id: 'bmtc_service', confidence: 88, reason: 'Bus did not stop' },
+  { keywords: ['ac not working in bus', 'fan not working in bus', 'bus ac broken', 'bus fan broken', 'no ac in bus'], scenario_id: 'bmtc_service', confidence: 85, reason: 'Bus comfort issue' },
+  { keywords: ['bmtc bus', 'bmrtc bus', 'bmtc'], scenario_id: 'bmtc_service', confidence: 80, reason: 'BMTC bus issue' },
+  { keywords: ['waiting for bus', 'bus stop waiting', 'bus never arrived'], scenario_id: 'bmtc_service', confidence: 85, reason: 'Waiting for bus' },
+  { keywords: ['dirty bus', 'bus leaking water', 'leaking bus', 'garbage in bus'], scenario_id: 'bmtc_service', confidence: 82, reason: 'Bus cleanliness issue' },
+  { keywords: ['bus aagilla', 'bus bandidilla', 'bus bartilla', 'bus late aayithu', 'bus jaasthi late'], scenario_id: 'bmtc_service', confidence: 88, reason: 'Bus did not arrive (Kanglish)' },
+  { keywords: ['bus olage jagane illa', 'jan tumbi hogta idi'], scenario_id: 'bmtc_service', confidence: 85, reason: 'Bus overcrowding (Kanglish)' },
+  { keywords: ['bus nahi aayi', 'bus late ho rahi hai', 'bus khadab ho gayi', 'bus mein bheed'], scenario_id: 'bmtc_service', confidence: 88, reason: 'Bus issue (Hindi)' },
+  { keywords: ['ಬಸ್ ಬಂದಿಲ್ಲ', 'ಬಸ್ ತಡ', 'ಬಸ್ ನಿಂತುಹೋಯಿತು', 'ಜನ ತುಂಬಿ'], scenario_id: 'bmtc_service', confidence: 88, reason: 'ಬಸ್ ಸೇವೆಯ ಸಮಸ್ಯೆ' },
+  { keywords: ['बस नहीं आई', 'बस लेट', 'बस खराब', 'बस में भीड़'], scenario_id: 'bmtc_service', confidence: 88, reason: 'बस सेवा समस्या' },
+  { keywords: ['బస్సు రాలేదు', 'బస్సు ఆలస్యం', 'బస్సు ఆగిపోయింది'], scenario_id: 'bmtc_service', confidence: 88, reason: 'బస్ సేవా సమస్య' },
+  // Staff behaviour
+  { keywords: ['bus driver rash', 'driver rash driving', 'conductor behaviour', 'conductor behavior', 'conductor rude', 'conductor argued', 'conductor shouting', 'conductor fighting'], scenario_id: 'bmtc_staff', confidence: 90, reason: 'BMTC staff behaviour' },
+  { keywords: ['conductor did not give ticket', 'conductor not giving ticket', 'no ticket given by conductor'], scenario_id: 'bmtc_staff', confidence: 90, reason: 'Conductor refused ticket' },
+  { keywords: ['bus driver arguing', 'staff misbehaved', 'misbehaved with me in bus', 'conductor abused'], scenario_id: 'bmtc_staff', confidence: 88, reason: 'Staff misbehaviour' },
+  { keywords: ['bus driver stopped suddenly', 'driver drove rashly', 'driver braking hard'], scenario_id: 'bmtc_staff', confidence: 85, reason: 'Rash bus driving' },
+  { keywords: ['conductor ticket kodlilla', 'conductor galu jagaad maadtare', 'driver jagaad maadta idi'], scenario_id: 'bmtc_staff', confidence: 88, reason: 'Staff misbehaviour (Kanglish)' },
+  { keywords: ['conductor ticket nahi de raha', 'driver se jhagda kiya', 'bus wale ne badtameezi ki'], scenario_id: 'bmtc_staff', confidence: 88, reason: 'Staff misbehaviour (Hindi)' },
+  { keywords: ['ಚಾಲಕ ಜಗಳ', 'ಸಿಬ್ಬಂದಿ ವರ್ತನೆ', 'ಕಂಡಕ್ಟರ್ ವರ್ತನೆ'], scenario_id: 'bmtc_staff', confidence: 88, reason: 'ಬಸ್ ಸಿಬ್ಬಂದಿ ವರ್ತನೆ' },
+  { keywords: ['ड्राइवर ने बहस', 'स्टाफ ने बदतमीजी', 'कंडक्टर ने टिकट नहीं दिया'], scenario_id: 'bmtc_staff', confidence: 88, reason: 'बस स्टाफ व्यवहार' },
+  { keywords: ['డ్రైవర్ వాదన', 'సిబ్బంది ప్రవర్తన', 'కండక్టర్ ప్రవర్తన'], scenario_id: 'bmtc_staff', confidence: 88, reason: 'బస్ సిబ్బంది ప్రవర్తన' },
+  // Fare / ticket
+  { keywords: ['bus fare', 'charged more fare', 'extra fare charged', 'fare too much', 'fare excess'], scenario_id: 'bmtc_fare_ticket', confidence: 85, reason: 'Bus fare issue' },
+  { keywords: ['ticket not given', 'did not give ticket', 'receipt not given', 'no change given', 'change not returned'], scenario_id: 'bmtc_fare_ticket', confidence: 88, reason: 'Ticket / change issue' },
+  { keywords: ['bus pass', 'buspass', 'pass not accepted', 'pass rejected', 'qr code not working', 'ticket machine not working'], scenario_id: 'bmtc_fare_ticket', confidence: 85, reason: 'Pass / ticket issue' },
+  { keywords: ['fare jasthi tagondru', 'duddu jasthi liya', 'baki hoda kodlilla'], scenario_id: 'bmtc_fare_ticket', confidence: 85, reason: 'Fare issue (Kanglish)' },
+  { keywords: ['zyada paisa liya', 'fare jyada liya', 'change nahi diya', 'ticket nahi mila'], scenario_id: 'bmtc_fare_ticket', confidence: 88, reason: 'Fare issue (Hindi)' },
+  { keywords: ['ಬಸ್ ದರ', 'ಹೆಚ್ಚು ದರ', 'ಬಾಕಿ ಹಣ ನೀಡಲಿಲ್ಲ'], scenario_id: 'bmtc_fare_ticket', confidence: 85, reason: 'ಬಸ್ ದರ / ಟಿಕೆಟ್ ಸಮಸ್ಯೆ' },
+  { keywords: ['बस किराया', 'ज़्यादा किराया', 'शेष पैसे नहीं', 'टिकट नहीं मिली'], scenario_id: 'bmtc_fare_ticket', confidence: 85, reason: 'बस किराया / टिकट समस्या' },
+  { keywords: ['బస్ ఛార్జీ', 'ఎక్కువ ఛార్జీ', 'చిల్లర ఇవ్వలేదు', 'టికెట్ ఇవ్వలేదు'], scenario_id: 'bmtc_fare_ticket', confidence: 85, reason: 'బస్ ఛార్జీ / టికెట్ సమస్య' },
 ];
 
 // Function to match user input against trained scenarios

@@ -22,6 +22,7 @@ export type CategoryParent =
   | 'HOUSING'
   | 'ENVIRONMENT'
   | 'UTILITIES'
+  | 'TRANSPORT'
   | 'DIGITAL'
   | 'ACCESS_INTEGRATION'
   | 'CORRUPTION'
@@ -44,6 +45,7 @@ export interface WorkflowQuestion {
   type: 'text' | 'select' | 'boolean' | 'date' | 'location' | 'evidence';
   required: boolean;
   options?: { label: Record<Language, string>; value: string }[];
+  suggest?: 'bengaluru';
 }
 
 export interface AttachmentMeta {

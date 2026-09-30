@@ -31,6 +31,9 @@ const KEYWORD_MAP: Record<string, string[]> = {
   footpath: ['footpath', 'sidewalk', 'pedestrian', 'walking', 'pavement', 'ಫುಟ್‌ಪಾತ್', 'ನಡಿಗೆ', 'ఫుట్‌పాత్', 'పాదచారి', 'फुटपाथ'],
   drainage: ['drain', 'drainage', 'blocked', 'water logging', 'pani bhar', 'paani bhar', 'ಚರಂಡಿ', 'ಡ್ರೈನ್', 'డ్రైనేజీ', 'నాలు', 'नाली', 'पानी भर'],
   wrong_side: ['wrong side', 'opposite', 'oncoming', 'ulta', 'ತಪ್ಪು ಬದಿ', 'తప్పు వైపు', 'गलत दिशा', 'उल्टा'],
+  bmtc_service: ['bmtc', 'bmrtc', 'bus late', 'bus did not come', 'bus not coming', 'bus broke down', 'bus breakdown', 'overcrowded bus', 'bus did not stop', 'bus skipped', 'waiting for bus', 'bus aagilla', 'bus bandidilla', 'bus nahi aayi', 'ಬಸ್ ಬಂದಿಲ್ಲ', 'ಬಸ್ ತಡ', 'ಬಸ್ ನಿಂತು', 'बस नहीं आई', 'बस लेट', 'బస్సు రాలేదు', 'బస్సు ఆలస్యం'],
+  bmtc_staff: ['conductor', 'bus driver rash', 'driver argued', 'staff misbehaved', 'conductor rude', 'conductor ticket kodlilla', 'ಕಂಡಕ್ಟರ್', 'चालक', 'कंडक्टर', 'కండక్టర్'],
+  bmtc_fare_ticket: ['bus fare', 'bus pass', 'buspass', 'ticket not given', 'no change', 'overcharged', 'fare more', 'bus fare issue', 'ಬಸ್ ದರ', 'ಟಿಕೆಟ್', 'बस किराया', 'टिकट नहीं', 'బస్ ఛార్జీ', 'టికెట్'],
   civic_sense: [
     'stunt', 'stunts', 'wheelie', 'racing', 'overspeeding', 'over speeding',
     'rash driving', 'reckless', 'jumped the signal', 'jumping signal',
@@ -82,6 +85,9 @@ export function classifyIncident(text: string, language: Language): ScenarioMatc
     util_power: [...KEYWORD_MAP.power],
     access_language: [...KEYWORD_MAP.language],
     govt_service: [...KEYWORD_MAP.government],
+    bmtc_service: [...KEYWORD_MAP.bmtc_service],
+    bmtc_staff: [...KEYWORD_MAP.bmtc_staff],
+    bmtc_fare_ticket: [...KEYWORD_MAP.bmtc_fare_ticket],
   };
 
   for (const [scenarioId, keywords] of Object.entries(scenarioKeywordMap)) {

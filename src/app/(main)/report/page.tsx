@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Language, IncidentCategory, AttachmentMeta } from '@/types';
 import { getStoredLanguage, setStoredLanguage, getOrCreateSession, LANGUAGE_EVENT } from '@/services/session';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
+import { BANGALORE_AREAS } from '@/data/bengaluru';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { detectReplyLanguage, shouldAdoptLanguage, speechLocale, isLanguage } from '@/lib/ai/language';
@@ -40,6 +41,9 @@ const categoryButtons = [
   { id: 'civic_water_supply', icon: '💧', label: 'Water Supply', labelKn: 'ನೀರು ಸರಬರಾಜು', labelHi: 'जल आपूर्ति', labelTe: 'నీటి సరఫరా' },
   { id: 'civic_stray_animals', icon: '🐕', label: 'Stray Animals', labelKn: 'ಬೀದಿ ಪ್ರಾಣಿಗಳು', labelHi: 'आवारा जानवर', labelTe: 'వీధి జంతువులు' },
   { id: 'traffic_interaction', icon: '👮', label: 'Police / Traffic Interaction', labelKn: 'ಪೊಲೀಸ್ / ಸಂಚಾರ ಸಂವಹನ', labelHi: 'पुलिस / ट्रैफिक', labelTe: 'పోలీసు / ట్రాఫిక్' },
+  { id: 'bmtc_service', icon: '🚌', label: 'BMTC Bus', labelKn: 'ಬಿಎಂಟಿಸಿ ಬಸ್', labelHi: 'बीएमटीसी बस', labelTe: 'బీఎంటీసీ బస్సు' },
+  { id: 'bmtc_staff', icon: '🧑‍✈️', label: 'Bus Staff', labelKn: 'ಬಸ್ ಸಿಬ್ಬಂದಿ', labelHi: 'बस स्टाफ', labelTe: 'బస్ సిబ్బంది' },
+  { id: 'bmtc_fare_ticket', icon: '🎟️', label: 'Bus Fare / Ticket', labelKn: 'ಬಸ್ ದರ / ಟಿಕೆಟ್', labelHi: 'बस किराया / टिकट', labelTe: 'బస్ ఛార్జీ / టికెట్' },
   { id: 'civic_sense', icon: '🚨', label: 'Civic Sense / Violations', labelKn: 'ಸಿವಿಕ್ ಸೆನ್ಸ್ / ಉಲ್ಲಂಘನೆಗಳು', labelHi: 'सिविक सेंस / उल्लंघन', labelTe: 'సివిక్ సెన్స్ / ఉల్లంఘనలు' },
   { id: 'bribes', icon: '💰', label: 'Bribes', labelKn: 'ಲಂಚ', labelHi: 'रिश्वत', labelTe: 'లంచం' },
   { id: 'safety_harassment', icon: '🛡️', label: 'Safety / Harassment', labelKn: 'ಸುರಕ್ಷತೆ / ಕಿರುಕುಳ', labelHi: 'सुरक्षा / उत्पीड़न', labelTe: 'భద్రత / వేధింపు' },
@@ -1104,6 +1108,13 @@ export default function ReportPage() {
                 className={`p-3 rounded-xl transition ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                 {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
+              {step === 'workflow' && currentQuestion?.suggest === 'bengaluru' && (
+                <datalist id="bengaluru-stops">
+                  {BANGALORE_AREAS.map(area => (
+                    <option key={area} value={area} />
+                  ))}
+                </datalist>
+              )}
               <input ref={inputRef} type="text" value={inputValue}
                 onChange={e => { voiceTextRef.current = false; setInputValue(e.target.value); }}
                 onKeyDown={e => {
@@ -1118,6 +1129,7 @@ export default function ReportPage() {
                   step === 'workflow' && currentQuestion ? (currentQuestion.text[lang] || currentQuestion.text.en) :
                   t('input.type_message', lang)
                 }
+                list={step === 'workflow' && currentQuestion?.suggest === 'bengaluru' ? 'bengaluru-stops' : undefined}
                 className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition text-sm"
               />
               <button onClick={() => {

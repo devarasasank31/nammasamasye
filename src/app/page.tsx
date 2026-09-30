@@ -75,6 +75,7 @@ const categories = [
   { icon: '🚰', label: { en: 'Drainage', kn: 'ಚರಂಡಿ', hi: 'नाली', te: 'డ్రైనేజీ' } },
   { icon: '💧', label: { en: 'Water', kn: 'ನೀರು', hi: 'पानी', te: 'నీరు' } },
   { icon: '👮', label: { en: 'Police', kn: 'ಪೊಲೀಸ್', hi: 'पुलिस', te: 'పోలీసు' } },
+  { icon: '🚌', label: { en: 'BMTC Bus', kn: 'ಬಿಎಂಟಿಸಿ ಬಸ್', hi: 'बीएमटीसी बस', te: 'బీఎంటీసీ బస్సు' } },
   { icon: '🚨', label: { en: 'Civic Sense', kn: 'ಸಿವಿಕ್ ಸೆನ್ಸ್', hi: 'सिविक सेंस', te: 'సివిక్ సెన్స్' } },
   { icon: '💰', label: { en: 'Bribes', kn: 'ಲಂಚ', hi: 'रिश्वत', te: 'లంచం' } },
   { icon: '🛡️', label: { en: 'Safety', kn: 'ಸುರಕ್ಷತೆ', hi: 'सुरक्षा', te: 'భద్రత' } },

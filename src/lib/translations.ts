@@ -168,6 +168,7 @@ const translations: Record<string, Record<Language, string>> = {
   'category.HOUSING': { en: 'Housing', kn: 'ವಸತಿ', hi: 'आवास', te: 'గృహ' },
   'category.ENVIRONMENT': { en: 'Environment', kn: 'ಪರಿಸರ', hi: 'पर्यावरण', te: 'పర్యావరణ' },
   'category.UTILITIES': { en: 'Utilities', kn: 'ಸೇವೆಗಳು', hi: 'उपयोगिताएँ', te: 'సౌకర్యాలు' },
+  'category.TRANSPORT': { en: 'Transport', kn: 'ಸಾರಿಗೆ', hi: 'परिवहन', te: 'రవాణా' },
   'category.DIGITAL': { en: 'Digital', kn: 'ಡಿಜಿಟಲ್', hi: 'डिजिटल', te: 'డిజిటల్' },
   'category.ACCESS_INTEGRATION': { en: 'Access', kn: 'ಪ್ರವೇಶ', hi: 'पहुँच', te: 'యాక్సెస్' },
 
