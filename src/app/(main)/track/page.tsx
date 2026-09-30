@@ -89,6 +89,18 @@ export default function TrackPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold text-gray-900">{t('track.title', lang)}</h1>
+
+          {/* Always-visible live counter, even while scrolling the list */}
+          <span
+            data-testid="header-registered-today"
+            className="flex items-center gap-1.5 text-xs text-gray-500 bg-white border border-gray-200 rounded-full px-2.5 py-1 ml-1"
+            title={t('track.registered_today', lang)}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <b className="text-gray-900 tabular-nums">{!loading ? pulse.reportsToday : '–'}</b>
+            <span className="hidden sm:inline">{t('track.registered_today', lang)}</span>
+          </span>
+
           <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
             <Home size={16} />
             <span className="text-xs font-medium">{t('nav.home', lang)}</span>
