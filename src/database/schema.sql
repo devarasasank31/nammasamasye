@@ -36,9 +36,44 @@ CREATE TABLE IF NOT EXISTS incidents (
   ai_scenario_match TEXT DEFAULT '',
   ai_confidence DECIMAL DEFAULT 0,
   ai_reason TEXT DEFAULT '',
+  -- Auto-detected from the pinned coordinate (offline Bengaluru gazetteer)
+  ward TEXT DEFAULT '',
+  ward_number INTEGER,
+  zone TEXT DEFAULT '',
+  police_station TEXT DEFAULT '',
+  ward_distance_km DECIMAL,
+  -- Priority engine output: P1 life-safety (3d) .. P4 routine (30d)
+  priority TEXT DEFAULT 'P3' CHECK (priority IN ('P1','P2','P3','P4')),
+  priority_base TEXT,
+  priority_score INTEGER,
+  priority_reason TEXT DEFAULT '',
+  sla_days INTEGER DEFAULT 21,
+  -- Citizen signals from the public issue feed
+  support_count INTEGER DEFAULT 0,
+  flag_count INTEGER DEFAULT 0,
+  cluster_key TEXT DEFAULT '',
+  cluster_citizens INTEGER DEFAULT 1,
+  resolved_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Back-fill for databases created before ward/priority existed.
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS ward TEXT DEFAULT '';
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS ward_number INTEGER;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS zone TEXT DEFAULT '';
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS police_station TEXT DEFAULT '';
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS ward_distance_km DECIMAL;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT 'P3';
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS priority_base TEXT;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS priority_score INTEGER;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS priority_reason TEXT DEFAULT '';
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS sla_days INTEGER DEFAULT 21;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS support_count INTEGER DEFAULT 0;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS flag_count INTEGER DEFAULT 0;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS cluster_key TEXT DEFAULT '';
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS cluster_citizens INTEGER DEFAULT 1;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ;
 
 -- Incident Q&A
 CREATE TABLE IF NOT EXISTS incident_answers (

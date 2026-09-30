@@ -6,6 +6,8 @@ import { Language, IncidentCategory, AttachmentMeta } from '@/types';
 import { getStoredLanguage, setStoredLanguage, getOrCreateSession, LANGUAGE_EVENT } from '@/services/session';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { BANGALORE_AREAS } from '@/data/bengaluru';
+import { detectLocationInfo, LocationInfo } from '@/data/wards';
+import { computePriority, severityFor } from '@/lib/priority';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { detectReplyLanguage, shouldAdoptLanguage, speechLocale, isLanguage } from '@/lib/ai/language';
@@ -160,6 +162,16 @@ export default function ReportPage() {
   const [showEvidenceUploader, setShowEvidenceUploader] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [pickedLocation, setPickedLocation] = useState<PickedLocation | null>(null);
+  // Ward + nearest police station, derived offline from the pinned point.
+  const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
+  // What the citizen sees after submitting: place + assigned priority.
+  const [submitSummary, setSubmitSummary] = useState<{
+    ward: string;
+    police: string;
+    priority: string;
+    sla: number;
+    reason: string;
+  } | null>(null);
   // What other citizens typed under "Something else", with how many used it.
   const [customSuggestions, setCustomSuggestions] = useState<{ text: string; count: number }[]>([]);
 
@@ -265,6 +277,19 @@ export default function ReportPage() {
     if (loc) {
       setPickedLocation(loc);
       setLocation(loc.address);
+      const info = detectLocationInfo(loc.lat, loc.lng);
+      setLocationInfo(info);
+      if (info) {
+        // Auto-detection of the ward and the nearest police station —
+        // shown to the citizen now and stored for the admin dashboard.
+        addBotMessage(
+          t('report.ward_found', lang)
+            .replace('{ward}', info.wardLabel)
+            .replace('{police}', info.policeStation || t('report.unknown_area', lang))
+        );
+      } else {
+        addBotMessage(t('report.ward_missing', lang));
+      }
       if (selectedScenario) {
         const q = selectedScenario.workflow[currentQuestionIdx];
         setAnswers(prev => ({ ...prev, [q.id]: loc.address }));
@@ -273,6 +298,7 @@ export default function ReportPage() {
         addUserMessage(loc.address);
       }
     } else {
+      setLocationInfo(null);
       if (selectedScenario?.workflow[currentQuestionIdx]) addUserMessage(t('report.skip_short', lang).replace(' →', ''));
     }
     setTimeout(() => moveToNextQuestion(), 250);
@@ -547,9 +573,21 @@ export default function ReportPage() {
       ai_scenario_match: selectedScenario.name,
       ai_confidence: scenarioMatches[0]?.confidence || 0,
       ai_reason: scenarioMatches[0]?.reason || '',
+      ward: locationInfo?.wardLabel,
+      ward_number: locationInfo?.wardNumber,
+      zone: locationInfo?.zone,
+      police_station: locationInfo?.policeStation,
+      ward_distance_km: locationInfo?.wardDistanceKm,
     });
     if (incident) {
       setIncidentId(incident.incident_id);
+      setSubmitSummary({
+        ward: incident.ward || '',
+        police: incident.police_station || '',
+        priority: incident.priority || 'P3',
+        sla: incident.sla_days || 21,
+        reason: incident.priority_reason || '',
+      });
       addBotMessage(`${t('bot.report_created', lang)}\n\n${t('bot.track_id', lang)}: ${incident.incident_id}`);
       setStep('submitted');
     }
@@ -896,6 +934,46 @@ export default function ReportPage() {
             {selectedScenario && <div className="text-sm text-gray-600"><span className="font-medium">{t('report.category', lang)}:</span> {selectedScenario.name}</div>}
             {originalText && <div className="text-sm text-gray-600"><span className="font-medium">{t('report.description', lang)}:</span> {originalText}</div>}
             {location && <div className="text-sm text-gray-600 flex items-center gap-1"><MapPin size={14} /> {location}</div>}
+
+            {/* Auto-detected ward + nearest police station */}
+            {locationInfo && (
+              <div className="text-xs bg-sky-50 border border-sky-200 rounded-xl p-3 space-y-1 text-sky-900">
+                <div className="flex justify-between gap-3">
+                  <span className="font-semibold">{t('report.ward', lang)}</span>
+                  <span className="text-right">{locationInfo.wardLabel} ({locationInfo.zone})</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="font-semibold">{t('report.police', lang)}</span>
+                  <span className="text-right">{locationInfo.policeStation || t('report.unknown_area', lang)}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Priority preview — explained, not hidden */}
+            {selectedScenario && (() => {
+              const pv = computePriority({
+                category: selectedScenario.parent,
+                subcategory: selectedScenario.id,
+                text: `${originalText} ${answers.what_happened || ''}`,
+                answers,
+              });
+              const color = pv.level === 'P1' ? 'bg-red-100 text-red-700 border-red-300'
+                : pv.level === 'P2' ? 'bg-orange-100 text-orange-700 border-orange-300'
+                : pv.level === 'P3' ? 'bg-amber-100 text-amber-800 border-amber-300'
+                : 'bg-gray-100 text-gray-700 border-gray-300';
+              return (
+                <div className={`text-xs rounded-xl border p-3 ${color}`}>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-semibold">{t('report.priority', lang)}: {pv.level}</span>
+                    <span>{t('report.sla', lang)}: {pv.slaDays} {t('report.days', lang)}</span>
+                  </div>
+                  <p className="mt-1 opacity-80">{severityFor(pv.level) === 'critical' ? t('report.priority_critical', lang)
+                    : severityFor(pv.level) === 'high' ? t('report.priority_high', lang)
+                    : severityFor(pv.level) === 'medium' ? t('report.priority_medium', lang)
+                    : t('report.priority_low', lang)}</p>
+                </div>
+              );
+            })()}
             {Object.entries(answers).map(([k, v]) => {
               const q = selectedScenario?.workflow.find(w => w.id === k);
               const label = q ? (q.text[lang] || q.text.en).replace(/\?+$/, '') : k.replace(/_/g, ' ');
@@ -1044,7 +1122,40 @@ export default function ReportPage() {
             <h3 className="font-bold text-gray-900 text-lg mb-2">{t('report.report_submitted', lang)}</h3>
             <div className="text-2xl font-mono font-bold text-primary mb-2">{incidentId}</div>
             <p className="text-sm text-gray-500 mb-4">{t('report.save_id', lang)}</p>
+
+            {submitSummary && (
+              <div className="mb-4 text-left space-y-2">
+                {submitSummary.ward && (
+                  <div className="flex justify-between gap-3 text-xs bg-sky-50 border border-sky-200 rounded-lg px-3 py-2">
+                    <span className="font-semibold text-sky-900">{t('report.ward', lang)}</span>
+                    <span className="text-sky-800 text-right">{submitSummary.ward}</span>
+                  </div>
+                )}
+                {submitSummary.police && (
+                  <div className="flex justify-between gap-3 text-xs bg-sky-50 border border-sky-200 rounded-lg px-3 py-2">
+                    <span className="font-semibold text-sky-900">{t('report.police', lang)}</span>
+                    <span className="text-sky-800 text-right">{submitSummary.police}</span>
+                  </div>
+                )}
+                <div className={`text-xs rounded-lg border px-3 py-2 flex justify-between gap-3 ${
+                  submitSummary.priority === 'P1' ? 'bg-red-50 border-red-200 text-red-700'
+                  : submitSummary.priority === 'P2' ? 'bg-orange-50 border-orange-200 text-orange-700'
+                  : submitSummary.priority === 'P3' ? 'bg-amber-50 border-amber-200 text-amber-800'
+                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                }`}>
+                  <span className="font-semibold">{t('report.priority', lang)}: {submitSummary.priority}</span>
+                  <span>{t('report.sla', lang)}: {submitSummary.sla} {t('report.days', lang)}</span>
+                </div>
+                {submitSummary.reason && (
+                  <p className="text-[11px] text-gray-500 leading-snug">{submitSummary.reason}</p>
+                )}
+              </div>
+            )}
+
             <button onClick={() => router.push(`/track/${incidentId}`)} className="px-6 py-2 rounded-xl border border-primary text-primary font-medium hover:bg-primary hover:text-white transition text-sm">{t('report.track_incident', lang)}</button>
+            <div className="mt-3">
+              <button onClick={() => router.push('/feed')} className="text-xs text-gray-500 hover:text-primary underline underline-offset-2">{t('report.see_public_feed', lang)}</button>
+            </div>
           </div>
         )}
       </div>

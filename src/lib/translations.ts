@@ -77,6 +77,48 @@ const translations: Record<string, Record<Language, string>> = {
   'report.report_submitted': { en: 'Report Submitted', kn: 'ವರದಿ ಸಲ್ಲಿಸಲಾಗಿದೆ', hi: 'रिपोर्ट सबमिट हो गई', te: 'నివేదిక సమర్పించబడింది' },
   'report.save_id': { en: 'Save this ID to track your report', kn: 'ವರದಿ ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಈ ಐಡಿ ಉಳಿಸಿ', hi: 'रिपोर्ट ट्रैक करने के लिए यह आईडी सेव करें', te: 'నివేదికను ట్రాక్ చేయడానికి ఈ ఐడిని సేవ్ చేయండి' },
 
+  // Auto-detected ward / police station + priority explanation
+  'report.ward': { en: 'Ward', kn: 'ವಾರ್ಡ್', hi: 'वार्ड', te: 'వార్డ్' },
+  'report.police': { en: 'Nearest police station', kn: 'ಹತ್ತಿರದ ಪೊಲೀಸ್ ಠಾಣೆ', hi: 'निकटतम पुलिस स्टेशन', te: 'సమీపపోలీస్ స్టేషన్' },
+  'report.ward_found': { en: 'Detected: {ward} — nearest police station {police}', kn: 'ಪತ್ತೆಯಾಗಿದೆ: {ward} — ಹತ್ತಿರದ ಪೊಲೀಸ್ ಠಾಣೆ {police}', hi: 'पता चला: {ward} — निकटतम पुलिस स्टेशन {police}', te: 'గుర్తించబడింది: {ward} — సమీప పోలీస్ స్టేషన్ {police}' },
+  'report.ward_missing': { en: 'This point is outside the Bengaluru ward list, so no ward was assigned.', kn: 'ಈ ಬಿಂದು ಬೆಂಗಳೂರು ವಾರ್ಡ್ ಪಟ್ಟಿಯ ಹೊರಗಿದೆ, ಆದ್ದರಿಂದ ವಾರ್ಡ್ ನಿಗದಿಪಡಿಸಲಾಗಿಲ್ಲ.', hi: 'यह बिंदु बेंगलुरु वार्ड सूची के बाहर है, इसलिए कोई वार्ड निर्धारित नहीं हुआ।', te: 'ఈ బిందువు బెంగళూరు వార్డ్ జాబితా వెలుపల ఉంది, కాబట్టి వార్డ్ కేటాయించబడలేదు.' },
+  'report.unknown_area': { en: 'Not identified', kn: 'ಗುರುತಿಸಲಾಗಿಲ್ಲ', hi: 'पहचाना नहीं गया', te: 'గుర్తించబడలేదు' },
+  'report.priority': { en: 'Priority', kn: 'ಆದ್ಯತಾ ಕ್ರಮ', hi: 'प्राथमिकता', te: 'ప్రాధాన్యత' },
+  'report.sla': { en: 'Target', kn: 'ಗುರಿ', hi: 'लक्ष्य', te: 'లక్ష్యం' },
+  'report.days': { en: 'days', kn: 'ದಿನಗಳು', hi: 'दिन', te: 'రోజులు' },
+  'report.priority_critical': { en: 'Immediate life-safety risk — handled within 3 days.', kn: 'ತಕ್ಷಣದ ಜೀವ ಅಪಾಯ — 3 ದಿನಗಳಲ್ಲಿ ನಿರ್ವಹಿಸಲಾಗುತ್ತದೆ.', hi: 'तुरंत जीवन-सुरक्षा जोखिम — 3 दिनों में निपटाया जाएगा।', te: 'తక్షణ ప్రాణ భద్రత ప్రమాదం — 3 రోజుల్లో పరిష్కరించబడుతుంది.' },
+  'report.priority_high': { en: 'Affects public safety — target 7 days.', kn: 'ಸಾರ್ವಜನಿಕ ಸುರಕ್ಷತೆಗೆ ಪರಿಣಾಮ — ಗುರಿ 7 ದಿನಗಳು.', hi: 'सार्वजनिक सुरक्षा को प्रभावित करता है — लक्ष्य 7 दिन।', te: 'ప్రజా భద్రతపై ప్రభావం — లక్ష్యం 7 రోజులు.' },
+  'report.priority_medium': { en: 'Routine civic issue — target 21 days.', kn: 'ಸಾಮಾನ್ಯ ನಾಗರಿಕ ಸಮಸ್ಯೆ — ಗುರಿ 21 ದಿನಗಳು.', hi: 'सामान्य नागरिक समस्या — लक्ष्य 21 दिन।', te: 'సాధారణ పౌర సమస్య — లక్ష్యం 21 రోజులు.' },
+  'report.priority_low': { en: 'Low impact — target 30 days.', kn: 'ಕಡಿಮೆ ಪರಿಣಾಮ — ಗುರಿ 30 ದಿನಗಳು.', hi: 'कम प्रभाव — लक्ष्य 30 दिन।', te: 'తక్కువ ప్రభావం — లక్ష్యం 30 రోజులు.' },
+  'report.see_public_feed': { en: 'See what the city is reporting →', kn: 'ನಗರ ಏನು ವರದಿ ಮಾಡುತ್ತಿದೆ ನೋಡಿ →', hi: 'देखें शहर क्या रिपोर्ट कर रहा है →', te: 'నగరం ఏమి నివేదిస్తోందో చూడండి →' },
+  'nav.feed': { en: 'City feed', kn: 'ನಗರ ಫೀಡ್', hi: 'शहर फ़ीड', te: 'నగర ఫీడ్' },
+
+  // Public issue feed (support / flag)
+  'feed.title': { en: 'Public Issue Feed', kn: 'ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆ ಫೀಡ್', hi: 'सार्वजनिक समस्या फ़ीड', te: 'పబ్లిక్ సమస్య ఫీడ్' },
+  'feed.subtitle': { en: 'Only the issue, place and priority are shown — no names, no contact details, no photos.', kn: 'ಸಮಸ್ಯೆ, ಸ್ಥಳ ಮತ್ತು ಆದ್ಯತಾ ಕ್ರಮ ಮಾತ್ರ ತೋರಿಸಲಾಗುತ್ತದೆ — ಹೆಸರು, ಸಂಪರ್ಕ, ಫೋಟೋ ಇಲ್ಲ.', hi: 'केवल समस्या, स्थान और प्राथमिकता दिखती है — न नाम, न संपर्क, न फ़ोटो।', te: 'సమస్య, ప్రదేశం, ప్రాధాన్యత మాత్రమే — పేర్లు, సంప్రదింపులు, ఫోటోలు లేవు.' },
+  'feed.loading': { en: 'Loading public feed...', kn: 'ಸಾರ್ವಜನಿಕ ಫೀಡ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ...', hi: 'सार्वजनिक फ़ीड लोड हो रहा है...', te: 'పబ్లిక్ ఫీడ్ లోడ్ అవుతోంది...' },
+  'feed.empty': { en: 'No public issues yet — be the first to report one.', kn: 'ಇನ್ನೂ ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆಗಳಿಲ್ಲ — ನೀವೇ ಮೊದಲಿಗರಾಗಿ ವರದಿ ಮಾಡಿ.', hi: 'अभी कोई सार्वजनिक समस्या नहीं — पहली रिपोर्ट आप करें।', te: 'ఇంకా పబ్లిక్ సమస్యలు లేవు — మీరే మొదటిగా నివేదించండి.' },
+  'feed.support': { en: 'Support', kn: 'ಬೆಂಬಲ', hi: 'समर्थन', te: 'మద్దతు' },
+  'feed.supported': { en: 'Supported', kn: 'ಬೆಂಬಲಿಸಲಾಗಿದೆ', hi: 'समर्थित', te: 'మద్దతు ఇచ్చారు' },
+  'feed.flag': { en: 'Flag unclear description', kn: 'ಸ್ಪಷ್ಟವಾಗಿಲ್ಲ ಎಂದು ಗುರುತಿಸಿ', hi: 'अस्पष्ट विवरण बताएँ', te: 'స్పష్టంగా లేదని గుర్తించండి' },
+  'feed.flagged': { en: 'Flagged for clarity', kn: 'ಸ್ಪಷ್ಟತೆಗಾಗಿ ಗುರುತಿಸಲಾಗಿದೆ', hi: 'स्पष्टता के लिए चिह्नित', te: 'స్పష్టత కోసం గుర్తించబడింది' },
+  'feed.all': { en: 'All', kn: 'ಎಲ್ಲಾ', hi: 'सभी', te: 'అన్నీ' },
+  'feed.ward': { en: 'Ward', kn: 'ವಾರ್ಡ್', hi: 'वार्ड', te: 'వార్డ్' },
+  'feed.citizens': { en: '{count} citizens reported this same issue here', kn: 'ಇಲ್ಲಿ {count} ಪೌರರು ಇದೇ ಸಮಸ್ಯೆಯನ್ನು ವರದಿ ಮಾಡಿದ್ದಾರೆ', hi: 'यहाँ {count} नागरिकों ने यही समस्या रिपोर्ट की है', te: 'ఇక్కడ {count} పౌరులు ఇదే సమస్యను నివేదించారు' },
+  'feed.sort_priority': { en: 'Most urgent', kn: 'ಅತಿ ತುರ್ತು', hi: 'सबसे ज़रूरी', te: 'అత్యవసరం' },
+  'feed.sort_support': { en: 'Most supported', kn: 'ಅತಿ ಬೆಂಬಲ', hi: 'सबसे अधिक समर्थित', te: 'ఎక్కువ మద్దతు' },
+  'feed.issues': { en: 'issues', kn: 'ಸಮಸ್ಯೆಗಳು', hi: 'समस्याएँ', te: 'సమస్యలు' },
+
+  // Personal dashboard (track)
+  'track.my_dashboard': { en: 'My Reporting Dashboard', kn: 'ನನ್ನ ವರದಿ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್', hi: 'मेरी रिपोर्टिंग डैशबोर्ड', te: 'నా నివేదిక డాష్‌బోర్డ్' },
+  'track.reported': { en: 'Reports filed', kn: 'ಸಲ್ಲಿಸಿದ ವರದಿಗಳು', hi: 'दाखिल रिपोर्टें', te: 'సమర్పించిన నివేదికలు' },
+  'track.resolved': { en: 'Resolved', kn: 'ಪರಿಹರಿಸಲಾಗಿದೆ', hi: 'हल हुई', te: 'పరిష్కరించబడింది' },
+  'track.open': { en: 'Still open', kn: 'ಇನ್ನೂ ತೆರೆದಿದೆ', hi: 'अभी खुली', te: 'ఇంకా తెరిచి ఉంది' },
+  'track.by_day': { en: 'Day by day — reports vs resolved', kn: 'ದಿನದಿಂದ ದಿನಕ್ಕೆ — ವರದಿ ಮತ್ತು ಪರಿಹಾರ', hi: 'दिन-प्रतिदिन — रिपोर्ट बनाम हल', te: 'రోజువారీ — నివేదికలు vs పరిష్కరించబడినవి' },
+  'track.day_reports': { en: 'Reports', kn: 'ವರದಿಗಳು', hi: 'रिपोर्ट', te: 'నివేదికలు' },
+  'track.day_resolved': { en: 'Resolved', kn: 'ಪರಿಹರಿಸಲಾಗಿದೆ', hi: 'हल हुई', te: 'పరిష్కరించబడింది' },
+  'track.no_chart_data': { en: 'The day-by-day chart appears once you file a report.', kn: 'ವರದಿ ಸಲ್ಲಿಸಿದ ನಂತರ ದೈನಂದಿನ ಚಾರ್ಟ್ ಕಾಣಿಸುತ್ತದೆ.', hi: 'रिपोर्ट दर्ज करने के बाद रोज़ाना चार्ट दिखेगा।', te: 'నివేదిక నమోదు చేసిన తర్వాత రోజువారీ చార్ట్ కనిపిస్తుంది.' },
+
   // Tracking page
   'track.title': { en: 'My Incidents', kn: 'ನನ್ನ ಘಟನೆಗಳು', hi: 'मेरी घटनाएँ', te: 'నా సంఘటనలు' },
   'track.search': { en: 'Search', kn: 'ಹುಡುಕಿ', hi: 'खोजें', te: 'వెతకండి' },

@@ -220,10 +220,44 @@ export default function AdminIncidentDetailPage() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div><span className="font-medium text-gray-500">Category:</span> <span className="text-gray-900 capitalize">{incident.category_id.replace(/_/g, ' ')}</span></div>
               <div><span className="font-medium text-gray-500">Subcategory:</span> <span className="text-gray-900 capitalize">{incident.subcategory.replace(/_/g, ' ')}</span></div>
+              <div><span className="font-medium text-gray-500">Ward:</span> <span className="text-gray-900">{incident.ward || '-'}</span></div>
+              <div><span className="font-medium text-gray-500">Zone:</span> <span className="text-gray-900">{incident.zone || '-'}</span></div>
+              <div className="col-span-2"><span className="font-medium text-gray-500">Nearest police station:</span> <span className="text-gray-900">{incident.police_station || '-'}</span>{typeof incident.ward_distance_km === 'number' && <span className="text-gray-400 text-xs"> ({incident.ward_distance_km} km from ward centre)</span>}</div>
               <div><span className="font-medium text-gray-500">Area:</span> <span className="text-gray-900">{incident.location_area || '-'}</span></div>
               <div><span className="font-medium text-gray-500">Language:</span> <span className="text-gray-900">{incident.language}</span></div>
               <div><span className="font-medium text-gray-500">Created:</span> <span className="text-gray-900">{new Date(incident.created_at).toLocaleString()}</span></div>
               <div><span className="font-medium text-gray-500">AI Confidence:</span> <span className="text-gray-900">{incident.ai_confidence}%</span></div>
+            </div>
+
+            {/* Priority engine output */}
+            <div className={`rounded-xl border p-4 ${
+              incident.priority === 'P1' ? 'bg-red-50 border-red-200'
+              : incident.priority === 'P2' ? 'bg-orange-50 border-orange-200'
+              : incident.priority === 'P3' ? 'bg-amber-50 border-amber-200'
+              : 'bg-gray-50 border-gray-200'
+            }`}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-sm">Priority: {incident.priority || 'P3'}</span>
+                  {incident.priority_base && incident.priority !== incident.priority_base && (
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-semibold">
+                      escalated from {incident.priority_base}
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-gray-600">
+                  Score {incident.priority_score ?? '-'} · SLA {incident.sla_days || 21} days
+                  {incident.resolved_at ? ` · resolved ${new Date(incident.resolved_at).toLocaleDateString()}` : ''}
+                </span>
+              </div>
+              {incident.priority_reason && <p className="text-xs text-gray-700 mt-2">{incident.priority_reason}</p>}
+              <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-700">
+                <span><b>{incident.support_count || 0}</b> citizen supports</span>
+                <span><b>{incident.cluster_citizens || 1}</b> citizens reported this issue here</span>
+                <span className={((incident.flag_count || 0) > 0) ? 'text-amber-700 font-semibold' : ''}>
+                  <b>{incident.flag_count || 0}</b> clarity flags
+                </span>
+              </div>
             </div>
 
             {incident.original_text && (

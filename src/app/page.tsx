@@ -184,6 +184,7 @@ export default function LandingPage() {
             <button onClick={toggleTheme} title={themeLabel} aria-label={themeLabel} className="p-2 rounded-lg hover:bg-white/10 transition">
               {themeIcon}
             </button>
+            <a href="/feed" className="hover:text-primary transition">{t('nav.feed', lang)}</a>
             <a href="/privacy" className="hover:text-primary transition">{t('nav.privacy', lang)}</a>
             <a href="/safety" className="hover:text-primary transition">{t('nav.safety', lang)}</a>
           </div>
@@ -201,6 +202,7 @@ export default function LandingPage() {
             <button onClick={() => { setShowLangModal(true); setMobileMenuOpen(false); }} className="block w-full text-left py-2">
               <Globe size={16} className="inline mr-2" />{t('nav.language', lang)}
             </button>
+            <a href="/feed" className="block py-2">{t('nav.feed', lang)}</a>
             <a href="/privacy" className="block py-2">{t('nav.privacy', lang)}</a>
             <a href="/safety" className="block py-2">{t('nav.safety', lang)}</a>
           </div>
@@ -238,6 +240,12 @@ export default function LandingPage() {
                 className={`${darkMode ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-gray-100 border-gray-200 hover:bg-gray-200'} border px-8 py-4 rounded-2xl font-semibold text-lg transition-all flex items-center justify-center gap-2`}
               >
                 <FileSearch size={20} /> {t('home.track_now', lang)}
+              </button>
+              <button
+                onClick={() => { setStoredLanguage(lang); router.push('/feed'); }}
+                className={`${darkMode ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-gray-100 border-gray-200 hover:bg-gray-200'} border px-8 py-4 rounded-2xl font-semibold text-lg transition-all flex items-center justify-center gap-2`}
+              >
+                <TrendingUp size={20} /> {t('nav.feed', lang)}
               </button>
             </div>
 

@@ -12,6 +12,9 @@ export type IncidentStatus =
 
 export type AdminRole = 'SUPER_ADMIN' | 'ADMIN' | 'REVIEWER' | 'VIEW_ONLY';
 
+/** P1 = immediate life-safety risk (3 days), P4 = routine/low impact (30 days). */
+export type PriorityLevel = 'P1' | 'P2' | 'P3' | 'P4';
+
 export type EvidenceType = 'image' | 'video' | 'audio' | 'document' | 'link';
 
 export type CategoryParent =
@@ -81,6 +84,51 @@ export interface Incident {
   ai_reason?: string;
   created_at: string;
   updated_at: string;
+  /** Auto-detected from the pinned coordinate (offline gazetteer). */
+  ward?: string;
+  ward_number?: number;
+  zone?: string;
+  police_station?: string;
+  ward_distance_km?: number;
+  /** Computed by the priority engine (P1 = life safety, P4 = routine). */
+  priority?: PriorityLevel;
+  priority_base?: PriorityLevel;
+  priority_score?: number;
+  priority_reason?: string;
+  sla_days?: number;
+  /** Citizen support (upvotes) and moderation signals from the public feed. */
+  support_count?: number;
+  flag_count?: number;
+  cluster_key?: string;
+  cluster_citizens?: number;
+  resolved_at?: string;
+}
+
+/**
+ * Sanitised view of an incident for the public issue feed.
+ * Deliberately omits original_text, answers, attachments, session id and
+ * exact coordinates — only the issue, place and severity are public.
+ */
+export interface PublicIncident {
+  incident_id: string;
+  category_id: string;
+  subcategory: string;
+  ward?: string;
+  ward_number?: number;
+  zone?: string;
+  police_station?: string;
+  area: string;
+  priority: PriorityLevel;
+  severity: string;
+  status: IncidentStatus;
+  support_count: number;
+  flag_count: number;
+  cluster_citizens: number;
+  sla_days?: number;
+  created_at: string;
+  resolved_at?: string;
+  supported?: boolean;
+  flagged?: boolean;
 }
 
 export interface Evidence {

@@ -6,14 +6,46 @@ import { t } from '@/lib/translations';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Language, Incident } from '@/types';
 import { getAllIncidents } from '@/services/incident';
-import { ArrowLeft, MessageSquare, Search, Home } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Search, Home, CheckCircle, FileText, Clock } from 'lucide-react';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { getStatusBadgeClass } from '@/lib/status-colors';
+import {
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
+} from 'recharts';
 
 function subcategoryLabel(id: string, lang: Language): string {
   const scn = getScenarioById(id);
   if (scn) return getScenarioName(scn, lang);
   return id.replace(/_/g, ' ');
+}
+
+interface DayPoint {
+  date: string;
+  reports: number;
+  resolved: number;
+}
+
+/** Last 14 days: how many I reported vs how many were resolved. */
+function buildDailySeries(incidents: Incident[]): DayPoint[] {
+  const days: DayPoint[] = [];
+  const today = new Date();
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    days.push({ date: d.toISOString().split('T')[0], reports: 0, resolved: 0 });
+  }
+  const index = new Map(days.map((d, i) => [d.date, i]));
+  for (const inc of incidents) {
+    const created = new Date(inc.created_at).toISOString().split('T')[0];
+    const at = index.get(created);
+    if (at !== undefined) days[at].reports += 1;
+    if (inc.resolved_at) {
+      const day = new Date(inc.resolved_at).toISOString().split('T')[0];
+      const r = index.get(day);
+      if (r !== undefined) days[r].resolved += 1;
+    }
+  }
+  return days;
 }
 
 export default function TrackPage() {
@@ -41,6 +73,16 @@ export default function TrackPage() {
     if (!searchId.trim()) return;
     router.push(`/track/${searchId.trim().toUpperCase()}`);
   };
+
+  const daily = buildDailySeries(incidents);
+  const resolvedCount = incidents.filter(i => i.status === 'RESOLVED' || i.status === 'CLOSED').length;
+  const openCount = incidents.length - resolvedCount;
+
+  const summary = [
+    { label: t('track.reported', lang), value: incidents.length, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: t('track.resolved', lang), value: resolvedCount, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
+    { label: t('track.open', lang), value: openCount, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -75,6 +117,38 @@ export default function TrackPage() {
             {t('track.search', lang)}
           </button>
         </div>
+
+        {/* My dashboard: totals + day-by-day reports vs resolved */}
+        {!loading && incidents.length > 0 && (
+          <>
+            <div className="grid grid-cols-3 gap-3">
+              {summary.map(s => (
+                <div key={s.label} className={`${s.bg} border border-gray-100 rounded-2xl p-4`}>
+                  <s.icon size={18} className={s.color} />
+                  <div className="text-2xl font-bold text-gray-900 mt-2">{s.value}</div>
+                  <div className="text-[11px] text-gray-500 mt-0.5">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+              <h2 className="font-bold text-gray-900 text-sm mb-3">{t('track.by_day', lang)}</h2>
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={daily} margin={{ top: 4, right: 8, bottom: 0, left: -24 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#eef2f7" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9ca3af' }} tickFormatter={v => String(v).slice(5)} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#9ca3af' }} />
+                    <Tooltip labelFormatter={v => String(v)} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Bar dataKey="reports" name={t('track.day_reports', lang)} fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <Line dataKey="resolved" name={t('track.day_resolved', lang)} stroke="#16a34a" strokeWidth={2} dot={{ r: 2 }} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Incidents List */}
         <div className="space-y-3">
@@ -124,10 +198,21 @@ function IncidentCard({ inc, lang, onClick }: { inc: Incident; lang: Language; o
             {hasNotes && <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
           </div>
           <div className="text-xs text-gray-500 mt-0.5 capitalize">{subcategoryLabel(inc.subcategory, lang)}</div>
+          {inc.ward && <div className="text-[11px] text-gray-400 mt-0.5">{inc.ward}</div>}
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(inc.status)}`}>
-          {t(`status.${inc.status}`, lang)}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          {inc.priority && (
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+              inc.priority === 'P1' ? 'bg-red-100 text-red-700 border-red-300'
+              : inc.priority === 'P2' ? 'bg-orange-100 text-orange-700 border-orange-300'
+              : inc.priority === 'P3' ? 'bg-amber-100 text-amber-800 border-amber-300'
+              : 'bg-gray-100 text-gray-600 border-gray-300'
+            }`}>{inc.priority}</span>
+          )}
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(inc.status)}`}>
+            {t(`status.${inc.status}`, lang)}
+          </span>
+        </div>
       </div>
       <div className="text-xs text-gray-400 mt-2">{new Date(inc.created_at).toLocaleString()}</div>
       {hasNotes && (

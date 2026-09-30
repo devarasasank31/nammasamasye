@@ -1,4 +1,4 @@
-﻿import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta, IncidentStats } from '@/types';
+﻿import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta, IncidentStats, PublicIncident } from '@/types';
 import { isDemoMode } from '@/lib/supabase';
 import { demoStore } from '@/lib/demo-store';
 
@@ -21,6 +21,11 @@ export async function createIncident(data: {
   ai_scenario_match?: string;
   ai_confidence?: number;
   ai_reason?: string;
+  ward?: string;
+  ward_number?: number;
+  zone?: string;
+  police_station?: string;
+  ward_distance_km?: number;
 }): Promise<Incident | null> {
   if (isDemoMode) {
     return demoStore.createIncident(data);
@@ -48,6 +53,11 @@ export async function createIncident(data: {
       ai_scenario_match: data.ai_scenario_match || '',
       ai_confidence: data.ai_confidence || 0,
       ai_reason: data.ai_reason || '',
+      ward: data.ward || null,
+      ward_number: data.ward_number ?? null,
+      zone: data.zone || null,
+      police_station: data.police_station || null,
+      ward_distance_km: data.ward_distance_km ?? null,
     })
     .select()
     .single();
@@ -276,4 +286,23 @@ export async function getDashboardStats(): Promise<IncidentStats> {
   });
 
   return { total: incidents.length, byCategory, byArea, byLang };
+}
+
+// ============================================================
+// PUBLIC ISSUE FEED — sanitised, no personal or sensitive fields
+// ============================================================
+
+export async function getPublicFeed(): Promise<PublicIncident[]> {
+  if (isDemoMode) return demoStore.getPublicFeed();
+  return [];
+}
+
+export async function supportIncident(incidentId: string): Promise<number | null> {
+  if (isDemoMode) return demoStore.supportIncident(incidentId);
+  return null;
+}
+
+export async function flagIncident(incidentId: string): Promise<number | null> {
+  if (isDemoMode) return demoStore.flagIncident(incidentId);
+  return null;
 }

@@ -1,4 +1,9 @@
-﻿import { Language, Incident, IncidentStatus, Session, Evidence, StatusHistory, AdminNote, AttachmentMeta } from '@/types';
+﻿import {
+  Language, Incident, IncidentStatus, Session, Evidence, StatusHistory, AdminNote,
+  AttachmentMeta, CategoryParent, PublicIncident,
+} from '@/types';
+import { computePriority, severityFor } from '@/lib/priority';
+import { buildClusters } from '@/lib/clusters';
 
 // ============================================================
 // PERSISTENT DEMO STORE — uses localStorage to survive restarts
@@ -45,6 +50,42 @@ export interface CustomProblem {
 
 let customProblems: CustomProblem[] = loadFromStorage<CustomProblem[]>('ns_custom_problems', []);
 
+// One vote / one flag per browser — the feed is anonymous, so the local
+// device is the identity.
+const supported: string[] = loadFromStorage<string[]>('ns_supported', []);
+const flagged: string[] = loadFromStorage<string[]>('ns_flagged', []);
+
+/**
+ * Re-derives everything that depends on the whole collection: cluster
+ * membership (N citizens, same ward, same issue) and the priority level,
+ * which can rise by one when enough citizens report or support the same
+ * problem.
+ */
+function recomputeDerived(): void {
+  const { citizenCountByIncident, clusterKeyByIncident } = buildClusters(incidents);
+  for (const inc of incidents) {
+    const cluster = citizenCountByIncident.get(inc.incident_id) || 1;
+    const support = inc.support_count || 0;
+    const res = computePriority({
+      category: (inc.category_id as CategoryParent) || 'OTHER',
+      subcategory: inc.subcategory,
+      text: `${inc.original_text} ${inc.ai_summary} ${Object.values(inc.answers || {}).join(' ')}`,
+      answers: inc.answers,
+      supportCount: support,
+      clusterSize: cluster,
+    });
+    inc.priority = res.level;
+    inc.priority_base = res.baseLevel;
+    inc.priority_score = res.score;
+    inc.priority_reason = res.reason;
+    inc.sla_days = res.slaDays;
+    inc.severity = severityFor(res.level);
+    inc.cluster_citizens = cluster;
+    inc.cluster_key = clusterKeyByIncident.get(inc.incident_id);
+  }
+  persistAll();
+}
+
 function genId(): string {
   idCounter++;
   saveToStorage('ns_id_counter', idCounter);
@@ -72,14 +113,11 @@ function persistAll(): void {
 
 export const demoStore = {
   // --- Sessions ---
+  // Mirrors Supabase mode: a caller only reaches here when this browser has no
+  // stored session id, so mint a brand-new session instead of reusing a recent
+  // one. Distinct citizens must stay distinct or "N citizens reported this"
+  // clusters would collapse to a single person.
   createSession(lang: Language): Session {
-    const existing = sessions.find(s => s.language === lang && 
-      (Date.now() - new Date(s.last_active).getTime()) < 30 * 60 * 1000);
-    if (existing) {
-      existing.last_active = new Date().toISOString();
-      persistAll();
-      return existing;
-    }
     const s: Session = {
       id: genId(),
       language: lang,
@@ -123,6 +161,11 @@ export const demoStore = {
     ai_scenario_match?: string;
     ai_confidence?: number;
     ai_reason?: string;
+    ward?: string;
+    ward_number?: number;
+    zone?: string;
+    police_station?: string;
+    ward_distance_km?: number;
   }): Incident {
     const now = new Date().toISOString();
     const incId = genIncidentId();
@@ -138,7 +181,7 @@ export const demoStore = {
       structured_interpretation: data.structured_interpretation || '',
       ai_summary: data.ai_summary || '',
       location: data.location || '',
-      location_area: data.location_area || '',
+      location_area: data.location_area || data.ward || '',
       location_lat: data.location_lat,
       location_lng: data.location_lng,
       date_of_incident: data.date_of_incident,
@@ -150,6 +193,13 @@ export const demoStore = {
       ai_scenario_match: data.ai_scenario_match || '',
       ai_confidence: data.ai_confidence || 0,
       ai_reason: data.ai_reason || '',
+      ward: data.ward,
+      ward_number: data.ward_number,
+      zone: data.zone,
+      police_station: data.police_station,
+      ward_distance_km: data.ward_distance_km,
+      support_count: 0,
+      flag_count: 0,
       created_at: now,
       updated_at: now,
       answers: data.answers || {},
@@ -175,8 +225,10 @@ export const demoStore = {
     };
 
     incidents.push(incident);
-    persistAll();
-    return this.toPublicIncident(incident);
+    // Clusters first (they can raise priority), then the derived fields.
+    recomputeDerived();
+    const created = incidents.find(i => i.id === id);
+    return created ? this.toPublicIncident(created) : this.toPublicIncident(incident);
   },
 
   getIncidentsBySession(sessionId: string): Incident[] {
@@ -229,6 +281,12 @@ export const demoStore = {
     const prev = inc.status;
     inc.status = newStatus;
     inc.updated_at = new Date().toISOString();
+    if (newStatus === 'RESOLVED' && !inc.resolved_at) {
+      inc.resolved_at = new Date().toISOString();
+    }
+    if (newStatus !== 'RESOLVED' && newStatus !== 'CLOSED') {
+      inc.resolved_at = undefined;
+    }
     inc.statusHistory.push({
       id: genId(),
       incident_id: incidentId,
@@ -290,6 +348,82 @@ export const demoStore = {
     return { total, byCategory, byArea, byLang };
   },
 
+  // --- Public issue feed (sanitised) ---
+  toPublicFeedItem(i: Incident): PublicIncident {
+    return {
+      incident_id: i.incident_id,
+      category_id: i.category_id,
+      subcategory: i.subcategory,
+      ward: i.ward,
+      ward_number: i.ward_number,
+      zone: i.zone,
+      police_station: i.police_station,
+      area: i.ward || i.location_area || '',
+      priority: i.priority || 'P3',
+      severity: i.severity || 'medium',
+      status: i.status,
+      support_count: i.support_count || 0,
+      flag_count: i.flag_count || 0,
+      cluster_citizens: i.cluster_citizens || 1,
+      sla_days: i.sla_days,
+      created_at: i.created_at,
+      resolved_at: i.resolved_at,
+      supported: supported.includes(i.incident_id),
+      flagged: flagged.includes(i.incident_id),
+    };
+  },
+
+  getPublicFeed(): PublicIncident[] {
+    const rank: Record<string, number> = { P1: 0, P2: 1, P3: 2, P4: 3 };
+    return incidents
+      .map(i => this.toPublicFeedItem(this.toPublicIncident(i)))
+      .filter(i => i.status !== 'INVALID')
+      .sort(
+        (a, b) =>
+          rank[a.priority] - rank[b.priority] ||
+          b.support_count - a.support_count ||
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+  },
+
+  /** Upvote a report; one per browser. Returns the new count or null. */
+  supportIncident(incidentId: string): number | null {
+    const inc = incidents.find(i => i.incident_id === incidentId);
+    if (!inc) return null;
+    if (supported.includes(incidentId)) return inc.support_count || 0;
+    supported.push(incidentId);
+    inc.support_count = (inc.support_count || 0) + 1;
+    saveToStorage('ns_supported', supported);
+    recomputeDerived();
+    const after = incidents.find(i => i.incident_id === incidentId);
+    return after?.support_count ?? 0;
+  },
+
+  /** Report a poor/inaccurate description so an admin can improve it. */
+  flagIncident(incidentId: string): number | null {
+    const inc = incidents.find(i => i.incident_id === incidentId);
+    if (!inc) return null;
+    if (flagged.includes(incidentId)) return inc.flag_count || 0;
+    flagged.push(incidentId);
+    inc.flag_count = (inc.flag_count || 0) + 1;
+    saveToStorage('ns_flagged', flagged);
+    persistAll();
+    return inc.flag_count;
+  },
+
+  hasSupported(incidentId: string): boolean {
+    return supported.includes(incidentId);
+  },
+
+  hasFlagged(incidentId: string): boolean {
+    return flagged.includes(incidentId);
+  },
+
+  /** All clusters with 2+ independent citizens — admin "same issue" view. */
+  getClusters() {
+    return buildClusters(incidents).clusters;
+  },
+
   toPublicIncident(inc: DemoIncident): Incident {
     const { answers, evidence, statusHistory, adminNotes, ...pub } = inc;
     return pub;
@@ -334,6 +468,10 @@ export const demoStore = {
     incidents = [];
     idCounter = 100;
     customProblems = [];
+    supported.length = 0;
+    flagged.length = 0;
+    saveToStorage('ns_supported', []);
+    saveToStorage('ns_flagged', []);
     persistAll();
   },
 };
@@ -345,4 +483,13 @@ export const demoStore = {
 
 export function seedDemoData() {
   // No fake data — only real submissions from users
+}
+
+// Back-fill wards/priorities for reports saved by an earlier build.
+if (typeof window !== 'undefined' && incidents.length > 0) {
+  try {
+    recomputeDerived();
+  } catch {
+    // Never block the app on a bad legacy record.
+  }
 }

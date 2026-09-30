@@ -40,9 +40,9 @@ export default function AdminReportsPage() {
 
   const handleExport = () => {
     const csv = [
-      'Incident ID,Category,Subcategory,Area,Status,Created At,Language',
+      'Incident ID,Category,Subcategory,Priority,Ward,Zone,Police Station,Area,Status,Support,Flags,Citizens Reporting,Created At,Language',
       ...filtered.map(inc =>
-        `${inc.incident_id},${inc.category_id},${inc.subcategory},${inc.location_area},${inc.status},${inc.created_at},${inc.language}`
+        `${inc.incident_id},${inc.category_id},${inc.subcategory},${inc.priority || 'P3'},${inc.ward || ''},${inc.zone || ''},${inc.police_station || ''},${inc.location_area || ''},${inc.status},${inc.support_count || 0},${inc.flag_count || 0},${inc.cluster_citizens || 1},${inc.created_at},${inc.language}`
       )
     ].join('\n');
 
@@ -136,7 +136,8 @@ export default function AdminReportsPage() {
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th className="text-left px-4 py-3 font-medium text-gray-600">ID</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Category</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Area</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Priority</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Ward / Area</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Created</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Actions</th>
@@ -144,15 +145,23 @@ export default function AdminReportsPage() {
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={6} className="text-center py-8 text-gray-400">Loading...</td></tr>
+                    <tr><td colSpan={7} className="text-center py-8 text-gray-400">Loading...</td></tr>
                   ) : filtered.length === 0 ? (
-                    <tr><td colSpan={6} className="text-center py-8 text-gray-400">No reports found.</td></tr>
+                    <tr><td colSpan={7} className="text-center py-8 text-gray-400">No reports found.</td></tr>
                   ) : (
                     filtered.map(inc => (
                       <tr key={inc.id} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="px-4 py-3 font-mono font-bold text-primary text-xs">{inc.incident_id}</td>
                         <td className="px-4 py-3 text-gray-700 capitalize">{inc.subcategory.replace(/_/g, ' ')}</td>
-                        <td className="px-4 py-3 text-gray-500">{inc.location_area || '-'}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 rounded-full text-xs font-bold border ${
+                            inc.priority === 'P1' ? 'bg-red-50 text-red-700 border-red-200'
+                            : inc.priority === 'P2' ? 'bg-orange-50 text-orange-700 border-orange-200'
+                            : inc.priority === 'P3' ? 'bg-amber-50 text-amber-800 border-amber-200'
+                            : 'bg-gray-50 text-gray-600 border-gray-200'
+                          }`}>{inc.priority || 'P3'}</span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">{inc.ward || inc.location_area || '-'}</td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(inc.status)}`}>
                             {inc.status.replace(/_/g, ' ')}
