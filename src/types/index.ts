@@ -48,7 +48,7 @@ export interface WorkflowQuestion {
   type: 'text' | 'select' | 'boolean' | 'date' | 'location' | 'evidence';
   required: boolean;
   options?: { label: Record<Language, string>; value: string }[];
-  suggest?: 'bengaluru';
+  suggest?: 'bengaluru' | 'bmtc_stops' | 'metro_stations';
 }
 
 export interface AttachmentMeta {

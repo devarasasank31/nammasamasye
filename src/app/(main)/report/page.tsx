@@ -6,6 +6,8 @@ import { Language, IncidentCategory, AttachmentMeta } from '@/types';
 import { getStoredLanguage, setStoredLanguage, getOrCreateSession, LANGUAGE_EVENT } from '@/services/session';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { BANGALORE_AREAS } from '@/data/bengaluru';
+import { BMTC_STOPS } from '@/data/bmtc-stops';
+import { METRO_STATION_NAMES } from '@/data/metro-stations';
 import { detectLocationInfo, LocationInfo } from '@/data/wards';
 import { computePriority, severityFor } from '@/lib/priority';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
@@ -47,6 +49,7 @@ const categoryButtons = [
   { id: 'bmtc_service', icon: '🚌', label: 'BMTC Bus', labelKn: 'ಬಿಎಂಟಿಸಿ ಬಸ್', labelHi: 'बीएमटीसी बस', labelTe: 'బీఎంటీసీ బస్సు' },
   { id: 'bmtc_staff', icon: '🧑‍✈️', label: 'Bus Staff', labelKn: 'ಬಸ್ ಸಿಬ್ಬಂದಿ', labelHi: 'बस स्टाफ', labelTe: 'బస్ సిబ్బంది' },
   { id: 'bmtc_fare_ticket', icon: '🎟️', label: 'Bus Fare / Ticket', labelKn: 'ಬಸ್ ದರ / ಟಿಕೆಟ್', labelHi: 'बस किराया / टिकट', labelTe: 'బస్ ఛార్జీ / టికెట్' },
+  { id: 'metro_service', icon: '🚇', label: 'Namma Metro', labelKn: 'ನಮ್ಮ ಮೆಟ್ರೋ', labelHi: 'नम्मा मेट्रो', labelTe: 'నమ్మ మెట్రో' },
   { id: 'civic_sense', icon: '🚨', label: 'Civic Sense / Violations', labelKn: 'ಸಿವಿಕ್ ಸೆನ್ಸ್ / ಉಲ್ಲಂಘನೆಗಳು', labelHi: 'सिविक सेंस / उल्लंघन', labelTe: 'సివిక్ సెన్స్ / ఉల్లంఘనలు' },
   { id: 'bribes', icon: '💰', label: 'Bribes', labelKn: 'ಲಂಚ', labelHi: 'रिश्वत', labelTe: 'లంచం' },
   { id: 'safety_harassment', icon: '🛡️', label: 'Safety / Harassment', labelKn: 'ಸುರಕ್ಷತೆ / ಕಿರುಕುಳ', labelHi: 'सुरक्षा / उत्पीड़न', labelTe: 'భద్రత / వేధింపు' },
@@ -250,8 +253,24 @@ export default function ReportPage() {
     };
   }, []);
 
+  // Timers that open the map / evidence panel for a question. Cleared whenever
+  // the flow moves on, so a slow click on Skip cannot reopen a stale panel.
+  const locationOpenTimer = useRef<number | null>(null);
+  const evidenceOpenTimer = useRef<number | null>(null);
+  const clearQuestionTimers = () => {
+    if (locationOpenTimer.current !== null) {
+      window.clearTimeout(locationOpenTimer.current);
+      locationOpenTimer.current = null;
+    }
+    if (evidenceOpenTimer.current !== null) {
+      window.clearTimeout(evidenceOpenTimer.current);
+      evidenceOpenTimer.current = null;
+    }
+  };
+
   const moveToNextQuestion = () => {
     if (!selectedScenario) return;
+    clearQuestionTimers();
     setShowEvidenceForm(false);
     setShowLocationPicker(false);
     const nextIdx = currentQuestionIdx + 1;
@@ -261,11 +280,17 @@ export default function ReportPage() {
       setTimeout(() => {
         addBotMessage(nextQ.text[lang] || nextQ.text.en);
         if (nextQ.type === 'evidence') {
-          setTimeout(() => setShowEvidenceForm(true), 300);
+          evidenceOpenTimer.current = window.setTimeout(() => {
+            evidenceOpenTimer.current = null;
+            setShowEvidenceForm(true);
+          }, 300);
         }
         if (nextQ.type === 'location') {
           addBotMessage(t('bot.map_hint', lang));
-          setTimeout(() => setShowLocationPicker(true), 300);
+          locationOpenTimer.current = window.setTimeout(() => {
+            locationOpenTimer.current = null;
+            setShowLocationPicker(true);
+          }, 300);
         }
       }, 300);
     } else {
@@ -321,6 +346,7 @@ export default function ReportPage() {
 
   // Starts a scenario's workflow at its first question
   const startScenario = (scenario: IncidentCategory, label?: string) => {
+    clearQuestionTimers();
     setSelectedScenario(scenario);
     if (label) addUserMessage(label);
     const firstQ = scenario.workflow[0];
@@ -328,10 +354,18 @@ export default function ReportPage() {
       addBotMessage(firstQ.text[lang] || firstQ.text.en);
       setStep('workflow');
       setCurrentQuestionIdx(0);
-      if (firstQ.type === 'evidence') setTimeout(() => setShowEvidenceForm(true), 300);
+      if (firstQ.type === 'evidence') {
+        evidenceOpenTimer.current = window.setTimeout(() => {
+          evidenceOpenTimer.current = null;
+          setShowEvidenceForm(true);
+        }, 300);
+      }
       if (firstQ.type === 'location') {
         addBotMessage(t('bot.map_hint', lang));
-        setTimeout(() => setShowLocationPicker(true), 300);
+        locationOpenTimer.current = window.setTimeout(() => {
+          locationOpenTimer.current = null;
+          setShowLocationPicker(true);
+        }, 300);
       }
     }
   };
@@ -1324,10 +1358,15 @@ export default function ReportPage() {
                 className={`p-3 rounded-xl transition ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                 {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
-              {step === 'workflow' && currentQuestion?.suggest === 'bengaluru' && (
-                <datalist id="bengaluru-stops">
-                  {BANGALORE_AREAS.map(area => (
-                    <option key={area} value={area} />
+              {step === 'workflow' && currentQuestion?.suggest && (
+                <datalist id={`suggest-${currentQuestion.suggest}`}>
+                  {(currentQuestion.suggest === 'bengaluru'
+                    ? BANGALORE_AREAS
+                    : currentQuestion.suggest === 'bmtc_stops'
+                      ? BMTC_STOPS
+                      : METRO_STATION_NAMES
+                  ).map(name => (
+                    <option key={name} value={name} />
                   ))}
                 </datalist>
               )}
@@ -1345,7 +1384,7 @@ export default function ReportPage() {
                   step === 'workflow' && currentQuestion ? (currentQuestion.text[lang] || currentQuestion.text.en) :
                   t('input.type_message', lang)
                 }
-                list={step === 'workflow' && currentQuestion?.suggest === 'bengaluru' ? 'bengaluru-stops' : undefined}
+                list={step === 'workflow' && currentQuestion?.suggest ? `suggest-${currentQuestion.suggest}` : undefined}
                 className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition text-sm"
               />
               <button onClick={() => {

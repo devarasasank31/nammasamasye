@@ -45,11 +45,12 @@ traffic_parking | civic_streetlight | civic_footpath | civic_drainage |
 civic_parks | civic_water_supply | civic_stray_animals | traffic_interaction |
 bribes | safety_harassment | cybercrime | housing_tenant | env_noise |
 util_power | access_language | govt_service | bmtc_service | bmtc_staff |
-bmtc_fare_ticket | something_else
+bmtc_fare_ticket | metro_service | something_else
 
 Rules:
 - civic_sense means traffic rules being broken even if nobody was hurt yet: stunts/wheelies, street racing or overspeeding, wrong-side driving, jumping signals, no helmet or triple riding, drunk or reckless driving. Prefer civic_sense over traffic_interaction when someone describes such behaviour.
 - BMTC city bus complaints: bmtc_service for the bus itself (did not come, long delay, broke down, overcrowding, did not stop, AC/fan, cleanliness), bmtc_staff for driver/conductor/checking-staff behaviour (rash driving, refusal, argument, not giving ticket, rude conduct), bmtc_fare_ticket for money and tickets (overcharged, no change, pass rejected, machine not working). Use bmtc_service when unsure which of the three.
+- Namma Metro (BMRCL) complaints are metro_service: train delay, crowding, cleanliness, station or escalator/lift problems, fare/token/QR gate issues, metro staff behaviour. Use metro_service even when the citizen only mentions a metro station name.
 - Never invent laws, contacts, phone numbers or official names.
 - Never accuse anyone of a crime.
 - confidence 1-99.
