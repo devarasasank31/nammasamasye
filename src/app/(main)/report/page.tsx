@@ -568,20 +568,27 @@ export default function ReportPage() {
     moveToNextQuestion();
   };
 
-  const handleAddEvidenceLink = () => {
-    if (!evidenceInput.trim()) return;
-    const link = evidenceInput.trim();
+  // Shared by the link field and the large-video fallback inside the
+  // uploader — returns true when the link was accepted and stored.
+  const addEvidenceLink = (rawInput: string): boolean => {
+    const link = rawInput.trim();
+    if (!link) return false;
     if (!link.startsWith('http')) {
       addBotMessage(t('bot.link_prompt', lang));
-      return;
+      return false;
     }
     if (!isValidEvidenceLink(link)) {
       addBotMessage(t('bot.link_invalid', lang));
-      return;
+      return false;
     }
     setEvidenceLinks(prev => [...prev, link]);
     setEvidenceInput('');
     addBotMessage(`${t('bot.link_added', lang)} (${evidenceLinks.length + 1})`);
+    return true;
+  };
+
+  const handleAddEvidenceLink = () => {
+    addEvidenceLink(evidenceInput);
   };
 
   const handleRemoveEvidence = (idx: number) => {
@@ -910,7 +917,7 @@ export default function ReportPage() {
             <div className="bg-white rounded-xl p-3 border border-amber-200">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-sm font-semibold text-gray-800">{t('evidence.upload_device', lang)}</span>
-                <FileUploader attachments={attachments} onChange={setAttachments} compact />
+                <FileUploader attachments={attachments} onChange={setAttachments} onAddLink={addEvidenceLink} lang={lang} compact />
               </div>
               <p className="text-[10px] text-gray-400 mt-1.5">{t('evidence.formats', lang)}</p>
             </div>
@@ -1071,7 +1078,7 @@ export default function ReportPage() {
                 </button>
               </div>
               {showEvidenceUploader ? (
-                <FileUploader attachments={attachments} onChange={setAttachments} />
+                <FileUploader attachments={attachments} onChange={setAttachments} onAddLink={addEvidenceLink} lang={lang} />
               ) : (
                 <p className="text-[11px] text-gray-400">
                   {attachments.length === 0
