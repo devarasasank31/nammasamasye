@@ -187,6 +187,7 @@ export const demoStore = {
     ai_scenario_match?: string;
     ai_confidence?: number;
     ai_reason?: string;
+    ai_context?: string;
     ward?: string;
     ward_number?: number;
     zone?: string;
@@ -219,6 +220,7 @@ export const demoStore = {
       ai_scenario_match: data.ai_scenario_match || '',
       ai_confidence: data.ai_confidence || 0,
       ai_reason: data.ai_reason || '',
+      ai_context: data.ai_context || undefined,
       ward: data.ward,
       ward_number: data.ward_number,
       zone: data.zone,
@@ -405,6 +407,7 @@ export const demoStore = {
       area: i.ward || i.location_area || '',
       priority: i.priority || 'P3',
       severity: i.severity || 'medium',
+      ai_context: i.ai_context,
       status: i.status,
       support_count: i.support_count || 0,
       flag_count: i.flag_count || 0,

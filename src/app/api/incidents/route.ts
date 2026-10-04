@@ -22,6 +22,7 @@ interface IncidentBody {
   ai_scenario_match?: string;
   ai_confidence?: number;
   ai_reason?: string;
+  ai_context?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
         ai_scenario_match: body.ai_scenario_match,
         ai_confidence: body.ai_confidence,
         ai_reason: body.ai_reason,
+        ai_context: body.ai_context,
       });
       return NextResponse.json({ incident });
     }
@@ -81,6 +83,7 @@ export async function POST(req: NextRequest) {
         ai_scenario_match: body.ai_scenario_match || '',
         ai_confidence: body.ai_confidence || 0,
         ai_reason: body.ai_reason || '',
+        ai_context: body.ai_context || '',
       })
       .select()
       .single();

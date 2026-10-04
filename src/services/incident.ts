@@ -22,6 +22,7 @@ export async function createIncident(data: {
   ai_scenario_match?: string;
   ai_confidence?: number;
   ai_reason?: string;
+  ai_context?: string;
   ward?: string;
   ward_number?: number;
   zone?: string;
@@ -54,6 +55,7 @@ export async function createIncident(data: {
       ai_scenario_match: data.ai_scenario_match || '',
       ai_confidence: data.ai_confidence || 0,
       ai_reason: data.ai_reason || '',
+      ai_context: data.ai_context || '',
       ward: data.ward || null,
       ward_number: data.ward_number ?? null,
       zone: data.zone || null,

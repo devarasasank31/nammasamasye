@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS incidents (
   ai_scenario_match TEXT DEFAULT '',
   ai_confidence DECIMAL DEFAULT 0,
   ai_reason TEXT DEFAULT '',
+  -- Four-line AI summary shown on the public feed (never the raw report)
+  ai_context TEXT DEFAULT '',
   -- Auto-detected from the pinned coordinate (offline Bengaluru gazetteer)
   ward TEXT DEFAULT '',
   ward_number INTEGER,
@@ -74,6 +76,7 @@ ALTER TABLE incidents ADD COLUMN IF NOT EXISTS flag_count INTEGER DEFAULT 0;
 ALTER TABLE incidents ADD COLUMN IF NOT EXISTS cluster_key TEXT DEFAULT '';
 ALTER TABLE incidents ADD COLUMN IF NOT EXISTS cluster_citizens INTEGER DEFAULT 1;
 ALTER TABLE incidents ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS ai_context TEXT DEFAULT '';
 
 -- Incident Q&A
 CREATE TABLE IF NOT EXISTS incident_answers (

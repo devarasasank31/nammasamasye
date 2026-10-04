@@ -182,12 +182,49 @@ export default function ReportPage() {
   const [similarMatch, setSimilarMatch] = useState<SimilarMatch | null>(null);
   const [similarSupported, setSimilarSupported] = useState(false);
   const [similarCount, setSimilarCount] = useState(1);
+  // Four-line public summary of the report. Generated on the review step so
+  // the feed can show context instead of the citizen's raw complaint.
+  const [aiContext, setAiContext] = useState<string | null>(null);
+  const aiContextTriedRef = useRef(false);
+  const aiContextPromiseRef = useRef<Promise<string | null> | null>(null);
 
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
   }, [messages, showEvidenceForm]);
+
+  // Build the public context as soon as the citizen reaches the review step,
+  // so submitting never waits on the AI. Input is redacted server-side.
+  useEffect(() => {
+    if (step !== 'review' || !selectedScenario || aiContextTriedRef.current) return;
+    aiContextTriedRef.current = true;
+    const generate = (async (): Promise<string | null> => {
+      try {
+        const res = await fetch('/api/ai/context', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            language: lang,
+            category: selectedScenario.parent,
+            subcategory: selectedScenario.id,
+            area: locationInfo?.wardLabel || location,
+            original_text: originalText || answers.what_happened || '',
+            answers,
+          }),
+        });
+        const data: unknown = await res.json();
+        const context = (data as { context?: unknown })?.context;
+        const text = typeof context === 'string' && context.trim() ? context.trim() : null;
+        setAiContext(text);
+        return text;
+      } catch {
+        setAiContext(null);
+        return null;
+      }
+    })();
+    aiContextPromiseRef.current = generate;
+  }, [step, selectedScenario, lang, locationInfo, location, originalText, answers]);
 
   const addBotMessage = useCallback((text: string) => {
     setMessages(prev => [...prev, {
@@ -624,6 +661,15 @@ export default function ReportPage() {
       }
     }
 
+    // If the citizen raced ahead of the context generation, give it a moment.
+    let contextForFeed = aiContext;
+    if (!contextForFeed && aiContextPromiseRef.current) {
+      contextForFeed = await Promise.race([
+        aiContextPromiseRef.current,
+        new Promise<null>(resolve => window.setTimeout(() => resolve(null), 1500)),
+      ]);
+    }
+
     const incident = await createIncident({
       session_id: sessionId,
       category_id: selectedScenario.parent,
@@ -631,6 +677,7 @@ export default function ReportPage() {
       original_text: originalText || answers.what_happened || '',
       structured_interpretation: '',
       ai_summary: Object.values(answers).join('. '),
+      ai_context: contextForFeed || undefined,
       location,
       location_lat: pickedLocation?.lat,
       location_lng: pickedLocation?.lng,

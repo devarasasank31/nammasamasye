@@ -106,7 +106,7 @@ const translations: Record<string, Record<Language, string>> = {
 
   // Public issue feed (support / flag)
   'feed.title': { en: 'Public Issue Feed', kn: 'ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆ ಫೀಡ್', hi: 'सार्वजनिक समस्या फ़ीड', te: 'పబ్లిక్ సమస్య ఫీడ్' },
-  'feed.subtitle': { en: 'Only the issue, place and priority are shown — no names, no contact details, no photos.', kn: 'ಸಮಸ್ಯೆ, ಸ್ಥಳ ಮತ್ತು ಆದ್ಯತಾ ಕ್ರಮ ಮಾತ್ರ ತೋರಿಸಲಾಗುತ್ತದೆ — ಹೆಸರು, ಸಂಪರ್ಕ, ಫೋಟೋ ಇಲ್ಲ.', hi: 'केवल समस्या, स्थान और प्राथमिकता दिखती है — न नाम, न संपर्क, न फ़ोटो।', te: 'సమస్య, ప్రదేశం, ప్రాధాన్యత మాత్రమే — పేర్లు, సంప్రదింపులు, ఫోటోలు లేవు.' },
+  'feed.subtitle': { en: 'Each issue shows a short AI summary with its severity — no names, no contact details, no photos.', kn: 'ಪ್ರತಿ ಸಮಸ್ಯೆಗೆ ತೀವ್ರತೆಯೊಂದಿಗೆ ಸಣ್ಣ AI ಸಾರಾಂಶ ಕಾಣಿಸುತ್ತದೆ — ಹೆಸರು, ಸಂಪರ್ಕ, ಫೋಟೋ ಇಲ್ಲ.', hi: 'हर समस्या के साथ गंभीरता और छोटा AI सारांश दिखता है — न नाम, न संपर्क, न फ़ोटो।', te: 'ప్రతి సమస్యకు తీవ్రత మరియు చిన్న AI సారాంశం కనిపిస్తుంది — పేర్లు, సంప్రదింపులు, ఫోటోలు లేవు.' },
   'feed.loading': { en: 'Loading public feed...', kn: 'ಸಾರ್ವಜನಿಕ ಫೀಡ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ...', hi: 'सार्वजनिक फ़ीड लोड हो रहा है...', te: 'పబ్లిక్ ఫీడ్ లోడ్ అవుతోంది...' },
   'feed.empty': { en: 'No public issues yet — be the first to report one.', kn: 'ಇನ್ನೂ ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆಗಳಿಲ್ಲ — ನೀವೇ ಮೊದಲಿಗರಾಗಿ ವರದಿ ಮಾಡಿ.', hi: 'अभी कोई सार्वजनिक समस्या नहीं — पहली रिपोर्ट आप करें।', te: 'ఇంకా పబ్లిక్ సమస్యలు లేవు — మీరే మొదటిగా నివేదించండి.' },
   'feed.support': { en: 'Support', kn: 'ಬೆಂಬಲ', hi: 'समर्थन', te: 'మద్దతు' },
@@ -120,6 +120,19 @@ const translations: Record<string, Record<Language, string>> = {
   'feed.sort_priority': { en: 'Most urgent', kn: 'ಅತಿ ತುರ್ತು', hi: 'सबसे ज़रूरी', te: 'అత్యవసరం' },
   'feed.sort_support': { en: 'Most supported', kn: 'ಅತಿ ಬೆಂಬಲ', hi: 'सबसे अधिक समर्थित', te: 'ఎక్కువ మద్దతు' },
   'feed.issues': { en: 'issues', kn: 'ಸಮಸ್ಯೆಗಳು', hi: 'समस्याएँ', te: 'సమస్యలు' },
+  'feed.registered_title': { en: 'Total reports registered so far', kn: 'ಇಲ್ಲಿಯವರೆಗೆ ದಾಖಲಾದ ಒಟ್ಟು ವರದಿಗಳು', hi: 'अभी तक कुल दर्ज रिपोर्टें', te: 'ఇప్పటివరకు మొత్తం నమోదైన నివేదికలు' },
+
+  // Plain-language severity (feed cards show this instead of P1–P4)
+  'severity.critical': { en: 'Critical', kn: 'ಅತ್ಯಂತ ಗಂಭೀರ', hi: 'अत्यंत गंभीर', te: 'అత్యంత క్లిష్టం' },
+  'severity.high': { en: 'High', kn: 'ಹೆಚ್ಚು ಗಂಭೀರ', hi: 'उच्च', te: 'అధిక' },
+  'severity.medium': { en: 'Moderate', kn: 'ಮಧ್ಯಮ', hi: 'मध्यम', te: 'మధ్యస్థం' },
+  'severity.low': { en: 'Low', kn: 'ಕಡಿಮೆ', hi: 'कम', te: 'తక్కువ' },
+
+  // Offline fallback for the four-line feed context
+  'context.l1': { en: '{severity} issue: {category}', kn: '{severity} ಸಮಸ್ಯೆ: {category}', hi: '{severity} समस्या: {category}', te: '{severity} సమస్య: {category}' },
+  'context.l3': { en: 'Area: {area}', kn: 'ಪ್ರದೇಶ: {area}', hi: 'क्षेत्र: {area}', te: 'ప్రాంతం: {area}' },
+  'context.l3_unknown': { en: 'Reported in Bengaluru', kn: 'ಬೆಂಗಳೂರಿನಲ್ಲಿ ವರದಿಯಾಗಿದೆ', hi: 'बेंगलुरु में रिपोर्ट किया गया', te: 'బెంగళూరులో నివేదించబడింది' },
+  'context.l4': { en: 'Support this if it affects your area too.', kn: 'ನಿಮ್ಮ ಪ್ರದೇಶಕ್ಕೂ ಇದು ಅನ್ವಯವಾದರೆ ಬೆಂಬಲಿಸಿ.', hi: 'अगर यह आपके इलाके पर भी लागू हो तो समर्थन करें।', te: 'ఇది మీ ప్రాంతానికి కూడా వర్తిస్తే మద్దతు ఇవ్వండి.' },
 
   // Personal dashboard (track)
   'track.my_dashboard': { en: 'My Reporting Dashboard', kn: 'ನನ್ನ ವರದಿ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್', hi: 'मेरी रिपोर्टिंग डैशबोर्ड', te: 'నా నివేదిక డాష్‌బోర్డ్' },

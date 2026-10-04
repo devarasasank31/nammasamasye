@@ -82,6 +82,8 @@ export interface Incident {
   ai_scenario_match?: string;
   ai_confidence?: number;
   ai_reason?: string;
+  /** Four-line AI summary shown on the public feed instead of the raw report. */
+  ai_context?: string;
   created_at: string;
   updated_at: string;
   /** Auto-detected from the pinned coordinate (offline gazetteer). */
@@ -133,6 +135,8 @@ export interface PublicIncident {
   resolved_at?: string;
   supported?: boolean;
   flagged?: boolean;
+  /** Sanitised 4-line analysis — safe to show publicly, no personal details. */
+  ai_context?: string;
 }
 
 export interface Evidence {
