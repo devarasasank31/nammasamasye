@@ -1,6 +1,7 @@
 import { Language, PublicIncident } from '@/types';
 import { t } from '@/lib/translations';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
+import { normalizeSeverity } from '@/lib/trained-severity';
 
 /**
  * Everything on the public feed must be shareable with strangers. These
@@ -31,10 +32,8 @@ export function containsPII(text: string): boolean {
 }
 
 function severityLabel(severity: string, lang: Language): string {
-  const known = severity === 'critical' || severity === 'high' || severity === 'medium' || severity === 'low'
-    ? severity
-    : 'medium';
-  return t(`severity.${known}`, lang);
+  // Trained 5-level label; legacy values are mapped onto the same scale.
+  return t(`severity.${normalizeSeverity(severity)}`, lang);
 }
 
 function categoryLabel(categoryId: string, lang: Language): string {

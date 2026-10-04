@@ -128,6 +128,28 @@ const translations: Record<string, Record<Language, string>> = {
   'severity.medium': { en: 'Moderate', kn: 'ಮಧ್ಯಮ', hi: 'मध्यम', te: 'మధ్యస్థం' },
   'severity.low': { en: 'Low', kn: 'ಕಡಿಮೆ', hi: 'कम', te: 'తక్కువ' },
 
+  // Trained 5-level severity (feed cards + AI context)
+  'severity.life_threatening': { en: 'Life-threatening', kn: 'ಪ್ರಾಣಾಂತಕ', hi: 'जीवन-घातक', te: 'ప్రాణాంతకం' },
+  'severity.urgent': { en: 'Urgent', kn: 'ತಕ್ಷಣದ', hi: 'तत्काल', te: 'తక్షణం' },
+  'severity.serious': { en: 'Serious', kn: 'ಗಂಭೀರ', hi: 'गंभीर', te: 'తీవ్రం' },
+  'severity.moderate': { en: 'Moderate', kn: 'ಮಧ್ಯಮ', hi: 'मध्यम', te: 'మధ్యస్థం' },
+  'severity.minor': { en: 'Minor', kn: 'ಸಣ್ಣ', hi: 'मामूली', te: 'చిన్నది' },
+
+  // Issue qualifiers used by the offline exact context
+  'qualifier.blocking': { en: 'blocking the way', kn: 'ದಾರಿ ತಡೆದಿದೆ', hi: 'रास्ता रोका हुआ', te: 'దారి అడ్డుకుంటోంది' },
+  'qualifier.deep': { en: 'deep and worsening', kn: 'ಆಳವಾಗಿ ಹದಗೆಟ್ಟಿದೆ', hi: 'गहरा और बिगड़ रहा', te: 'లోతైన మరియు తీవ్రమవుతోంది' },
+  'qualifier.overflowing': { en: 'overflowing onto the road', kn: 'ರಸ್ತೆಗೆ ಹರಿದು ಬರುತ್ತಿದೆ', hi: 'सड़क पर फैल रहा', te: 'రోడ్డుపైకి పొంగుతోంది' },
+  'qualifier.recurring': { en: 'recurring for weeks', kn: 'ವಾರಗಳಿಂದ ಪುನರಾವರ್ತನೆ', hi: 'हफ्तों से बार-बार', te: 'వారాలుగా పునరావృతం' },
+  'qualifier.damaged': { en: 'left unrepaired', kn: 'ದುರಸ್ತಿ ಆಗಿಲ್ಲ', hi: 'मरम्मत नहीं हुई', te: 'మరమ్మతు కాలేదు' },
+  'qualifier.leaking': { en: 'leaking continuously', kn: 'ನಿರಂತರವಾಗಿ ಸೋರುತ್ತಿದೆ', hi: 'लगातार रिस रहा', te: 'నిరంతరం చొరుతున్నది' },
+  'qualifier.clogged': { en: 'clogged completely', kn: 'ಸಂಪೂರ್ಣವಾಗಿ ಮುಚ್ಚಿಹೋಗಿದೆ', hi: 'पूरी तरह बंद', te: 'పూర్తిగా మూసుకుపోయింది' },
+  'qualifier.sparking': { en: 'sparking intermittently', kn: 'ಕಾಲಕಾಲಕ್ಕೆ ಹೊಳಪುತ್ತಿದೆ', hi: 'बीच-बीच में चिंगारी', te: 'అప్పుడప్పుడు మెరుస్తోంది' },
+  'qualifier.stagnant': { en: 'stagnant water around', kn: 'ಸುತ್ತ ನೀರು ನಿಂತಿದೆ', hi: 'चारों ओर जमा पानी', te: 'చుట్టూ నీరు నిలిచింది' },
+  'qualifier.loud': { en: 'loud and disruptive', kn: 'ತೀವ್ರ ಶಬ್ದ ಮತ್ತು ಅಡಚಣೆ', hi: 'तेज़ और परेशान करने वाला', te: 'ప్రబలమైన శబ్దం, ఇబ్బంది' },
+  'qualifier.scattered': { en: 'scattered across the lane', kn: 'ಲೇನ್ ಎಲ್ಲೆಲ್ಲಿ ಚೆಲ್ಲಾಡಿದೆ', hi: 'पूरी गली में बिखरा', te: 'మొత్తం వీధిలో చెదరింది' },
+  'qualifier.dangerous': { en: 'hazard for two-wheelers', kn: 'ಎರಡು ಚಕ್ರ ವಾಹನಗಳಿಗೆ ಅಪಾಯ', hi: 'दोपहिया के लिए खतरा', te: 'రెండు చక్రాలకు ప్రమాదం' },
+  'qualifier.unfinished': { en: 'unfinished repair work', kn: 'ಅರ್ಧ ದುರಸ್ತಿ ಕೆಲಸ', hi: 'अधूरा मरम्मत काम', te: 'అధూరమైన మరమ్మతు పని' },
+
   // Offline fallback for the four-line feed context
   'context.l1': { en: '{severity} issue: {category}', kn: '{severity} ಸಮಸ್ಯೆ: {category}', hi: '{severity} समस्या: {category}', te: '{severity} సమస్య: {category}' },
   'context.l3': { en: 'Area: {area}', kn: 'ಪ್ರದೇಶ: {area}', hi: 'क्षेत्र: {area}', te: 'ప్రాంతం: {area}' },
@@ -310,12 +332,19 @@ const translations: Record<string, Record<Language, string>> = {
   'safety.r5.desc': { en: 'General police assistance', kn: 'ಸಾಮಾನ್ಯ ಪೊಲೀಸ್ ಸಹಾಯ', hi: 'सामान्य पुलिस सहायता', te: 'సాధారణ పోలీస్ సహాయం' },
   'safety.r6.name': { en: 'Elders Helpline', kn: 'ಹಿರಿಯರ ಸಹಾಯವಾಣಿ', hi: 'वरिष्ठ नागरिक हेल्पलाइन', te: 'పెద్దల హెల్ప్‌లైన్' },
   'safety.r6.desc': { en: 'Senior citizen care & support (24x7)', kn: 'ಹಿರಿಯ ನಾಗರಿಕರ ಆರೈಕೆ ಮತ್ತು ಸಹಾಯ (24x7)', hi: 'बुजुर्ग नागरिकों की देखभाल व सहायता (24x7)', te: 'పెద్దల సంరక్షణ & సహాయం (24x7)' },
+  'safety.r7.name': { en: 'GBA', kn: 'ಜಿಬಿಎ', hi: 'जीबीए', te: 'జీబీఏ' },
+  'safety.r7.desc': { en: 'GBA citizen helpline', kn: 'ಜಿಬಿಎ ಪೌರ ಸಹಾಯವಾಣಿ', hi: 'जीबीए नागरिक हेल्पलाइन', te: 'జీబీఏ పౌర హెల్ప్‌లైన్' },
   'safety.notice_title': { en: 'Important Notice', kn: 'ಮುಖ್ಯ ಸೂಚನೆ', hi: 'महत्वपूर्ण सूचना', te: 'ముఖ్యమైన గమనిక' },
   'safety.notice_strong': { en: 'Namma Samasye is NOT an emergency-response service.', kn: 'ನಮ್ಮ ಸಮಸ್ಯೆ ತುರ್ತು ಪ್ರತಿಕ್ರಿಯಾ ಸೇವೆ ಅಲ್ಲ.', hi: 'नम्मा समस्ये आपातकालीन प्रतिक्रिया सेवा नहीं है।', te: 'నమ్మ సమస్యే అత్యవసర ప్రతిస్పందన సేవ కాదు.' },
   'safety.notice_rest': { en: 'We do not dispatch police, ambulances, or fire services.', kn: 'ನಾವು ಪೊಲೀಸ್, ಆ್ಯಂಬುಲೆನ್ಸ್ ಅಥವಾ ಅಗ್ನಿಶಾಮಕ ಸೇವೆಗಳನ್ನು ಕಳುಹಿಸುವುದಿಲ್ಲ.', hi: 'हम पुलिस, एम्बुलेंस या फायर सेवाएँ नहीं भेजते।', te: 'మేము పోలీసులు, అంబులెన్స్ లేదా అగ్నిమాపక సేవలను పంపము.' },
   'safety.notice_call_a': { en: 'If you are in immediate danger, please call', kn: 'ನೀವು ತಕ್ಷಣದ ಅಪಾಯದಲ್ಲಿದ್ದರೆ, ದಯವಿಟ್ಟು', hi: 'यदि आप तुरंत खतरे में हैं, तो कृपया', te: 'మీరు వెంటనే ప్రమాదంలో ఉంటే, దయచేసి' },
   'safety.notice_call_b': { en: 'directly.', kn: 'ನೇರವಾಗಿ ಕರೆಯಿರಿ.', hi: 'सीधे कॉल करें।', te: 'నేరుగా కాల్ చేయండి.' },
   'safety.notice_3': { en: 'Namma Samasye helps you document and track incidents. It does not guarantee resolution or replace official channels.', kn: 'ನಮ್ಮ ಸಮಸ್ಯೆ ಘಟನೆಗಳನ್ನು ದಾಖಲಿಸಲು ಮತ್ತು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ. ಇದು ಪರಿಹಾರವನ್ನು ಖಾತರಿಪಡಿಸುವುದಿಲ್ಲ ಅಥವಾ ಅಧಿಕೃತ ಚಾನೆಲ್‌ಗಳನ್ನು ಬದಲಾಯಿಸುವುದಿಲ್ಲ.', hi: 'नम्मा समस्ये घटनाओं का दस्तावेज़ीकरण और ट्रैक करने में मदद करता है। यह समाधान की गारंटी नहीं देता और आधिकारिक चैनलों का विकल्प नहीं है।', te: 'నమ్మ సమస్యే సంఘటనలను డాక్యుమెంట్ చేయడానికి మరియు ట్రాక్ చేయడానికి సహాయపడుతుంది. ఇది పరిష్కారానికి హామీ ఇవ్వదు లేదా అధికారిక ఛానెల్‌లను భర్తీ చేయదు.' },
+
+  // Cookie consent notice
+  'cookie.title': { en: 'Cookie Policy', kn: 'ಕುಕೀ ನೀತಿ', hi: 'कुकी नीति', te: 'కుకీ విధానం' },
+  'cookie.accept': { en: 'Accept policy', kn: 'ನೀತಿ ಸ್ವೀಕರಿಸಿ', hi: 'नीति स्वीकारें', te: 'విధానాన్ని ఆమోదించండి' },
+  'cookie.read_more': { en: 'Read full policy', kn: 'ಪೂರ್ಣ ನೀತಿ ಓದಿ', hi: 'पूरी नीति पढ़ें', te: 'పూర్తి విధానాన్ని చదవండి' },
 
   // Privacy policy
   'privacy.title': { en: 'Privacy Policy', kn: 'ಗೌಪ್ಯತಾ ನೀತಿ', hi: 'गोपनीयता नीति', te: 'గోప్యతా విధానం' },

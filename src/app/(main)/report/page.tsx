@@ -12,7 +12,8 @@ import { detectLocationInfo, LocationInfo } from '@/data/wards';
 import { computePriority, severityFor } from '@/lib/priority';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
-import { detectReplyLanguage, shouldAdoptLanguage, speechLocale, isLanguage } from '@/lib/ai/language';
+import { exactContext } from '@/lib/exact-context';
+import { speechLocale, isLanguage } from '@/lib/ai/language';
 import { t } from '@/lib/translations';
 import { createIncident, findSimilarIssues, supportIncident } from '@/services/incident';
 import type { SimilarMatch } from '@/lib/analytics';
@@ -492,15 +493,10 @@ export default function ReportPage() {
       text = await maybeTranslateVoice(heard);
     }
 
-    // If the citizen wrote in another language, answer in that language and
-    // switch the rest of the conversation over too.
-    const detected = detectReplyLanguage(text, lang);
-    const replyLang = shouldAdoptLanguage(detected, lang, text) ? detected : lang;
-    if (replyLang !== lang) {
-      setLang(replyLang);
-      setStoredLanguage(replyLang);
-      setVoiceOverride(speechLocale(replyLang));
-    }
+    // The conversation stays in the language the citizen chose in the app —
+    // typing in another script or transliteration never switches it. Only the
+    // explicit language selector changes the language.
+    const replyLang = lang;
 
     if (isEmergencyMessage(text)) addBotMessage(t('safety.emergency', replyLang));
 
@@ -669,6 +665,16 @@ export default function ReportPage() {
         new Promise<null>(resolve => window.setTimeout(() => resolve(null), 1500)),
       ]);
     }
+    // Every card must carry issue-exact context — if the AI did not answer,
+    // build the same four lines locally from the trained scenario.
+    const fallbackContext = exactContext({
+      categoryId: selectedScenario.parent,
+      scenarioId: selectedScenario.id,
+      text: originalText || answers.what_happened || '',
+      area: locationInfo?.wardLabel || location,
+      answers,
+      lang,
+    });
 
     const incident = await createIncident({
       session_id: sessionId,
@@ -677,7 +683,7 @@ export default function ReportPage() {
       original_text: originalText || answers.what_happened || '',
       structured_interpretation: '',
       ai_summary: Object.values(answers).join('. '),
-      ai_context: contextForFeed || undefined,
+      ai_context: contextForFeed || fallbackContext,
       location,
       location_lat: pickedLocation?.lat,
       location_lng: pickedLocation?.lng,

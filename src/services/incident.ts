@@ -1,6 +1,7 @@
 ﻿import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta, IncidentStats, PublicIncident } from '@/types';
 import { isDemoMode } from '@/lib/supabase';
 import { demoStore } from '@/lib/demo-store';
+import { trainedSeverity } from '@/lib/trained-severity';
 import { buildExportRows, CivicPulse, DayPoint, ExportRow, SimilarMatch } from '@/lib/analytics';
 
 export async function createIncident(data: {
@@ -56,6 +57,11 @@ export async function createIncident(data: {
       ai_confidence: data.ai_confidence || 0,
       ai_reason: data.ai_reason || '',
       ai_context: data.ai_context || '',
+      severity: trainedSeverity({
+        scenarioId: data.subcategory || data.ai_scenario_match,
+        text: `${data.original_text} ${data.ai_summary}`,
+        answers: data.answers,
+      }),
       ward: data.ward || null,
       ward_number: data.ward_number ?? null,
       zone: data.zone || null,

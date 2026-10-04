@@ -1,6 +1,6 @@
 import { Language } from '@/types';
 import { scenarios, getScenarioName } from '@/data/scenarios';
-import { normalizeForMatch, guessLanguage } from '@/lib/ai/language';
+import { normalizeForMatch } from '@/lib/ai/language';
 import { t } from '@/lib/translations';
 
 export interface ScenarioMatch {
@@ -65,7 +65,9 @@ function calculateMatch(text: string, keywords: string[]): { confidence: number;
 export function classifyIncident(text: string, language: Language): ScenarioMatch[] {
   const results: ScenarioMatch[] = [];
   const lowerText = normalizeForMatch(text);
-  const effectiveLanguage = guessLanguage(text, language);
+  // Matching understands every language, but what we show back is always the
+  // language the citizen selected — typing elsewhere never switches it.
+  const effectiveLanguage = language;
 
   const scenarioKeywordMap: Record<string, string[]> = {
     traffic_accident: [...KEYWORD_MAP.accident],

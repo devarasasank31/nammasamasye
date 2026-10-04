@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation';
 import { t } from '@/lib/translations';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Language, Incident } from '@/types';
-import { getAllIncidents } from '@/services/incident';
+import { getIncidentsBySession } from '@/services/incident';
+import { getOrCreateSession } from '@/services/session';
 import { ArrowLeft, MessageSquare, Search, Home, CheckCircle, FileText, Clock } from 'lucide-react';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { getStatusBadgeClass } from '@/lib/status-colors';
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from 'recharts';
-import { buildDailySeries, getCivicPulse } from '@/lib/analytics';
+import { buildDailySeries } from '@/lib/analytics';
 
 function subcategoryLabel(id: string, lang: Language): string {
   const scn = getScenarioById(id);
@@ -26,26 +27,24 @@ export default function TrackPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [searchId, setSearchId] = useState('');
   const [loading, setLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState('');
 
-  // Quiet pull: never flips the loading state, so live refreshes do not flash.
+  // Only this browser's own reports — the dashboard belongs to the citizen
+  // who filed them, so filed/resolved/open numbers never show anyone else's.
   const loadIncidents = async () => {
-    const allInc = await getAllIncidents();
-    setIncidents(allInc);
-    setLastUpdated(new Date().toLocaleTimeString());
+    const session = await getOrCreateSession();
+    const mine = await getIncidentsBySession(session.id);
+    setIncidents(mine);
     setLoading(false);
   };
 
   useEffect(() => {
-    // `loading` already starts as true, so the first pull can be silent and
-    // never sets state synchronously inside the effect.
     const init = async () => {
       await loadIncidents();
     };
     void init();
 
-    // Every number here stays live: quiet refresh every 10 seconds, on tab
-    // focus, and when another tab files a report.
+    // Numbers stay live: quiet refresh every 10 seconds, on tab focus, and
+    // when this browser files a report from another tab.
     const refresh = () => void loadIncidents();
     const timer = window.setInterval(refresh, 10000);
     const onVisibility = () => {
@@ -71,14 +70,13 @@ export default function TrackPage() {
   };
 
   const daily = buildDailySeries(incidents);
-  const pulse = getCivicPulse(incidents);
   const resolvedCount = incidents.filter(i => i.status === 'RESOLVED' || i.status === 'CLOSED').length;
   const openCount = incidents.length - resolvedCount;
 
   const summary = [
-    { label: t('track.reported', lang), value: incidents.length, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: t('track.resolved', lang), value: resolvedCount, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: t('track.open', lang), value: openCount, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { id: 'filed', label: t('track.reported', lang), value: incidents.length, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { id: 'resolved', label: t('track.resolved', lang), value: resolvedCount, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
+    { id: 'open', label: t('track.open', lang), value: openCount, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
   ];
 
   return (
@@ -89,17 +87,6 @@ export default function TrackPage() {
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold text-gray-900">{t('track.title', lang)}</h1>
-
-          {/* Always-visible live counter, even while scrolling the list */}
-          <span
-            data-testid="header-registered-today"
-            className="flex items-center gap-1.5 text-xs text-gray-500 bg-white border border-gray-200 rounded-full px-2.5 py-1 ml-1"
-            title={t('track.registered_today', lang)}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            <b className="text-gray-900 tabular-nums">{!loading ? pulse.reportsToday : '–'}</b>
-            <span className="hidden sm:inline">{t('track.registered_today', lang)}</span>
-          </span>
 
           <button onClick={() => router.push('/')} title="Go to homepage" aria-label="Go to homepage" className="ml-auto flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition">
             <Home size={16} />
@@ -127,101 +114,12 @@ export default function TrackPage() {
           </button>
         </div>
 
-        {/* Live counter: how many reports were registered today */}
-        {!loading && (
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm" data-testid="registered-today">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-                {t('track.registered_today', lang)}
-              </span>
-              <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                {t('track.live', lang)}
-                {lastUpdated && (
-                  <span>· {t('track.updated_at', lang).replace('{time}', lastUpdated)}</span>
-                )}
-              </span>
-            </div>
-            <div className="flex items-end justify-between gap-3 mt-1">
-              <div>
-                <div
-                  key={pulse.reportsToday}
-                  className="text-5xl font-black text-blue-600 leading-none tabular-nums"
-                  data-testid="registered-today-count"
-                >
-                  {pulse.reportsToday}
-                </div>
-                <div className="text-[11px] text-gray-500 mt-1.5">
-                  {t('track.day_reports', lang)} · {pulse.today}
-                </div>
-              </div>
-              <span className="text-lg" role="img" aria-label="registered today">📝</span>
-            </div>
-          </div>
-        )}
-
-        {/* Registered each day — just the numbers, rolls forward on its own */}
-        {!loading && (
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-            <h2 className="font-bold text-gray-900 text-sm mb-3">{t('track.registered_by_day', lang)}</h2>
-            <div className="flex gap-2 overflow-x-auto pb-1" data-testid="registered-by-day">
-              {daily.map(d => {
-                const isToday = d.date === pulse.today;
-                return (
-                  <div
-                    key={d.date}
-                    className={`shrink-0 min-w-[56px] rounded-xl border px-2 py-2 text-center ${
-                      isToday ? 'border-blue-300 bg-blue-50' : 'border-gray-100 bg-gray-50'
-                    }`}
-                  >
-                    <div className={`text-xl font-bold tabular-nums ${isToday ? 'text-blue-700' : 'text-gray-900'}`}>
-                      {d.reports}
-                    </div>
-                    <div className="text-[10px] font-mono text-gray-400 mt-0.5">{d.date.slice(5)}</div>
-                    {isToday && (
-                      <div className="text-[9px] font-semibold text-blue-500 uppercase mt-0.5">
-                        {t('track.pulse_today', lang)}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Bengaluru Civic Pulse — today's real numbers */}
-        {!loading && (
-          <div className="bg-gradient-to-r from-slate-900 to-gray-800 text-white rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="font-bold text-sm">{t('track.pulse_title', lang)}</h2>
-              <span className="text-[10px] uppercase tracking-widest bg-white/10 px-2 py-1 rounded-full">
-                {t('track.pulse_today', lang)} · {pulse.today}
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-3 mt-3">
-              <div className="bg-white/10 rounded-xl px-3 py-2.5">
-                <div className="text-2xl font-bold">{pulse.reportsToday}</div>
-                <div className="text-[11px] text-gray-300">{t('track.day_reports', lang)}</div>
-              </div>
-              <div className="bg-white/10 rounded-xl px-3 py-2.5">
-                <div className="text-2xl font-bold text-green-400">{pulse.resolvedToday}</div>
-                <div className="text-[11px] text-gray-300">{t('track.resolved', lang)}</div>
-              </div>
-              <div className="bg-white/10 rounded-xl px-3 py-2.5">
-                <div className="text-2xl font-bold text-amber-400">{pulse.open}</div>
-                <div className="text-[11px] text-gray-300">{t('track.open', lang)}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* My dashboard: totals + day-by-day reports vs resolved */}
         {!loading && incidents.length > 0 && (
           <>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-3" data-testid="track-dashboard">
               {summary.map(s => (
-                <div key={s.label} className={`${s.bg} border border-gray-100 rounded-2xl p-4`}>
+                <div key={s.label} data-testid={`track-kpi-${s.id}`} className={`${s.bg} border border-gray-100 rounded-2xl p-4`}>
                   <s.icon size={18} className={s.color} />
                   <div className="text-2xl font-bold text-gray-900 mt-2">{s.value}</div>
                   <div className="text-[11px] text-gray-500 mt-0.5">{s.label}</div>
@@ -229,7 +127,7 @@ export default function TrackPage() {
               ))}
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm" data-testid="track-by-day">
               <h2 className="font-bold text-gray-900 text-sm mb-3">{t('track.by_day', lang)}</h2>
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">

@@ -12,6 +12,7 @@ const emergencyResources = [
   { number: '080-22943400', nameKey: 'safety.r4.name', descKey: 'safety.r4.desc' },
   { number: '100', nameKey: 'safety.r5.name', descKey: 'safety.r5.desc' },
   { number: '1090', nameKey: 'safety.r6.name', descKey: 'safety.r6.desc' },
+  { number: '1533', nameKey: 'safety.r7.name', descKey: 'safety.r7.desc' },
 ];
 
 export default function SafetyPage() {

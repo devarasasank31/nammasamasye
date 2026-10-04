@@ -112,13 +112,9 @@ export default function AIChatbot() {
       const result = await res.json();
       setIsAnalyzing(false);
 
-      // The bot answers in the language of the message it just received —
-      // follow it so the rest of the chat speaks the same language.
+      // The bot always answers in the language chosen in the app — the
+      // citizen switches it only through the explicit language selector.
       const rl = asLanguage(result.replyLang, lang);
-      if (rl !== lang) {
-        setLang(rl);
-        setStoredLanguage(rl);
-      }
 
       if (result.type === 'chat' || (!result.type && result.reply)) {
         setMessages(prev => [...prev, { id: `${Date.now()}-b`, role: 'bot', text: result.reply }]);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, clientIp } from '@/lib/security';
 import { containsPII, redactPII } from '@/lib/ai-context';
+import { matchContextRows } from '@/data/context-corpus';
 
 // Server-side only — same keys the chatbot uses.
 const AI_API_KEY = process.env.AI_API_KEY || process.env.GROQ_API_KEY || '';
@@ -147,12 +148,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ context: null });
   }
 
+  // Trained phrasing for this exact issue (from a corpus of tens of thousands
+  // of scenario rows) — keeps the four lines issue-specific, not generic.
+  const trained = matchContextRows([redactedReport, subcategory, category].join(' '), subcategory);
+  const trainedHint = trained.length > 0
+    ? [
+        '',
+        'Trained issue phrasing for this report — use it to name the exact issue in lines 1 and 2, but write it fresh in the target language:',
+        ...trained.map(r => `- ${r.issue}`),
+      ].join('\n')
+    : '';
+
   const user = [
     `Category: ${category}`,
     `Subcategory: ${subcategory}`,
     `Area: ${area || 'not given'}`,
     `Report: ${redactedReport}`,
-  ].join('\n');
+    trainedHint,
+  ].filter(Boolean).join('\n');
 
   try {
     const raw = AI_PROVIDER === 'gemini'

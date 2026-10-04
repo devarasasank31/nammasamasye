@@ -5,31 +5,33 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Home, Flag, Users } from 'lucide-react';
 import { t } from '@/lib/translations';
 import { useLanguage } from '@/hooks/useLanguage';
-import { PublicIncident } from '@/types';
+import { PublicIncident, SEVERITY_RANK, SeverityLevel } from '@/types';
 import { getPublicFeed, supportIncident, flagIncident, getDashboardStats } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
 import { buildFallbackContext } from '@/lib/ai-context';
+import { normalizeSeverity } from '@/lib/trained-severity';
 import { getAllCategories } from '@/data/scenarios';
 import { getStatusBadgeClass } from '@/lib/status-colors';
 
-const SEVERITY_STYLE: Record<string, string> = {
-  critical: 'bg-red-100 text-red-700 border-red-300',
-  high: 'bg-orange-100 text-orange-700 border-orange-300',
-  medium: 'bg-amber-100 text-amber-800 border-amber-300',
-  low: 'bg-gray-100 text-gray-600 border-gray-300',
+const SEVERITY_STYLE: Record<SeverityLevel, string> = {
+  life_threatening: 'bg-red-100 text-red-700 border-red-300',
+  urgent: 'bg-orange-100 text-orange-700 border-orange-300',
+  serious: 'bg-amber-100 text-amber-800 border-amber-300',
+  moderate: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  minor: 'bg-gray-100 text-gray-600 border-gray-300',
 };
 
-const SEVERITY_DOT: Record<string, string> = {
-  critical: 'bg-red-500',
-  high: 'bg-orange-500',
-  medium: 'bg-amber-500',
-  low: 'bg-green-500',
+const SEVERITY_DOT: Record<SeverityLevel, string> = {
+  life_threatening: 'bg-red-600',
+  urgent: 'bg-orange-500',
+  serious: 'bg-amber-500',
+  moderate: 'bg-yellow-500',
+  minor: 'bg-gray-400',
 };
 
-const SEVERITY_RANK: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
-
-function severityKey(severity: string): string {
-  return SEVERITY_RANK[severity] !== undefined ? severity : 'medium';
+// Trained 5-level scale; legacy stored values are mapped onto it.
+function severityKey(severity: string): SeverityLevel {
+  return normalizeSeverity(severity);
 }
 
 function formatWhen(iso: string): string {
@@ -96,7 +98,7 @@ export default function FeedPage() {
     .sort((a, b) => {
       if (sort === 'support') return b.support_count - a.support_count;
       return (
-        (SEVERITY_RANK[severityKey(a.severity)] ?? 2) - (SEVERITY_RANK[severityKey(b.severity)] ?? 2) ||
+        SEVERITY_RANK[severityKey(a.severity)] - SEVERITY_RANK[severityKey(b.severity)] ||
         b.support_count - a.support_count
       );
     });
@@ -204,9 +206,9 @@ export default function FeedPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         data-testid="feed-severity"
-                        className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${SEVERITY_STYLE[sev] || SEVERITY_STYLE.medium}`}
+                        className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${SEVERITY_STYLE[sev] || SEVERITY_STYLE.moderate}`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${SEVERITY_DOT[sev] || SEVERITY_DOT.medium}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${SEVERITY_DOT[sev] || SEVERITY_DOT.moderate}`} />
                         {t(`severity.${sev}`, lang)}
                       </span>
                       <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${getStatusBadgeClass(item.status)}`}>

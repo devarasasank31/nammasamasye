@@ -1,4 +1,6 @@
-// Pre-trained scenario mappings — 1000+ examples
+// Pre-trained scenario mappings — base hand-written examples plus a generated
+// expansion covering everyday phrasings in English, Hinglish, Kanglish,
+// Kannada, Hindi and Telugu (see getTrainedCorpus below, 15,000+ rows).
 // Covers: English, Kannada, Hindi, Hinglish, Kanglish, casual/butler English
 // Each entry maps keywords/phrases to a scenario with confidence
 
@@ -725,6 +727,97 @@ export const trainedScenarios: TrainedScenario[] = [
   { keywords: ['బస్ ఛార్జీ', 'ఎక్కువ ఛార్జీ', 'చిల్లర ఇవ్వలేదు', 'టికెట్ ఇవ్వలేదు'], scenario_id: 'bmtc_fare_ticket', confidence: 85, reason: 'బస్ ఛార్జీ / టికెట్ సమస్య' },
 ];
 
+// ============================================================
+// Expanded trained corpus — every base keyword is crossed with the sentence
+// frames citizens actually type ("X problem", "X nahi theek ho raha",
+// "X sari agilla", …) plus hand-listed extra surface forms per scenario.
+// Deterministic and lazy: the full list is built once on first match.
+// ============================================================
+
+const FRAMES: ((keyword: string) => string)[] = [
+  k => `${k} problem`,
+  k => `${k} issue`,
+  k => `${k} still there`,
+  k => `${k} not fixed`,
+  k => `${k} happening again`,
+  k => `${k} ki samasya`,
+  k => `${k} nahi theek ho raha`,
+  k => `${k} theek karo`,
+  k => `${k} sari agilla`,
+  k => `${k} saripovatledu`,
+];
+
+/** Extra surface forms (synonyms, transliterations, common spellings). */
+const EXTRA_FORMS: Record<string, string[]> = {
+  traffic_accident: ['pramada', 'vahanam muddi', 'dhakka laga', 'takkar maaru', 'accidant', 'bike dimbina', 'road mishap', 'collision case', 'gadiya talaki'],
+  traffic_wrong_side: ['vipareetha disha', 'thilidi bandhe', 'obre alli', 'galat side', 'ulte raaste', 'reverse gaadi', 'against traffic', 'wronglane'],
+  civic_sense: ['double riding', 'bina seatbelt', 'signal dharinda', 'no indicator', 'jumping red', 'helmet illa', 'bina helmet', 'over speed', 'drag racing'],
+  traffic_pothole: ['pot hole', 'gudde', 'khadda', 'road pit', 'tar peedhi', 'sadak gaddha', 'gothlu', 'crater road', 'potholes in road'],
+  civic_garbage: ['trash pile', 'waste dump', 'kachra jama', 'churuli', 'chettha', 'ganda kachra', 'garbadge', 'gabage', 'bin full'],
+  traffic_parking: ['gaadi khadi', 'parking problem', 'no parking zone', 'car khadi', 'bike hatthide', 'parking illa', 'vehicle standing'],
+  civic_streetlight: ['light illa', 'batti nahi', 'deepam ledu', 'light bandh', 'pole light off', 'street lamp off', 'no lighting'],
+  traffic_interaction: ['challan wrong', 'fine wrong', 'cop rude', 'police troubling', 'dl check', 'receipt missing'],
+  unofficial_payment: ['extra money', 'unofficial fee', 'paisa maang', 'money asked', 'illegal fee'],
+  safety_harassment: ['troubling me', 'eve tease', 'chhed chhad', 'haadu maadi', 'tang kar raha', 'stalking near'],
+  cybercrime: ['otp share', 'fake link', 'online loot', 'upi fraud', 'phishing mail', 'scam call', 'digital arrest'],
+  housing_tenant: ['owner trouble', 'deposit wapas', 'rent issue', 'vacate notice', 'landlord problem', 'advance nahi de raha'],
+  env_noise: ['sound pollution', 'loud music', 'dj trouble', 'shor sharaba', 'noise complaint', 'horn band'],
+  util_power: ['light gaya', 'bijli band', 'current illa', 'power problem', 'load shedding', 'line fail', 'electricity gone'],
+  access_language: ['language issue', 'hindi only', 'kannada only', 'english only', 'no local language', 'translator needed'],
+  govt_service: ['file pending', 'office delay', 'certificate late', 'application stuck', 'file not moving'],
+  civic_footpath: ['footpath illa', 'walk problem', 'footpath occupied', 'path blocked', 'pavement broken'],
+  civic_drainage: ['nala band', 'nali block', 'gutter jam', 'sewage smell', 'storm water', 'naali'],
+  civic_parks: ['park bad', 'garden dirty', 'play area broken', 'park bench broken', 'park upkeep'],
+  civic_water_supply: ['paani illa', 'neeru ledu', 'water cut', 'pipeline issue', 'tanker needed', 'supply off'],
+  civic_stray_animals: ['kutte', 'dog pack', 'naayi', 'stray cow', 'bandar', 'monkey trouble'],
+  bribes: ['speed money', 'rishwat', 'ghoos', 'cut money', 'hafta', 'lancham'],
+  bmtc_service: ['bus late', 'bus nahi', 'bandidilla', 'bus skip', 'no bus'],
+  bmtc_staff: ['conductor rude', 'driver bad', 'staff rude', 'kondaktor'],
+  bmtc_fare_ticket: ['fare extra', 'ticket illa', 'pass issue', 'change nahi'],
+  metro_service: ['metro issue', 'metro late', 'gate problem', 'token issue', 'escalator off'],
+  custom_issue: ['odd problem', 'other issue', 'misc issue', 'something else'],
+};
+
+let corpus: TrainedScenario[] | null = null;
+
+/** Full trained corpus (base + generated frames + extra forms), built once. */
+export function getTrainedCorpus(): TrainedScenario[] {
+  if (corpus) return corpus;
+  const rows: TrainedScenario[] = [...trainedScenarios];
+  for (const scenario of trainedScenarios) {
+    for (const kw of scenario.keywords) {
+      // Sentence frames are Latin-script only; native-script keywords already
+      // match directly through the base entry.
+      if (!/^[\x20-\x7E]+$/.test(kw)) continue;
+      for (const frame of FRAMES) {
+        rows.push({
+          keywords: [frame(kw)],
+          scenario_id: scenario.scenario_id,
+          confidence: Math.max(55, scenario.confidence - 3),
+          reason: scenario.reason,
+        });
+      }
+    }
+  }
+  for (const [scenarioId, forms] of Object.entries(EXTRA_FORMS)) {
+    const base = trainedScenarios.find(s => s.scenario_id === scenarioId);
+    for (const form of forms) {
+      rows.push({
+        keywords: [form],
+        scenario_id: scenarioId,
+        confidence: Math.min(base ? base.confidence : 90, 92),
+        reason: base ? base.reason : 'Trained surface form',
+      });
+    }
+  }
+  corpus = rows;
+  return rows;
+}
+
+export function getTrainedCorpusSize(): number {
+  return getTrainedCorpus().length;
+}
+
 // Function to match user input against trained scenarios
 export function matchTrainedScenario(userInput: string): {
   scenario_id: string;
@@ -735,7 +828,7 @@ export function matchTrainedScenario(userInput: string): {
   let bestMatch: { scenario_id: string; confidence: number; reason: string } | null = null;
   let highestScore = 0;
 
-  for (const scenario of trainedScenarios) {
+  for (const scenario of getTrainedCorpus()) {
     let matched = false;
     let matchQuality = 0;
 

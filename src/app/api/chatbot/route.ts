@@ -2,7 +2,7 @@
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { getScenarioById } from '@/data/scenarios';
 import { detectIntent, intentReply, askMore } from '@/lib/conversation';
-import { detectReplyLanguage, languageName } from '@/lib/ai/language';
+import { languageName } from '@/lib/ai/language';
 import { Language } from '@/types';
 
 // Server-side only
@@ -68,10 +68,10 @@ function buildSystemPrompt(replyLang: string): string {
   return `${SYSTEM_PROMPT}
 
 LANGUAGE
-- The citizen's latest message is written in ${name}. Write EVERY reply in ${name} — chat replies and the "reason" field alike.
-- The citizen may answer in any of English, Kannada, Hindi or Telugu, in native script or in Latin transliteration ("kuch nahi ho raha", "gundi road", "bijli gayi", "ledu sir"), and may mix two languages in one message. Understand all of it.
-- If the latest message is clearly in a different language from ${name}, switch to that language for your reply instead. Follow the citizen, never the app settings.
-- Never ask the citizen to switch language, and never reply in a language they did not use.`;
+- Write EVERY reply in ${name} — chat replies and the "reason" field alike.
+- This is the language the citizen selected in the app. Keep it for every message, no matter which language or script the citizen types in (English, transliterated Hindi/Kannada/Telugu, or native script).
+- Never switch languages on your own. The citizen changes the language only through the app's language selector, and the new selection will be passed to you here.
+- Never ask the citizen to switch language, and never reply in a language other than ${name}.`;
 }
 
 interface Turn {
@@ -98,10 +98,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No input provided' }, { status: 400 });
     }
 
-    // Answer in whatever language this message is written in, not the one the
-    // app happens to be set to.
+    // The reply always uses the language chosen in the app. Typed text in
+    // another script or transliteration never switches it — only the explicit
+    // language selector (sent here as `lang`) does.
     const appLang: Language = lang === 'kn' || lang === 'hi' || lang === 'te' ? lang : 'en';
-    const replyLang: Language = detectReplyLanguage(userInput, appLang);
+    const replyLang: Language = appLang;
     const replyLangName = languageName(replyLang);
 
     // ---- Fast path: deterministic conversational intents ----

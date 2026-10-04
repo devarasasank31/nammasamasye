@@ -15,6 +15,18 @@ export type AdminRole = 'SUPER_ADMIN' | 'ADMIN' | 'REVIEWER' | 'VIEW_ONLY';
 /** P1 = immediate life-safety risk (3 days), P4 = routine/low impact (30 days). */
 export type PriorityLevel = 'P1' | 'P2' | 'P3' | 'P4';
 
+/** Trained 5-level severity shown on the public feed (most → least severe). */
+export type SeverityLevel = 'life_threatening' | 'urgent' | 'serious' | 'moderate' | 'minor';
+
+/** Sort rank for the trained severity scale (0 = life-threatening). */
+export const SEVERITY_RANK: Record<SeverityLevel, number> = {
+  life_threatening: 0,
+  urgent: 1,
+  serious: 2,
+  moderate: 3,
+  minor: 4,
+};
+
 export type EvidenceType = 'image' | 'video' | 'audio' | 'document' | 'link';
 
 export type CategoryParent =

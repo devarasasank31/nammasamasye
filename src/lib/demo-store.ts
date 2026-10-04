@@ -2,7 +2,8 @@
   Language, Incident, IncidentStatus, Session, Evidence, StatusHistory, AdminNote,
   AttachmentMeta, CategoryParent, PublicIncident,
 } from '@/types';
-import { computePriority, severityFor } from '@/lib/priority';
+import { computePriority } from '@/lib/priority';
+import { trainedSeverity } from '@/lib/trained-severity';
 import { buildClusters } from '@/lib/clusters';
 import { assessRisk, RiskLevel } from '@/lib/spam';
 import {
@@ -105,7 +106,7 @@ function recomputeDerived(): void {
     inc.priority_score = res.score;
     inc.priority_reason = res.reason;
     inc.sla_days = res.slaDays;
-    inc.severity = severityFor(res.level);
+    // severity stays as trained at creation — the P1–P4 engine never touches it
     inc.cluster_citizens = cluster;
     inc.cluster_key = clusterKeyByIncident.get(inc.incident_id);
   }
@@ -214,7 +215,11 @@ export const demoStore = {
       date_of_incident: data.date_of_incident,
       language: data.language,
       status: 'NEW',
-      severity: 'medium',
+      severity: trainedSeverity({
+        scenarioId: data.subcategory || data.ai_scenario_match,
+        text: `${data.original_text} ${data.ai_summary}`,
+        answers: data.answers,
+      }),
       is_recurring: false,
       attachments: data.attachments || [],
       ai_scenario_match: data.ai_scenario_match || '',
