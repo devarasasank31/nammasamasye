@@ -1,8 +1,9 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { getScenarioById } from '@/data/scenarios';
 import { detectIntent, intentReply, askMore } from '@/lib/conversation';
 import { shouldGuard, guardReply, hasAnyCivicSignal } from '@/lib/chat-guard';
+import { civicClassify, clarificationQuestion } from '@/lib/civic-classifier';
+import { LocalClassifyResult } from '@/lib/civic-types';
 import { languageName } from '@/lib/ai/language';
 import { Language } from '@/types';
 
@@ -22,29 +23,34 @@ const AI_MODEL = (process.env.AI_MODEL || CONFIG.defaultModel).trim();
 const MAX_TURNS = 12;
 const MAX_TURN_CHARS = 1200;
 
-const SYSTEM_PROMPT = `You are the AI assistant inside "Namma Samasye", the anonymous civic-reporting app for Bengaluru (roads, garbage, water, power, transport, safety, bribes, cybercrime, tenancy, noise, government services).
+// External-AI call gating: only when local evidence is weak or the top two
+// candidates are close. Strong local results never spend an API call.
+const LOCAL_TRUST = 75;
+const LOCAL_ACCEPT = 55;
+const MARGIN_TRUST = 0.1;
 
-The app already contains a TRAINED knowledge base of 19,000+ civic scenario phrasings in English, Kannada, Hindi, Telugu and their transliterations (Hinglish, Kanglish, Tanglish). For familiar cases the trained model is the PRIMARY source — you are the FALLBACK for unfamiliar, ambiguous or out-of-distribution cases, not an unquestionable authority.
+const SYSTEM_PROMPT = `You are "Namma Samasye AI", the assistant inside Namma Samasye — an anonymous civic-reporting app for Bengaluru (roads, garbage, water, power, transport, safety, bribes, cybercrime, tenancy, noise, government services).
 
-You do TWO jobs depending on what the user sends:
+You are an ALL-IN-ONE assistant. You answer ANY question the citizen asks — greetings, general knowledge, science, health information, studies, technology, culture, how the app works — and you ALSO classify civic complaints. Never refuse a normal question just because it is not about civic issues.
 
-JOB 1 — CONVERSATION
-If the user is just talking to you (greeting, small talk, thanks, asking what the app does, general questions), OR the message contains NO real civic problem (abuse, insults, trolling, jokes, gibberish, venting with no incident), reply naturally as one short chat message — maximum 45 words.
+The app runs a TRAINED local classifier FIRST over 5,000+ civic scenarios (English, Kannada, Hindi, Telugu and transliterations) plus a phrase corpus. When the message is a civic complaint you receive its candidate categories — treat them as strong evidence, you are the tie-breaker for ambiguous or novel cases, not an unquestionable authority.
 
-For abuse or insults: one calm, polite line briefly inviting them to describe an actual civic problem (roads, garbage, water, power, transport, safety). Never repeat their words back. Never lecture, moralize, argue or get defensive.
+JOB 1 — CONVERSATION (the default)
+If the message is not a civic problem (greeting, thanks, small talk, general question, joke), reply as chat in at most 60 words (up to 100 for a real knowledge question). Answer helpfully and correctly. Never invent facts, statistics, live data, prices, phone numbers, laws or official names — if you are not sure, say so honestly in one line. For abuse or insults: one calm, polite line inviting them to describe an actual civic problem; never repeat their words, never lecture.
 
 JOB 2 — CLASSIFICATION
-Only when the conversation describes an actual civic problem, classify it. Use the FULL conversation history — if they add detail in later messages (first "bike accident", then "wrong side car, my leg broke"), combine everything before deciding.
-
-Understand MEANING before classifying: informal language, slang, spelling mistakes, emotional language, mixed languages and transliteration are normal. Decide what physically happened, which service is affected, and whether anyone is at risk.
+Classify ONLY when the conversation describes an actual civic problem. Use the full history — if they add detail later, combine it before deciding. Understand MEANING: informal language, slang, spelling mistakes, mixed languages and transliteration are normal.
 
 Respond with ONLY one JSON object, no markdown, no extra text.
 
-For conversation:
+Conversation:
 {"type":"chat","reply":"your reply"}
 
-For classification:
-{"type":"classify","scenario_id":"id","confidence":85,"reason":"brief reason"}
+Classification:
+{"type":"classify","scenario_id":"id","subcategory":"short_subcategory","confidence":85,"severity":"low|medium|high|critical","reason":"brief reason in the selected language","primary_issue":"short_label","secondary_issue":null,"needs_clarification":false,"clarification_question":null}
+
+Genuinely ambiguous:
+{"type":"chat","reply":"one short clarifying question","needs_clarification":true,"clarification_question":"the same question"}
 
 scenario_id must be exactly one of:
 traffic_accident | traffic_wrong_side | civic_sense | traffic_pothole | civic_garbage |
@@ -54,18 +60,21 @@ bribes | safety_harassment | cybercrime | housing_tenant | env_noise |
 util_power | access_language | govt_service | bmtc_service | bmtc_staff |
 bmtc_fare_ticket | metro_service | something_else
 
-Rules:
-- SAFETY OVERRIDE: immediate danger to life outranks everything. Live or exposed wire, sparks, electric shock, electrocution → util_power with high confidence and a reason that names the electrical hazard (never describe a dangerous wire as a routine "power cut"). Gas leak, fire, building collapse, open manhole in traffic, serious accident with injuries → classify with high confidence to the closest matching id above (fire/collapse → traffic_accident, open manhole → traffic_pothole). Never downgrade a dangerous condition to a mundane category.
-- NEVER classify a message that describes no civic problem: abuse, jokes, gibberish, or plain frustration with no incident → chat.
-- Never invent locations, injuries, laws, phone numbers, official names, police involvement or government action. Never accuse anyone of a crime.
-- Over-classification is forbidden: a crowd shouting, rude words or vague venting alone is NOT a crime or emergency — reply as chat and ask one clarifying question if needed.
-- Confidence represents CERTAINTY, not how serious the issue is: 90-100 only with clear specific evidence, 75-89 strong classification, 50-74 meaningful ambiguity, below 50 unclear. Never raise confidence because the user typed "urgent", "P1" or "EMERGENCY".
-- A single message may contain multiple issues — pick the PRIMARY one and mention secondary issues briefly in "reason".
-- Always prefer the most specific valid scenario_id (pothole over generic road problem, fallen wire over generic power issue).
-- civic_sense means traffic rules being broken even if nobody was hurt: stunts/wheelies, street racing, wrong-side driving, jumping signals, no helmet or triple riding, drunk or reckless driving. Prefer civic_sense over traffic_interaction for such behaviour.
-- BMTC: bmtc_service for the bus itself, bmtc_staff for driver/conductor behaviour, bmtc_fare_ticket for money and tickets. Use bmtc_service when unsure.
-- Namma Metro (BMRCL) complaints are metro_service, even when only a metro station is mentioned.
-- If still unclear after the history, use confidence below 50.`;
+Rules — understanding:
+- NEGATIONS AND CONTRADICTIONS: "there is no power outage", "electricity is working normally", "we have water", "the streetlight works" deny those categories. NOT X BUT Y → classify Y. A message can mention a keyword only to deny it.
+- CAUSE VS SYMPTOM: classify what is actually broken (burst sewer pipe causing flooding → civic_drainage with sewage subcategory, not mere flooding).
+- PRIMARY ISSUE: multiple problems → the most specific, most urgent one is primary; mention the secondary in "secondary_issue". Never decide by the first keyword.
+- ALLEGATIONS are never facts: "the official stole money so my file is stuck" → govt_service (or bribes as an allegation), reason notes it is an unverified claim. Never accuse anyone.
+- Confidence is CERTAINTY, not seriousness: 90-100 only with clear specific evidence, 75-89 strong, 55-74 moderate, below 55 ambiguous (then ask ONE clarifying question instead). Never raise it because the user typed "urgent" or "P1".
+
+Rules — safety:
+- SAFETY OVERRIDE: immediate danger outranks everything. Live or exposed fallen wire, sparks, electric shock → util_power with high confidence and a reason naming the electrical hazard — never call a dangerous wire a routine "power cut". Open sewer manhole with no cover → civic_drainage. Fire or building collapse → traffic_accident. Chemical or gas smell → civic_drainage with a reason naming the hazardous exposure. Serious accident with injuries → traffic_accident. Dog bite → civic_stray_animals. Never downgrade a dangerous condition to a mundane category.
+- Never invent injuries, laws, phone numbers, police involvement or government action. Do not give medical, legal or financial instructions beyond common-sense safety.
+
+Rules — honesty:
+- NEVER classify a message with no civic problem: abuse, gibberish, plain venting → chat. Over-classification is forbidden.
+- If candidates are provided, prefer them; pick a different id only when clearly correct. Never invent ids or subcategories.
+- If still unclear, confidence below 50 and one clarifying question.`;
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: 'English',
@@ -79,10 +88,9 @@ function buildSystemPrompt(replyLang: string): string {
   return `${SYSTEM_PROMPT}
 
 LANGUAGE
-- Write EVERY reply in ${name} — chat replies and the "reason" field alike.
-- This is the language the citizen selected in the app. Keep it for every message, no matter which language or script the citizen types in (English, transliterated Hindi/Kannada/Telugu, or native script).
-- Never switch languages on your own. The citizen changes the language only through the app's language selector, and the new selection will be passed to you here.
-- Never ask the citizen to switch language, and never reply in a language other than ${name}.`;
+- Write EVERY reply in ${name} — chat replies, clarifying questions and the "reason" field alike.
+- This is the language the citizen selected in the app. Keep it for every message, no matter which language or script the citizen types in.
+- Never switch languages on your own; the selection changes only through the app's language selector.`;
 }
 
 interface Turn {
@@ -109,14 +117,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No input provided' }, { status: 400 });
     }
 
-    // The reply always uses the language chosen in the app. Typed text in
-    // another script or transliteration never switches it — only the explicit
-    // language selector (sent here as `lang`) does.
+    // The reply always uses the language chosen in the app.
     const appLang: Language = lang === 'kn' || lang === 'hi' || lang === 'te' ? lang : 'en';
     const replyLang: Language = appLang;
     const replyLangName = languageName(replyLang);
 
-    // ---- Fast path: deterministic conversational intents ----
+    // ---- Fast path: deterministic conversational intents --------------------
     const intent = detectIntent(userInput);
     if (intent && intent !== 'yes' && intent !== 'no') {
       const reply = intentReply(intent, replyLang);
@@ -129,8 +135,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ---- Deterministic guard: abuse/off-topic never reaches a classifier,
-    // so a rude message can never turn into a fake "Report this issue" card.
+    // ---- Deterministic guard: abuse never reaches a classifier --------------
     if (shouldGuard(userInput)) {
       return NextResponse.json({
         type: 'chat',
@@ -141,63 +146,142 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ---- Build transcript so the model sees added context ----
+    // ---- Transcript for context-aware decisions -----------------------------
     const transcript = [
       ...history.map(t => `${t.role === 'user' ? 'User' : 'Assistant'}: ${truncate(t.text)}`),
       `User: ${truncate(userInput)}`,
     ].join('\n');
 
-    // ---- Strong trained match: answer instantly, no API round-trip ----
-    const trainedMatch = matchTrainedScenario(userInput);
-    if (trainedMatch && trainedMatch.confidence >= 85) {
-      return NextResponse.json({ type: 'classify', ...trainedMatch, replyLang, replyLangName, source: 'trained' });
+    // ---- Local hybrid classifier (retrieval + negations + safety) -----------
+    let local = civicClassify(userInput);
+    if ((!local.category || local.confidence < LOCAL_ACCEPT) && history.length) {
+      const deeper = civicClassify(transcript);
+      if (deeper.confidence > local.confidence) local = deeper;
     }
 
-    // ---- Call AI with full history ----
-    if (AI_API_KEY) {
-      try {
-        const aiResult = await callAI(transcript, replyLang);
-        if (aiResult) {
-          if (aiResult.type === 'chat') {
-            return NextResponse.json({ ...aiResult, replyLang, replyLangName, source: 'ai' });
-          }
-          if (aiResult.confidence >= 50) {
-            // Backstop: if neither the current message nor the transcript
-            // touches any civic or safety topic, an off-topic answer must
-            // never become a "Report this issue" card.
-            if (!hasAnyCivicSignal(transcript)) {
-              return NextResponse.json({
-                type: 'chat',
-                reply: askMore(userInput, replyLang),
-                replyLang,
-                replyLangName,
-                source: 'ai',
-              });
-            }
-            if (trainedMatch && trainedMatch.confidence > aiResult.confidence) {
-              return NextResponse.json({ type: 'classify', ...trainedMatch, replyLang, replyLangName, source: 'trained' });
-            }
-            return NextResponse.json({ ...aiResult, replyLang, replyLangName, source: 'ai' });
-          }
-          // Too vague to classify — ask naturally instead of a canned reply
-          return NextResponse.json({
-            type: 'chat',
-            reply: askMore(userInput, replyLang),
+    const started = Date.now();
+    let apiCalled = false;
+
+    // A negated message with no hazard signal (e.g. "no outage, power is
+    // fine") may only be accepted as a very strong local match — leftover
+    // weak candidates must go through the AI or fall back to a question,
+    // never become a confident card.
+    const negatedNoHazard = local.negations_applied.length > 0 && local.hazards.length === 0;
+    const trustGate = negatedNoHazard ? 85 : LOCAL_TRUST;
+    const acceptGate = negatedNoHazard ? 70 : LOCAL_ACCEPT;
+
+    // ---- Strong local result: answer instantly, no API round-trip -----------
+    if (local.category && local.confidence >= trustGate && !local.needs_clarification) {
+      logClassify(userInput, local, false, 'local_scenario', Date.now() - started);
+      return NextResponse.json(classifyPayload(local, 'local_scenario', replyLang, replyLangName));
+    }
+
+    // ---- External AI fallback (validated, cached, candidate-scoped) ---------
+    let aiResult: AIResult | null = null;
+    if (AI_API_KEY && (!local.category || local.confidence < trustGate || local.margin < MARGIN_TRUST)) {
+      const cacheKey = `${replyLang}|${normalizeCacheKey(transcript)}`;
+      const cached = aiCacheGet(cacheKey);
+      if (cached) {
+        aiResult = cached;
+      } else {
+        apiCalled = true;
+        try {
+          aiResult = await callAI(transcript, replyLang, local);
+          if (aiResult) aiCacheSet(cacheKey, aiResult);
+        } catch (err) {
+          console.log('AI API error:', err);
+        }
+      }
+
+      if (aiResult && aiResult.type === 'chat') {
+        // A strong-enough local civic match beats an AI "this is just chat".
+        if (local.category && local.confidence >= acceptGate && !local.needs_clarification) {
+          logClassify(userInput, local, apiCalled, 'local_scenario', Date.now() - started);
+          return NextResponse.json(classifyPayload(local, 'local_scenario', replyLang, replyLangName));
+        }
+        const payload = {
+          type: 'chat' as const,
+          reply: aiResult.reply,
+          needs_clarification: Boolean(aiResult.needs_clarification) || undefined,
+          clarification_question: aiResult.clarification_question || undefined,
+          guessed_category: local.category || undefined,
+          replyLang,
+          replyLangName,
+          source: 'external_ai',
+        };
+        logClassify(userInput, local, apiCalled, 'external_ai_chat', Date.now() - started);
+        return NextResponse.json(payload);
+      }
+
+      if (aiResult && aiResult.type === 'classify') {
+        const valid = validateAI(aiResult, local, transcript) &&
+          (!negatedNoHazard || aiResult.confidence >= 70);
+        if (valid && aiResult.confidence >= 50 && aiResult.confidence > local.confidence + 4) {
+          const payload = {
+            type: 'classify' as const,
+            scenario_id: aiResult.scenario_id,
+            confidence: Math.min(99, aiResult.confidence),
+            reason: aiResult.reason,
+            category: aiResult.scenario_id,
+            subcategory: aiResult.subcategory || null,
+            severity: normalizeSeverity(aiResult.severity),
+            primary_issue: aiResult.primary_issue || aiResult.subcategory || aiResult.scenario_id,
+            secondary_issue: aiResult.secondary_issue || local.secondary_issue || null,
+            needs_clarification: false,
+            clarification_question: null,
+            source: 'external_ai',
             replyLang,
             replyLangName,
-            source: 'ai',
+          };
+          logClassify(userInput, local, apiCalled, 'external_ai', Date.now() - started);
+          return NextResponse.json(payload);
+        }
+        if (valid && aiResult.needs_clarification && aiResult.clarification_question) {
+          const q = aiResult.clarification_question;
+          logClassify(userInput, local, apiCalled, 'external_ai_clarify', Date.now() - started);
+          return NextResponse.json({
+            type: 'chat',
+            reply: q,
+            needs_clarification: true,
+            clarification_question: q,
+            guessed_category: local.category || undefined,
+            replyLang,
+            replyLangName,
+            source: 'external_ai',
           });
         }
-      } catch (err) {
-        console.log('AI API error:', err);
+        // Invalid or weaker than local: fall through to local handling below.
       }
     }
 
-    // ---- Fallbacks ----
-    if (trainedMatch && trainedMatch.confidence >= 55) {
-      return NextResponse.json({ type: 'classify', ...trainedMatch, replyLang, replyLangName, source: 'trained' });
+    // ---- Local acceptance / clarification / fallback ------------------------
+    if (local.category && local.confidence >= acceptGate && !local.needs_clarification) {
+      logClassify(userInput, local, apiCalled, 'local_scenario', Date.now() - started);
+      return NextResponse.json(classifyPayload(local, 'local_scenario', replyLang, replyLangName));
     }
 
+    if (local.category && local.needs_clarification && local.confidence >= 45 && local.clarification_family) {
+      const q = clarificationQuestion(local.clarification_family, replyLang);
+      logClassify(userInput, local, apiCalled, 'local_clarify', Date.now() - started);
+      return NextResponse.json({
+        type: 'chat',
+        reply: q,
+        needs_clarification: true,
+        clarification_question: q,
+        guessed_category: local.category,
+        replyLang,
+        replyLangName,
+        source: 'local_scenario',
+      });
+    }
+
+    // Moderate single-candidate evidence without ambiguity → accept it.
+    if (local.category && local.confidence >= acceptGate) {
+      logClassify(userInput, local, apiCalled, 'local_scenario', Date.now() - started);
+      return NextResponse.json(classifyPayload(local, 'local_scenario', replyLang, replyLangName));
+    }
+
+    logClassify(userInput, local, apiCalled, 'fallback', Date.now() - started);
     return NextResponse.json({
       type: 'chat',
       reply: askMore(userInput, replyLang),
@@ -211,25 +295,108 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Response builders
+// ---------------------------------------------------------------------------
+function classifyPayload(local: LocalClassifyResult, source: string, replyLang: Language, replyLangName: string) {
+  return {
+    type: 'classify' as const,
+    scenario_id: local.scenario_id,
+    confidence: local.confidence,
+    reason: local.reason || 'Matched by the local scenario knowledge base.',
+    category: local.category,
+    subcategory: local.subcategory,
+    severity: local.severity,
+    primary_issue: local.subcategory || local.category,
+    secondary_issue: local.secondary_issue,
+    needs_clarification: false,
+    clarification_question: null,
+    source,
+    hazards: local.hazards.length ? local.hazards : undefined,
+    replyLang,
+    replyLangName,
+  };
+}
+
+function normalizeSeverity(s: unknown): string {
+  if (s === 'low' || s === 'medium' || s === 'high' || s === 'critical') return s;
+  return 'medium';
+}
+
+function logClassify(input: string, local: LocalClassifyResult, apiCalled: boolean, source: string, ms: number) {
+  console.log('[civic]', JSON.stringify({
+    q: input.slice(0, 80),
+    local_conf: local.confidence,
+    local_cat: local.category,
+    margin: Number(local.margin.toFixed(3)),
+    neg: local.negations_applied.length,
+    hz: local.hazards.join(',') || '-',
+    api: apiCalled,
+    src: source,
+    ms,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// AI result validation (phase 12) — never trust the API blindly
+// ---------------------------------------------------------------------------
+function validateAI(r: Extract<AIResult, { type: 'classify' }>, local: LocalClassifyResult, transcript: string): boolean {
+  if (!getScenarioById(r.scenario_id)) return false; // category must exist
+  if (!hasAnyCivicSignal(transcript)) return false; // never classify non-civic
+  // Text explicitly denies the AI's category while local has another reading.
+  const denied = local.negations_applied.filter(k => k.startsWith(r.scenario_id + ':'));
+  const localTop = local.top[0];
+  if (denied.length && localTop && localTop.category !== r.scenario_id && r.confidence < 85) return false;
+  // A strong local candidate outranks a weaker AI guess.
+  if (localTop && localTop.category !== r.scenario_id && localTop.score > 0.62 && r.confidence < 75) return false;
+  return true;
+}
+
 function truncate(s: string): string {
   return s.length > MAX_TURN_CHARS ? s.slice(0, MAX_TURN_CHARS) + '…' : s;
 }
 
+// ---------------------------------------------------------------------------
+// External AI (Groq / OpenAI / Gemini)
+// ---------------------------------------------------------------------------
 type AIResult =
-  | { type: 'chat'; reply: string }
-  | { type: 'classify'; scenario_id: string; confidence: number; reason: string };
+  | { type: 'chat'; reply: string; needs_clarification?: boolean; clarification_question?: string }
+  | {
+      type: 'classify';
+      scenario_id: string;
+      subcategory?: string;
+      confidence: number;
+      severity?: string;
+      reason: string;
+      primary_issue?: string;
+      secondary_issue?: string | null;
+      needs_clarification?: boolean;
+      clarification_question?: string;
+    };
 
-async function callAI(transcript: string, lang: string): Promise<AIResult | null> {
+function buildCandidatesBlock(local: LocalClassifyResult): string {
+  if (!local.top.length) return '';
+  const lines = local.top.map((c, i) =>
+    `${i + 1}. ${c.category}${c.subcategory ? '/' + c.subcategory : ''} (local score ${c.score.toFixed(2)}) — ${c.reason}`
+  );
+  const neg = local.negations_applied.length
+    ? `\nDetected negations: ${local.negations_applied.join(', ')}`
+    : '';
+  const hz = local.hazards.length ? `\nDetected hazards: ${local.hazards.join(', ')}` : '';
+  return `\n\nLOCAL CANDIDATES (from the trained knowledge base):\n${lines.join('\n')}${neg}${hz}`;
+}
+
+async function callAI(transcript: string, lang: string, local: LocalClassifyResult): Promise<AIResult | null> {
   if (AI_PROVIDER === 'groq' || AI_PROVIDER === 'openai') {
-    return callOpenAICompatible(transcript, lang);
+    return callOpenAICompatible(transcript, lang, local);
   }
   if (AI_PROVIDER === 'gemini') {
-    return callGemini(transcript, lang);
+    return callGemini(transcript, lang, local);
   }
   return null;
 }
 
-async function callOpenAICompatible(transcript: string, lang: string): Promise<AIResult | null> {
+async function callOpenAICompatible(transcript: string, lang: string, local: LocalClassifyResult): Promise<AIResult | null> {
   const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -240,9 +407,9 @@ async function callOpenAICompatible(transcript: string, lang: string): Promise<A
       model: AI_MODEL,
       messages: [
         { role: 'system', content: buildSystemPrompt(lang) },
-        { role: 'user', content: transcript },
+        { role: 'user', content: transcript + buildCandidatesBlock(local) },
       ],
-      max_tokens: 700,
+      max_tokens: 800,
       temperature: 0.4,
     }),
   });
@@ -255,7 +422,7 @@ async function callOpenAICompatible(transcript: string, lang: string): Promise<A
   return normalise(data.choices?.[0]?.message?.content);
 }
 
-async function callGemini(transcript: string, lang: string): Promise<AIResult | null> {
+async function callGemini(transcript: string, lang: string, local: LocalClassifyResult): Promise<AIResult | null> {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${AI_API_KEY}`,
     {
@@ -263,8 +430,8 @@ async function callGemini(transcript: string, lang: string): Promise<AIResult | 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: buildSystemPrompt(lang) }] },
-        contents: [{ role: 'user', parts: [{ text: transcript }] }],
-        generationConfig: { maxOutputTokens: 700, temperature: 0.4 },
+        contents: [{ role: 'user', parts: [{ text: transcript + buildCandidatesBlock(local) }] }],
+        generationConfig: { maxOutputTokens: 800, temperature: 0.4 },
       }),
     }
   );
@@ -283,7 +450,12 @@ function normalise(content: unknown): AIResult | null {
   if (!parsed) return null;
 
   if (parsed.type === 'chat' && typeof parsed.reply === 'string' && parsed.reply.trim()) {
-    return { type: 'chat', reply: parsed.reply.trim() };
+    return {
+      type: 'chat',
+      reply: parsed.reply.trim(),
+      needs_clarification: Boolean(parsed.needs_clarification),
+      clarification_question: typeof parsed.clarification_question === 'string' ? parsed.clarification_question : undefined,
+    };
   }
 
   const sid = parsed.scenario_id;
@@ -291,8 +463,24 @@ function normalise(content: unknown): AIResult | null {
     return {
       type: 'classify',
       scenario_id: sid,
+      subcategory: typeof parsed.subcategory === 'string' ? parsed.subcategory : undefined,
       confidence: Math.min(Math.max(Number(parsed.confidence) || 50, 1), 99),
+      severity: typeof parsed.severity === 'string' ? parsed.severity : undefined,
       reason: typeof parsed.reason === 'string' ? parsed.reason : 'Matched by AI',
+      primary_issue: typeof parsed.primary_issue === 'string' ? parsed.primary_issue : undefined,
+      secondary_issue: typeof parsed.secondary_issue === 'string' ? parsed.secondary_issue : null,
+      needs_clarification: Boolean(parsed.needs_clarification),
+      clarification_question: typeof parsed.clarification_question === 'string' ? parsed.clarification_question : undefined,
+    };
+  }
+
+  // Clarifying question expressed as chat-like JSON without a reply field
+  if (parsed.needs_clarification && typeof parsed.clarification_question === 'string') {
+    return {
+      type: 'chat',
+      reply: parsed.clarification_question,
+      needs_clarification: true,
+      clarification_question: parsed.clarification_question,
     };
   }
 
@@ -320,4 +508,33 @@ function parseJsonLoose(content: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Response cache (phase 21): repeated queries never re-spend an API call
+// ---------------------------------------------------------------------------
+const AI_CACHE_TTL_MS = 15 * 60 * 1000;
+const AI_CACHE_MAX = 400;
+const aiCache = new Map<string, { value: AIResult; t: number }>();
+
+function normalizeCacheKey(s: string): string {
+  return s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 500);
+}
+
+function aiCacheGet(key: string): AIResult | null {
+  const hit = aiCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.t > AI_CACHE_TTL_MS) {
+    aiCache.delete(key);
+    return null;
+  }
+  return hit.value;
+}
+
+function aiCacheSet(key: string, value: AIResult) {
+  if (aiCache.size >= AI_CACHE_MAX) {
+    const oldest = aiCache.keys().next().value;
+    if (oldest !== undefined) aiCache.delete(oldest);
+  }
+  aiCache.set(key, { value, t: Date.now() });
 }

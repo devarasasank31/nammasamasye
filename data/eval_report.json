@@ -1,0 +1,854 @@
+{
+  "tests_total": 5077,
+  "classify_tests": 5035,
+  "local_top1_accuracy": 0.9944,
+  "e2e_simulated_accuracy": 0.9901,
+  "abstained_after_gates": 41,
+  "macro_f1": 0.9948,
+  "pools": {
+    "positive": {
+      "n": 3137,
+      "local": "3134/3137",
+      "e2e": "3129/3137",
+      "local_rate": 0.999,
+      "e2e_rate": 0.9974
+    },
+    "hard_negative": {
+      "n": 1104,
+      "local": "1088/1104",
+      "e2e": "1075/1104",
+      "local_rate": 0.9855,
+      "e2e_rate": 0.9737
+    },
+    "confusion": {
+      "n": 770,
+      "local": "766/770",
+      "e2e": "764/770",
+      "local_rate": 0.9948,
+      "e2e_rate": 0.9922
+    },
+    "negation": {
+      "n": 12,
+      "local": "12/12",
+      "e2e": "12/12",
+      "local_rate": 1,
+      "e2e_rate": 1
+    },
+    "multi_issue": {
+      "n": 12,
+      "local": "7/12",
+      "e2e": "5/12",
+      "local_rate": 0.5833,
+      "e2e_rate": 0.4167
+    },
+    "ambiguous": {
+      "n": 10,
+      "local": "10/10",
+      "e2e": "10/10",
+      "local_rate": 1,
+      "e2e_rate": 1
+    },
+    "safety": {
+      "n": 12,
+      "local": "12/12",
+      "e2e": "12/12",
+      "local_rate": 1,
+      "e2e_rate": 1
+    },
+    "ood": {
+      "n": 12,
+      "local": "12/12",
+      "e2e": "12/12",
+      "local_rate": 1,
+      "e2e_rate": 1
+    },
+    "adversarial": {
+      "n": 8,
+      "local": "8/8",
+      "e2e": "8/8",
+      "local_rate": 1,
+      "e2e_rate": 1
+    }
+  },
+  "api_fallback_rate": 0.0292,
+  "local_accepted_rate": 0.984,
+  "clarification_rate": 0.0152,
+  "latency_ms": {
+    "p50": 11,
+    "p95": 17,
+    "p99": 20,
+    "max": 34
+  },
+  "confidence": {
+    "correct_mean": 98.8,
+    "wrong_mean": 71.7
+  },
+  "top_confusions": [
+    {
+      "pair": "civic_streetlight -> traffic_parking",
+      "count": 4
+    },
+    {
+      "pair": "civic_streetlight -> civic_sense",
+      "count": 3
+    },
+    {
+      "pair": "civic_streetlight -> civic_water_supply",
+      "count": 3
+    },
+    {
+      "pair": "bmtc_service -> metro_service",
+      "count": 3
+    },
+    {
+      "pair": "traffic_parking -> civic_footpath",
+      "count": 2
+    },
+    {
+      "pair": "util_power -> env_noise",
+      "count": 1
+    },
+    {
+      "pair": "civic_streetlight -> safety_harassment",
+      "count": 1
+    },
+    {
+      "pair": "civic_streetlight -> util_power",
+      "count": 1
+    },
+    {
+      "pair": "civic_streetlight -> traffic_wrong_side",
+      "count": 1
+    },
+    {
+      "pair": "civic_streetlight -> civic_parks",
+      "count": 1
+    },
+    {
+      "pair": "civic_streetlight -> civic_drainage",
+      "count": 1
+    },
+    {
+      "pair": "traffic_wrong_side -> civic_sense",
+      "count": 1
+    }
+  ],
+  "per_category": [
+    {
+      "cat": "access_language",
+      "support": 77,
+      "tp": 77,
+      "fp": 0,
+      "fn": 0,
+      "p": 1,
+      "r": 1,
+      "f1": 1
+    },
+    {
+      "cat": "bmtc_fare_ticket",
+      "support": 182,
+      "tp": 181,
+      "fp": 0,
+      "fn": 1,
+      "p": 1,
+      "r": 0.9945054945054945,
+      "f1": 0.9972451790633609
+    },
+    {
+      "cat": "bmtc_service",
+      "support": 378,
+      "tp": 374,
+      "fp": 0,
+      "fn": 4,
+      "p": 1,
+      "r": 0.9894179894179894,
+      "f1": 0.9946808510638299
+    },
+    {
+      "cat": "bmtc_staff",
+      "support": 172,
+      "tp": 172,
+      "fp": 2,
+      "fn": 0,
+      "p": 0.9885057471264368,
+      "r": 1,
+      "f1": 0.9942196531791908
+    },
+    {
+      "cat": "bribes",
+      "support": 85,
+      "tp": 84,
+      "fp": 0,
+      "fn": 1,
+      "p": 1,
+      "r": 0.9882352941176471,
+      "f1": 0.9940828402366864
+    },
+    {
+      "cat": "civic_drainage",
+      "support": 370,
+      "tp": 369,
+      "fp": 1,
+      "fn": 1,
+      "p": 0.9972972972972973,
+      "r": 0.9972972972972973,
+      "f1": 0.9972972972972973
+    },
+    {
+      "cat": "civic_footpath",
+      "support": 341,
+      "tp": 341,
+      "fp": 2,
+      "fn": 0,
+      "p": 0.9941690962099126,
+      "r": 1,
+      "f1": 0.9970760233918129
+    },
+    {
+      "cat": "civic_garbage",
+      "support": 244,
+      "tp": 244,
+      "fp": 0,
+      "fn": 0,
+      "p": 1,
+      "r": 1,
+      "f1": 1
+    },
+    {
+      "cat": "civic_parks",
+      "support": 309,
+      "tp": 309,
+      "fp": 1,
+      "fn": 0,
+      "p": 0.9967741935483871,
+      "r": 1,
+      "f1": 0.9983844911147012
+    },
+    {
+      "cat": "civic_sense",
+      "support": 222,
+      "tp": 222,
+      "fp": 5,
+      "fn": 0,
+      "p": 0.9779735682819384,
+      "r": 1,
+      "f1": 0.9888641425389755
+    },
+    {
+      "cat": "civic_stray_animals",
+      "support": 114,
+      "tp": 114,
+      "fp": 0,
+      "fn": 0,
+      "p": 1,
+      "r": 1,
+      "f1": 1
+    },
+    {
+      "cat": "civic_streetlight",
+      "support": 205,
+      "tp": 190,
+      "fp": 0,
+      "fn": 15,
+      "p": 1,
+      "r": 0.926829268292683,
+      "f1": 0.9620253164556963
+    },
+    {
+      "cat": "civic_water_supply",
+      "support": 170,
+      "tp": 170,
+      "fp": 4,
+      "fn": 0,
+      "p": 0.9770114942528736,
+      "r": 1,
+      "f1": 0.9883720930232558
+    },
+    {
+      "cat": "cybercrime",
+      "support": 75,
+      "tp": 75,
+      "fp": 0,
+      "fn": 0,
+      "p": 1,
+      "r": 1,
+      "f1": 1
+    },
+    {
+      "cat": "env_noise",
+      "support": 190,
+      "tp": 190,
+      "fp": 1,
+      "fn": 0,
+      "p": 0.9947643979057592,
+      "r": 1,
+      "f1": 0.9973753280839895
+    },
+    {
+      "cat": "govt_service",
+      "support": 110,
+      "tp": 110,
+      "fp": 0,
+      "fn": 0,
+      "p": 1,
+      "r": 1,
+      "f1": 1
+    },
+    {
+      "cat": "housing_tenant",
+      "support": 86,
+      "tp": 86,
+      "fp": 0,
+      "fn": 0,
+      "p": 1,
+      "r": 1,
+      "f1": 1
+    },
+    {
+      "cat": "metro_service",
+      "support": 263,
+      "tp": 262,
+      "fp": 3,
+      "fn": 1,
+      "p": 0.9886792452830189,
+      "r": 0.9961977186311787,
+      "f1": 0.9924242424242423
+    },
+    {
+      "cat": "safety_harassment",
+      "support": 124,
+      "tp": 124,
+      "fp": 1,
+      "fn": 0,
+      "p": 0.992,
+      "r": 1,
+      "f1": 0.9959839357429718
+    },
+    {
+      "cat": "traffic_accident",
+      "support": 149,
+      "tp": 149,
+      "fp": 1,
+      "fn": 0,
+      "p": 0.9933333333333333,
+      "r": 1,
+      "f1": 0.9966555183946488
+    },
+    {
+      "cat": "traffic_interaction",
+      "support": 196,
+      "tp": 196,
+      "fp": 0,
+      "fn": 0,
+      "p": 1,
+      "r": 1,
+      "f1": 1
+    },
+    {
+      "cat": "traffic_parking",
+      "support": 228,
+      "tp": 226,
+      "fp": 4,
+      "fn": 2,
+      "p": 0.9826086956521739,
+      "r": 0.9912280701754386,
+      "f1": 0.9868995633187774
+    },
+    {
+      "cat": "traffic_pothole",
+      "support": 249,
+      "tp": 248,
+      "fp": 0,
+      "fn": 1,
+      "p": 1,
+      "r": 0.9959839357429718,
+      "f1": 0.9979879275653923
+    },
+    {
+      "cat": "traffic_wrong_side",
+      "support": 187,
+      "tp": 186,
+      "fp": 1,
+      "fn": 1,
+      "p": 0.9946524064171123,
+      "r": 0.9946524064171123,
+      "f1": 0.9946524064171123
+    },
+    {
+      "cat": "unofficial_payment",
+      "support": 107,
+      "tp": 107,
+      "fp": 1,
+      "fn": 0,
+      "p": 0.9907407407407407,
+      "r": 1,
+      "f1": 0.9953488372093023
+    },
+    {
+      "cat": "util_power",
+      "support": 202,
+      "tp": 201,
+      "fp": 1,
+      "fn": 1,
+      "p": 0.995049504950495,
+      "r": 0.995049504950495,
+      "f1": 0.995049504950495
+    }
+  ],
+  "failures": [
+    {
+      "pool": "hard_negative",
+      "id": "gen_util_power_701",
+      "text": "We have electricity, but the స్ట్రీట్ లైట్ is not working because its తీగ came down.",
+      "expected": "util_power",
+      "denied": null,
+      "got": "env_noise",
+      "conf": 65,
+      "margin": 0,
+      "clar": true,
+      "neg": [
+        "util_power:power_outage"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "positive",
+      "id": "gen_civic_streetlight_1966",
+      "text": "From the railway crossing to Basavanagudi every deepu ide out, unsafe for women at night.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "safety_harassment",
+      "conf": 79,
+      "margin": 0.173,
+      "clar": false,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2034",
+      "text": "The fallen thing near the flyover base undi the lamp post itself, ledu an electrical wire lying live.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "util_power",
+      "conf": 99,
+      "margin": 0,
+      "clar": false,
+      "neg": [],
+      "hz": [
+        "live_wire!"
+      ],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2038",
+      "text": "The area has power supply, but the streetlights on Hosur Road are all out.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "civic_sense",
+      "conf": 50,
+      "margin": 0.027,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2039",
+      "text": "The area has power supply, but the streetlights on the road near the metro pillar are all out.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "traffic_wrong_side",
+      "conf": 67,
+      "margin": 0.017,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2040",
+      "text": "The area has power supply, but the streetlights on the road opposite the bus stand are all out.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "traffic_parking",
+      "conf": 84,
+      "margin": 0.083,
+      "clar": false,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2041",
+      "text": "The area has power supply, but the streetlights on Hosur Road are all out near the hospital gate, this layout.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "civic_parks",
+      "conf": 65,
+      "margin": 0.012,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2042",
+      "text": "The area has power supply, but the streetlights on Hosur Road are all out near the temple junction, this layout.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "civic_drainage",
+      "conf": 62,
+      "margin": 0.009,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2043",
+      "text": "The area has pwoer supply, but the streetlights on Hosur Road are all out.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "traffic_parking",
+      "conf": 50,
+      "margin": 0.021,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2044",
+      "text": "The area has power supply, but the streetlights on Hosur Road are all out. sir",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "traffic_parking",
+      "conf": 50,
+      "margin": 0.018,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2045",
+      "text": "The area has power supply, but the streetlights on Hosur Road are all out. thanks",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "civic_sense",
+      "conf": 50,
+      "margin": 0.008,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2046",
+      "text": "The area has power supply, but the streetlights on Hosur Road are all out. please take action immediately",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "civic_sense",
+      "conf": 72,
+      "margin": 0.059,
+      "clar": false,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2047",
+      "text": "The area has power supply, but the streetlights on Hosur raste are all out.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "civic_water_supply",
+      "conf": 62,
+      "margin": 0.005,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2048",
+      "text": "The area has ವಿದ್ಯುತ್ supply, but the streetlights on Hosur Road are all out.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "traffic_parking",
+      "conf": 50,
+      "margin": 0.021,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2049",
+      "text": "The area has बिजली supply, but the streetlights on Hosur सड़क are all out.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "civic_water_supply",
+      "conf": 62,
+      "margin": 0.037,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_civic_streetlight_2050",
+      "text": "The area has power supply, but the streetlights on Hosur రోడ్ are all out.",
+      "expected": "civic_streetlight",
+      "denied": null,
+      "got": "civic_water_supply",
+      "conf": 63,
+      "margin": 0.049,
+      "clar": true,
+      "neg": [
+        "civic_streetlight:light_not_working"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "confusion",
+      "id": "gen_traffic_wrong_side_3335",
+      "text": "They jumped the signal AND went wrong side on Hosur Road; the report is the wrong-side habit.",
+      "expected": "traffic_wrong_side",
+      "denied": null,
+      "got": "civic_sense",
+      "conf": 99,
+      "margin": 0.092,
+      "clar": false,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "positive",
+      "id": "gen_traffic_parking_3673",
+      "text": "Bikes parked on the ఫుట్‌పాత్ near the hospital gate force pedestrians onto the road.",
+      "expected": "traffic_parking",
+      "denied": null,
+      "got": "civic_footpath",
+      "conf": 87,
+      "margin": 0.023,
+      "clar": true,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "positive",
+      "id": "gen_bmtc_service_4228",
+      "text": "Driver ignored the Koramangala halt and continued, we missed work near the bus stop, this layout.",
+      "expected": "bmtc_service",
+      "denied": null,
+      "got": "civic_sense",
+      "conf": 50,
+      "margin": 0.169,
+      "clar": true,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "confusion",
+      "id": "gen_bmtc_service_4388",
+      "text": "Metro is running fine; the delay is BMTC buses on the 100 Feet Road corridor.",
+      "expected": "bmtc_service",
+      "denied": null,
+      "got": "metro_service",
+      "conf": 87,
+      "margin": 0.034,
+      "clar": true,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "confusion",
+      "id": "gen_bmtc_service_4389",
+      "text": "Metro is runnnig fine; the delay is BMTC buses on the the main road corridor.",
+      "expected": "bmtc_service",
+      "denied": null,
+      "got": "metro_service",
+      "conf": 86,
+      "margin": 0.029,
+      "clar": true,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "confusion",
+      "id": "gen_bmtc_service_4390",
+      "text": "Metro is running fine; the delay is BMTC buses on the the main road coridor.",
+      "expected": "bmtc_service",
+      "denied": null,
+      "got": "metro_service",
+      "conf": 88,
+      "margin": 0.056,
+      "clar": false,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "hard_negative",
+      "id": "gen_bmtc_fare_ticket_4680",
+      "text": "URGENT: The bus came fine, the extra fare near the market is the complaint.",
+      "expected": "bmtc_fare_ticket",
+      "denied": null,
+      "got": "bmtc_staff",
+      "conf": 87,
+      "margin": 0.021,
+      "clar": true,
+      "neg": [
+        "bmtc_service:bus_not_coming"
+      ],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "multi_issue",
+      "id": "multi_issue_5024",
+      "text": "Illegal parking on the footpath is forcing pedestrians onto the busy road",
+      "expected": "traffic_parking",
+      "denied": null,
+      "got": "civic_footpath",
+      "conf": 50,
+      "margin": 0.011,
+      "clar": true,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "multi_issue",
+      "id": "multi_issue_5025",
+      "text": "The officer is demanding extra money to push my file faster — my application is stuck",
+      "expected": "bribes",
+      "denied": null,
+      "got": "unofficial_payment",
+      "conf": 50,
+      "margin": 0.219,
+      "clar": true,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "multi_issue",
+      "id": "multi_issue_5027",
+      "text": "Metro train was delayed 30 minutes and the staff misbehaved with passengers",
+      "expected": "metro_service",
+      "denied": null,
+      "got": "bmtc_staff",
+      "conf": 96,
+      "margin": 0.274,
+      "clar": false,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "multi_issue",
+      "id": "multi_issue_5030",
+      "text": "No water supply since two days and sewage is overflowing outside the house",
+      "expected": "civic_drainage",
+      "denied": null,
+      "got": "civic_water_supply",
+      "conf": 99,
+      "margin": 0.286,
+      "clar": false,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    },
+    {
+      "pool": "multi_issue",
+      "id": "multi_issue_5033",
+      "text": "Pothole hit my bike and the streetlight above it is also not working",
+      "expected": "traffic_pothole",
+      "denied": null,
+      "got": "traffic_accident",
+      "conf": 99,
+      "margin": 0.33,
+      "clar": false,
+      "neg": [],
+      "hz": [],
+      "localPass": false,
+      "e2ePass": false
+    }
+  ]
+}

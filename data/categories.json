@@ -1,0 +1,1672 @@
+[
+  {
+    "category_id": "civic_garbage",
+    "parent_category": "CIVIC",
+    "category_name": "Garbage",
+    "description": "Garbage is not picked up by the collection van.",
+    "department": "BBMP (Solid Waste Management)",
+    "severity_guidance": "Biomedical/sharp waste or burning waste near homes → high; weekly non-collection → medium; scattered litter → low.",
+    "subcategories": [
+      {
+        "subcategory_id": "uncollected_waste",
+        "name": "Uncollected garbage",
+        "description": "Garbage is not picked up by the collection van.",
+        "count": 120
+      },
+      {
+        "subcategory_id": "overflowing_bins",
+        "name": "Overflowing bin",
+        "description": "The community bin is overflowing.",
+        "count": 23
+      },
+      {
+        "subcategory_id": "illegal_dumping",
+        "name": "Illegal dumping",
+        "description": "Someone is dumping waste in a public place.",
+        "count": 84
+      },
+      {
+        "subcategory_id": "bulk_waste",
+        "name": "Bulk waste",
+        "description": "Construction or household bulk waste is abandoned.",
+        "count": 6
+      },
+      {
+        "subcategory_id": "burning_garbage",
+        "name": "Burning garbage",
+        "description": "Garbage is being burnt, releasing toxic smoke.",
+        "count": 56
+      }
+    ],
+    "synonyms": [
+      "garbage",
+      "trash",
+      "waste",
+      "kachra",
+      "kasa",
+      "dumping",
+      "stink",
+      "ಇಲ್ಲಿ ಕಸ",
+      "చెత్త",
+      "कचरा",
+      "bins overflowing",
+      "waste pile"
+    ],
+    "positive_examples": [
+      "Garbage has not been collected in {area} for the whole week and it stinks.",
+      "kachra nahi uthaya ja raha {area} me, hafta ho gaya",
+      "ಕಸ ಸಂಗ್ರಹಣೆ ಆಗುತ್ತಿಲ್ಲ {area} ನಲ್ಲಿ, ವಾರವಾಗಿದೆ"
+    ],
+    "negative_examples": [
+      "The drain beside the bin is clean, the complaint is simply uncollected garbage.",
+      "Water supply is normal, someone is dumping waste on {road} instead.",
+      "There is no fire hazard elsewhere, people themselves are burning garbage near {spot}."
+    ],
+    "confusing_categories": [
+      "civic_parks"
+    ],
+    "scenario_count": 289
+  },
+  {
+    "category_id": "env_noise",
+    "parent_category": "ENVIRONMENT",
+    "category_name": "Env Noise",
+    "description": "Loudspeaker, DJ or music beyond permitted hours.",
+    "department": "KSPCB / BBMP (Pollution Control)",
+    "severity_guidance": "Night DJ/loudspeaker past hours → medium/high; daytime construction within legal hours → low; continuous industrial → high.",
+    "subcategories": [
+      {
+        "subcategory_id": "loudspeaker_dj",
+        "name": "Loudspeaker / DJ noise",
+        "description": "Loudspeaker, DJ or music beyond permitted hours.",
+        "count": 71
+      },
+      {
+        "subcategory_id": "construction_noise",
+        "name": "Construction noise",
+        "description": "Construction drilling/hammering noise.",
+        "count": 35
+      },
+      {
+        "subcategory_id": "traffic_noise",
+        "name": "Traffic / honking noise",
+        "description": "Horns and engine noise.",
+        "count": 58
+      },
+      {
+        "subcategory_id": "loudspeaker_announcement",
+        "name": "Announcement / megaphone",
+        "description": "Public address or megaphone noise.",
+        "count": 11
+      },
+      {
+        "subcategory_id": "industrial_noise",
+        "name": "Industrial / machine noise",
+        "description": "Generators, machines, factories.",
+        "count": 50
+      }
+    ],
+    "synonyms": [
+      "noise",
+      "loud music",
+      "loud speaker",
+      "shor",
+      "sharaba",
+      "dj till",
+      "ಶಬ್ದ",
+      "ధ్వని",
+      "शोर",
+      "horn honking",
+      "construction noise",
+      "dj night"
+    ],
+    "positive_examples": [
+      "DJ is playing till 2am near {spot}, nobody can sleep.",
+      "Loud music from the function hall near {area} is going on all night.",
+      "dj night full noise, kids sleeping problem near {area}"
+    ],
+    "negative_examples": [
+      "The power is on and fine, the problem is loud DJ noise near {spot}.",
+      "No accident happened, the early morning drilling near {area} is the complaint.",
+      "It is honking noise, not a traffic rule violation like jumping signals."
+    ],
+    "confusing_categories": [
+      "civic_sense"
+    ],
+    "scenario_count": 225
+  },
+  {
+    "category_id": "civic_stray_animals",
+    "parent_category": "CIVIC",
+    "category_name": "Stray Animals",
+    "description": "Stray dogs are attacking or chasing people.",
+    "department": "BBMP (Animal Husbandry) / Local MLA funds",
+    "severity_guidance": "Dog bite / attack in progress / rabid → critical; aggressive pack chasing people → high; cattle blocking road → medium; monkeys → medium.",
+    "subcategories": [
+      {
+        "subcategory_id": "aggressive_dogs",
+        "name": "Aggressive stray dogs",
+        "description": "Stray dogs are attacking or chasing people.",
+        "count": 34
+      },
+      {
+        "subcategory_id": "dogs_on_road",
+        "name": "Dogs on road / hazard",
+        "description": "Stray dogs resting or running on the carriageway.",
+        "count": 20
+      },
+      {
+        "subcategory_id": "cattle_on_road",
+        "name": "Cattle on road",
+        "description": "Cattle blocking or wandering on roads.",
+        "count": 0
+      },
+      {
+        "subcategory_id": "monkeymenace",
+        "name": "Monkey menace",
+        "description": "Monkeys causing trouble.",
+        "count": 52
+      },
+      {
+        "subcategory_id": "animal_attack",
+        "name": "Animal attack",
+        "description": "A person has been bitten or attacked.",
+        "count": 16
+      }
+    ],
+    "synonyms": [
+      "stray dog",
+      "stray dogs",
+      "dogs chasing",
+      "cattle on road",
+      "monkeys",
+      "ಆವಾರ ನಾಯಿ",
+      "stray animal",
+      "dog bite",
+      "rabid",
+      "cow on road",
+      "street dogs"
+    ],
+    "positive_examples": [
+      "A pack of stray dogs near {spot} chase and bite passersby every evening.",
+      "Stray dogs in {area} are aggressive, children cannot walk to school.",
+      "street dogs near {spot} chasing people, very scary at night"
+    ],
+    "negative_examples": [
+      "It is not a road accident, the dogs near {spot} are chasing people.",
+      "Garbage is collected but the dogs that feed on it near {spot} are attacking people.",
+      "The park is fine, the dogs from it are blocking {road} at night."
+    ],
+    "confusing_categories": [],
+    "scenario_count": 122
+  },
+  {
+    "category_id": "util_power",
+    "parent_category": "UTILITIES",
+    "category_name": "Power Outage",
+    "description": "Electricity supply has gone in the area.",
+    "department": "BESCOM (Electricity Supply Company)",
+    "severity_guidance": "Fallen/exposed live wire, sparks, shock → critical; area outage → medium/high; voltage fluctuation → medium; bulb-level → low. A dangerous wire is NEVER a routine power cut.",
+    "subcategories": [
+      {
+        "subcategory_id": "power_outage",
+        "name": "Power outage",
+        "description": "Electricity supply has gone in the area.",
+        "count": 62
+      },
+      {
+        "subcategory_id": "fallen_wire",
+        "name": "Fallen electrical wire",
+        "description": "A live wire has fallen or is lying exposed.",
+        "count": 58
+      },
+      {
+        "subcategory_id": "sparking_wire",
+        "name": "Sparking / exposed wire",
+        "description": "Wires are sparking or hanging dangerously.",
+        "count": 1
+      },
+      {
+        "subcategory_id": "voltage_fluctuation",
+        "name": "Voltage fluctuation",
+        "description": "Power is unstable, appliances at risk.",
+        "count": 48
+      },
+      {
+        "subcategory_id": "transformer_fault",
+        "name": "Transformer / pole fault",
+        "description": "Transformer or pole is damaged or burnt.",
+        "count": 62
+      }
+    ],
+    "synonyms": [
+      "power cut",
+      "no power",
+      "electricity",
+      "bijli",
+      "current gaya",
+      "voltage",
+      "ವಿದ್ಯುತ್",
+      "విద్యుత్",
+      "बिजली",
+      "transformer",
+      "no current",
+      "power is gone"
+    ],
+    "positive_examples": [
+      "Electricity has been gone in {area} since morning.",
+      "bijli gayi hai poore din se {area} me, kuch nahi chal raha",
+      "ಬೆಸ್ಕಾಂ ಕರೆಂಟ್ ಹೋಗಿದೆ {area} ನಲ್ಲಿ, ಬೆಳಿಗ್ಗೆಯಿಂದ"
+    ],
+    "negative_examples": [
+      "There is no power outage. Electricity is working normally, but a cable has fallen onto {road}.",
+      "Electricity is working normally, but the pole near {spot} is damaged and wires hang low.",
+      "We have electricity, but the streetlight is not working because its wire came down."
+    ],
+    "confusing_categories": [
+      "civic_streetlight",
+      "traffic_pothole"
+    ],
+    "scenario_count": 231
+  },
+  {
+    "category_id": "traffic_pothole",
+    "parent_category": "CIVIC",
+    "category_name": "Pothole",
+    "description": "A deep pothole in the carriageway needs repair.",
+    "department": "BBMP (Roads & Infrastructure)",
+    "severity_guidance": "Deep pothole with traffic risk → high; surface wear → low; pothole with accident/injury → critical.",
+    "subcategories": [
+      {
+        "subcategory_id": "pothole",
+        "name": "Pothole",
+        "description": "A deep pothole in the carriageway needs repair.",
+        "count": 224
+      },
+      {
+        "subcategory_id": "road_damage",
+        "name": "Road damage",
+        "description": "The road surface itself is broken or caved in.",
+        "count": 0
+      },
+      {
+        "subcategory_id": "road_caving",
+        "name": "Road caving / edge collapse",
+        "description": "Part of the road or its edge has collapsed.",
+        "count": 31
+      },
+      {
+        "subcategory_id": "road_crack",
+        "name": "Road cracking",
+        "description": "Cracks are spreading across the road surface.",
+        "count": 0
+      }
+    ],
+    "synonyms": [
+      "pothole",
+      "potholes",
+      "gundi",
+      "gadda",
+      "road damage",
+      "road broken",
+      "crater",
+      "caved in",
+      "ಗುಂಡಿ",
+      "గుంత",
+      "गड्ढा",
+      "broken road"
+    ],
+    "positive_examples": [
+      "There is a huge pothole on {road} and two-wheelers are falling into it.",
+      "A pothole in front of {spot} has grown bigger after the rain.",
+      "Multiple potholes on {road} are making the commute terrible."
+    ],
+    "negative_examples": [
+      "There is no flooding here, just a deep pothole on {road} that collects a little water.",
+      "The road is broken but the drain beside it is clean and not blocked at all.",
+      "No accident happened, the pothole on {road} is only damaging vehicles slowly."
+    ],
+    "confusing_categories": [
+      "util_power",
+      "civic_drainage",
+      "civic_footpath"
+    ],
+    "scenario_count": 255
+  },
+  {
+    "category_id": "civic_footpath",
+    "parent_category": "CIVIC",
+    "category_name": "Footpath",
+    "description": "Footpath slabs are broken, lifted or missing.",
+    "department": "BBMP (Footpaths & Pedestrian Infrastructure)",
+    "severity_guidance": "Broken/missing footpath forcing pedestrians onto carriageway → medium/high; minor slabs → low.",
+    "subcategories": [
+      {
+        "subcategory_id": "broken_footpath",
+        "name": "Broken footpath",
+        "description": "Footpath slabs are broken, lifted or missing.",
+        "count": 111
+      },
+      {
+        "subcategory_id": "missing_footpath",
+        "name": "Missing footpath",
+        "description": "There is no footpath at all on this stretch.",
+        "count": 82
+      },
+      {
+        "subcategory_id": "encroached_footpath",
+        "name": "Encroached footpath",
+        "description": "Footpath is blocked by vendors, bikes or debris.",
+        "count": 107
+      },
+      {
+        "subcategory_id": "unsafe_footpath",
+        "name": "Unsafe footpath",
+        "description": "Footpath is dangerous (open slabs, water, holes).",
+        "count": 88
+      }
+    ],
+    "synonyms": [
+      "footpath",
+      "sidewalk",
+      "pavement",
+      "walkway",
+      "ಫುಟ್‌ಪಾತ್",
+      "ఫుట్‌పాత్",
+      "फुटपाथ",
+      "foot path",
+      "no walking space",
+      "encroached path"
+    ],
+    "positive_examples": [
+      "The footpath on {road} is broken everywhere and people walk on the road.",
+      "Slabs near {spot} are lifted and uneven, elders trip on them.",
+      "There is no footpath on {road} at all, pedestrians squeeze past buses."
+    ],
+    "negative_examples": [
+      "The road is fine, only the footpath beside it is broken near {spot}.",
+      "It is not illegal parking on the road, the vehicles are parked ON the footpath near {area}.",
+      "The drain is not blocked, but its open cover on the footpath near {spot} is dangerous."
+    ],
+    "confusing_categories": [
+      "traffic_pothole",
+      "civic_sense"
+    ],
+    "scenario_count": 388
+  },
+  {
+    "category_id": "civic_drainage",
+    "parent_category": "CIVIC",
+    "category_name": "Drainage",
+    "description": "The drain is clogged and water is not going in.",
+    "department": "BBMP (Storm Water Drains & Sewerage)",
+    "severity_guidance": "Sewage overflow / manhole open → high/critical; clogged street drain → medium; slow drain → low.",
+    "subcategories": [
+      {
+        "subcategory_id": "drain_blockage",
+        "name": "Drain blockage",
+        "description": "The drain is clogged and water is not going in.",
+        "count": 114
+      },
+      {
+        "subcategory_id": "drain_overflow",
+        "name": "Drain overflow",
+        "description": "Drain water is overflowing onto the street.",
+        "count": 88
+      },
+      {
+        "subcategory_id": "sewage_overflow",
+        "name": "Sewage overflow",
+        "description": "Sewage is spilling out in public.",
+        "count": 76
+      },
+      {
+        "subcategory_id": "missing_manhole",
+        "name": "Missing / open manhole",
+        "description": "A manhole cover is missing or open.",
+        "count": 57
+      },
+      {
+        "subcategory_id": "stormwater_flood",
+        "name": "Stormwater flooding",
+        "description": "Rainwater has flooded the street because drains fail.",
+        "count": 52
+      },
+      {
+        "subcategory_id": "broken_drain",
+        "name": "Broken drain / sewer pipe",
+        "description": "A drain or sewer pipe is broken and leaking.",
+        "count": 29
+      }
+    ],
+    "synonyms": [
+      "drain",
+      "drainage",
+      "clogged drain",
+      "sewage",
+      "manhole",
+      "nala",
+      "ಚರಂಡಿ",
+      "డ్రైన్",
+      "नाली",
+      "sewer",
+      "storm water",
+      "overflowing drain"
+    ],
+    "positive_examples": [
+      "The drain near {spot} is fully blocked and black water is stagnating.",
+      "Clogged drain in {area} is smelling badly for a week.",
+      "Drain water is overflowing onto {road} after every shower."
+    ],
+    "negative_examples": [
+      "There is no water supply problem, the drain near {spot} is simply blocked.",
+      "We are getting tap water normally; the issue is drain overflow on {road}.",
+      "It is not rain flooding, the sewage pipe near {spot} itself is leaking."
+    ],
+    "confusing_categories": [
+      "civic_water_supply",
+      "traffic_pothole"
+    ],
+    "scenario_count": 416
+  },
+  {
+    "category_id": "civic_water_supply",
+    "parent_category": "CIVIC",
+    "category_name": "Water Supply",
+    "description": "Tap water is not coming at all.",
+    "department": "BWSSB (Water Supply & Sewerage Board)",
+    "severity_guidance": "Contaminated water → high; no supply/low pressure → medium; minor leak → low; burst main flooding → high.",
+    "subcategories": [
+      {
+        "subcategory_id": "no_supply",
+        "name": "No water supply",
+        "description": "Tap water is not coming at all.",
+        "count": 71
+      },
+      {
+        "subcategory_id": "low_pressure",
+        "name": "Low water pressure",
+        "description": "Water comes too weakly to use.",
+        "count": 15
+      },
+      {
+        "subcategory_id": "contaminated_water",
+        "name": "Contaminated water",
+        "description": "Supply water is dirty or unsafe.",
+        "count": 50
+      },
+      {
+        "subcategory_id": "pipe_leakage",
+        "name": "Water pipe leakage",
+        "description": "A pipe is leaking or has burst.",
+        "count": 47
+      },
+      {
+        "subcategory_id": "irregular_supply",
+        "name": "Irregular supply",
+        "description": "Supply timing is unpredictable.",
+        "count": 5
+      }
+    ],
+    "synonyms": [
+      "water supply",
+      "no water",
+      "water leakage",
+      "pipe leak",
+      "low pressure",
+      "contaminated water",
+      "ನೀರು",
+      "నీరు",
+      "पानी",
+      "tap water",
+      "bwssb",
+      "water is not"
+    ],
+    "positive_examples": [
+      "No water supply in {area} since morning, taps are completely dry.",
+      "ನೀರಿನ ಪೂರೈಕೆ ಇಲ್ಲ, ಬೆಳಿಗ್ಗೆಯಿಂದ ಟ್ಯಾಪ್ ಒಣಗಿದೆ {area} ನಲ್ಲಿ",
+      "paani nahi aa raha subah se {area} me, supply band kar diya kya"
+    ],
+    "negative_examples": [
+      "The drain is fine, we simply have no tap water supply in {area}.",
+      "The road is not flooded, only a water pipe near {spot} is leaking.",
+      "Garbage is collected daily, but the drinking water here is contaminated."
+    ],
+    "confusing_categories": [
+      "civic_drainage"
+    ],
+    "scenario_count": 188
+  },
+  {
+    "category_id": "civic_streetlight",
+    "parent_category": "CIVIC",
+    "category_name": "Streetlight",
+    "description": "A streetlight is dead or not turning on.",
+    "department": "BESCOM / BBMP (Street Lighting)",
+    "severity_guidance": "Dark stretch with accident history → high; single dead light → medium; flicker → low. Fallen wire ≠ streetlight (see util_power).",
+    "subcategories": [
+      {
+        "subcategory_id": "light_not_working",
+        "name": "Streetlight not working",
+        "description": "A streetlight is dead or not turning on.",
+        "count": 132
+      },
+      {
+        "subcategory_id": "multiple_lights_out",
+        "name": "Multiple lights out",
+        "description": "A whole stretch is dark.",
+        "count": 41
+      },
+      {
+        "subcategory_id": "flickering_light",
+        "name": "Flickering light",
+        "description": "Light flickers or works partially.",
+        "count": 37
+      },
+      {
+        "subcategory_id": "damaged_pole",
+        "name": "Damaged light pole",
+        "description": "The pole or fixture is broken/dangerous.",
+        "count": 45
+      }
+    ],
+    "synonyms": [
+      "streetlight",
+      "street light",
+      "lamp post",
+      "no light",
+      "light not working",
+      "deepu",
+      "ದೀಪ",
+      "దీపం",
+      "स्ट्रीटलाइट",
+      "dark stretch",
+      "light is not"
+    ],
+    "positive_examples": [
+      "The streetlight near {spot} has not been working for two weeks.",
+      "deepu ondalu illa {road} alli night full dark",
+      "Street light near {area} is not turning on at all."
+    ],
+    "negative_examples": [
+      "We have electricity at home, only the streetlight near {spot} is not working.",
+      "There is no power cut, the street light outside is simply dead.",
+      "The fallen thing near {spot} is the lamp post itself, not an electrical wire lying live."
+    ],
+    "confusing_categories": [
+      "util_power"
+    ],
+    "scenario_count": 255
+  },
+  {
+    "category_id": "civic_parks",
+    "parent_category": "CIVIC",
+    "category_name": "Parks",
+    "description": "Park is dirty or full of garbage.",
+    "department": "BBMP (Gardens & Parks)",
+    "severity_guidance": "Dangerous structure/water in park → high; broken equipment → medium; cleanliness → low/medium.",
+    "subcategories": [
+      {
+        "subcategory_id": "unclean_park",
+        "name": "Park cleanliness",
+        "description": "Park is dirty or full of garbage.",
+        "count": 89
+      },
+      {
+        "subcategory_id": "broken_equipment",
+        "name": "Broken equipment",
+        "description": "Playground/benches/gym items are broken.",
+        "count": 84
+      },
+      {
+        "subcategory_id": "no_lighting",
+        "name": "No park lighting",
+        "description": "Park is dark at night.",
+        "count": 43
+      },
+      {
+        "subcategory_id": "park_encroachment",
+        "name": "Park encroachment",
+        "description": "Park land or path is encroached.",
+        "count": 59
+      },
+      {
+        "subcategory_id": "dead_plants",
+        "name": "Dead plants / poor maintenance",
+        "description": "Plants and lawn are dying or unmaintained.",
+        "count": 61
+      },
+      {
+        "subcategory_id": "waterlogging_park",
+        "name": "Waterlogging in park",
+        "description": "Standing water in the park.",
+        "count": 54
+      }
+    ],
+    "synonyms": [
+      "park",
+      "garden",
+      "playground",
+      "ಉದ್ಯಾನ",
+      "పార్క్",
+      "पार्क",
+      "gym in park",
+      "bench",
+      "garden area",
+      "children play"
+    ],
+    "positive_examples": [
+      "The park near {spot} is full of garbage and nobody cleans it.",
+      "ಉದ್ಯಾನದಲ್ಲಿ ಕಸ ತುಂಬಿದೆ, ಸ್ವಚ್ಛತೆ ಮಾಡುತ್ತಿಲ್ಲ",
+      "Park area in {area} has become a dumping corner, stinking daily."
+    ],
+    "negative_examples": [
+      "The road outside is clean, the garbage is inside the park near {spot}.",
+      "The park gate is fine, its play equipment inside is broken.",
+      "The drain is not blocked, water stands inside the park because the ground is sunken."
+    ],
+    "confusing_categories": [
+      "civic_garbage"
+    ],
+    "scenario_count": 390
+  },
+  {
+    "category_id": "safety_harassment",
+    "parent_category": "PUBLIC_SAFETY",
+    "category_name": "Safety Harassment",
+    "description": "Someone is following or watching.",
+    "department": "Bengaluru City Police / Women & Child Safety",
+    "severity_guidance": "Attack/physical violence in progress → critical; stalking/threats → high; verbal harassment → medium; general unsafe feeling → low.",
+    "subcategories": [
+      {
+        "subcategory_id": "stalking",
+        "name": "Stalking / being followed",
+        "description": "Someone is following or watching.",
+        "count": 49
+      },
+      {
+        "subcategory_id": "verbal_harassment",
+        "name": "Verbal harassment",
+        "description": "Abusive words, teasing, eve-teasing.",
+        "count": 24
+      },
+      {
+        "subcategory_id": "physical_attack",
+        "name": "Physical attack",
+        "description": "Beating, pushing or physical violence.",
+        "count": 0
+      },
+      {
+        "subcategory_id": "threat",
+        "name": "Threats",
+        "description": "Threatening messages or words.",
+        "count": 6
+      },
+      {
+        "subcategory_id": "unsafe_area",
+        "name": "Unsafe area feeling",
+        "description": "Area feels unsafe, poor lighting/isolation.",
+        "count": 65
+      }
+    ],
+    "synonyms": [
+      "harassment",
+      "harassing",
+      "following me",
+      "stalking",
+      "threatening",
+      "picha kar",
+      "ಕಿರುಕುಳ",
+      "వేధింపు",
+      "उत्पीड़न",
+      "eve teasing",
+      "molested",
+      "unsafe"
+    ],
+    "positive_examples": [
+      "A man has been following me from the bus stop to home near {spot} every day.",
+      "someone is following me near {area}, I am scared to walk alone",
+      "picha kar raha hai mera roz {spot} pe, ghar tak aata hai"
+    ],
+    "negative_examples": [
+      "Not a stray animal, a man is following me near {spot}.",
+      "No traffic accident, a person deliberately attacked someone near {spot}.",
+      "It was not a police stop, men harassed us verbally near {area}."
+    ],
+    "confusing_categories": [
+      "traffic_interaction"
+    ],
+    "scenario_count": 144
+  },
+  {
+    "category_id": "cybercrime",
+    "parent_category": "DIGITAL",
+    "category_name": "Cybercrime",
+    "description": "Money lost via fraudulent payment requests.",
+    "department": "Cyber Crime Cell (Bengaluru City Police)",
+    "severity_guidance": "Money already lost / account compromised → high; phishing attempt blocked → medium; suspicious message → low.",
+    "subcategories": [
+      {
+        "subcategory_id": "upi_fraud",
+        "name": "UPI / payment fraud",
+        "description": "Money lost via fraudulent payment requests.",
+        "count": 43
+      },
+      {
+        "subcategory_id": "phishing",
+        "name": "Phishing / fake links",
+        "description": "Fake links, OTP theft, vishing.",
+        "count": 51
+      },
+      {
+        "subcategory_id": "account_hack",
+        "name": "Account hacked",
+        "description": "Social media or email account taken over.",
+        "count": 37
+      },
+      {
+        "subcategory_id": "online_harassment",
+        "name": "Online harassment",
+        "description": "Abuse, impersonation or threats online.",
+        "count": 0
+      },
+      {
+        "subcategory_id": "shopping_fraud",
+        "name": "Online shopping fraud",
+        "description": "Paid but goods never delivered.",
+        "count": 14
+      }
+    ],
+    "synonyms": [
+      "cyber",
+      "otp",
+      "phishing",
+      "fraud",
+      "scam",
+      "fake link",
+      "upi fraud",
+      "ಸೈಬರ್",
+      "సైబర్",
+      "साइबर",
+      "hacked",
+      "blocked amount"
+    ],
+    "positive_examples": [
+      "I lost 8000 rupees to a fake UPI request near {area} yesterday.",
+      "Someone took money from my account through a fraudulent upi qr scan.",
+      "otp nange bantu, adka apde money poyitu fraud through near {area}"
+    ],
+    "negative_examples": [
+      "No road issue, the money fraud through upi is the complaint.",
+      "Not a physical theft, the OTP fraud call targeted me online.",
+      "The account was hacked, nothing was stolen from my house."
+    ],
+    "confusing_categories": [],
+    "scenario_count": 145
+  },
+  {
+    "category_id": "housing_tenant",
+    "parent_category": "HOUSING",
+    "category_name": "Housing Tenant",
+    "description": "Landlord withholding deposit.",
+    "department": "Rent Controller / Legal Aid (citizen guidance)",
+    "severity_guidance": "Eviction without notice / harassment / safety hazard → high; deposit denial → medium; agreement disputes → medium.",
+    "subcategories": [
+      {
+        "subcategory_id": "deposit_dispute",
+        "name": "Deposit not returned",
+        "description": "Landlord withholding deposit.",
+        "count": 58
+      },
+      {
+        "subcategory_id": "eviction_harassment",
+        "name": "Eviction / harassment",
+        "description": "Forced eviction or owner harassment.",
+        "count": 32
+      },
+      {
+        "subcategory_id": "agreement_dispute",
+        "name": "Agreement dispute",
+        "description": "Terms of rent agreement violated.",
+        "count": 16
+      },
+      {
+        "subcategory_id": "maintenance_issue",
+        "name": "Maintenance negligence",
+        "description": "Owner refuses repairs.",
+        "count": 0
+      },
+      {
+        "subcategory_id": "utility_shutoff",
+        "name": "Water/power shutoff by owner",
+        "description": "Owner cutting essential services.",
+        "count": 0
+      }
+    ],
+    "synonyms": [
+      "tenant",
+      "landlord",
+      "land lord",
+      "deposit",
+      "rent agreement",
+      "evict",
+      "ಕಿರಾಯಿ",
+      "కిరాయి",
+      "किरायेदार",
+      "owner is",
+      "deposit nange"
+    ],
+    "positive_examples": [
+      "The landlord is not returning my deposit after vacating in {area}.",
+      "deposit nange kothilla owner, one month aayitu {area} alli",
+      "Owner is deducting the full deposit for no reason near {spot}."
+    ],
+    "negative_examples": [
+      "The house is fine physically, the deposit money kept by the owner is the issue.",
+      "Not police harassment, the owner himself is forcing us out near {spot}.",
+      "No city water supply problem, the owner shut our valve in {area}."
+    ],
+    "confusing_categories": [],
+    "scenario_count": 106
+  },
+  {
+    "category_id": "bribes",
+    "parent_category": "CORRUPTION",
+    "category_name": "Bribes",
+    "description": "Money demanded to get work done.",
+    "department": "Lokayukta / Vigilance (allegations logged as claims)",
+    "severity_guidance": "Bribe demanded for essential/urgent service → high; demand reported → medium; historical allegation → low. Always logged as unverified allegation.",
+    "subcategories": [
+      {
+        "subcategory_id": "bribe_demanded",
+        "name": "Bribe demanded",
+        "description": "Money demanded to get work done.",
+        "count": 79
+      },
+      {
+        "subcategory_id": "bribe_for_license",
+        "name": "Bribe for licence/RTO",
+        "description": "Bribe in licensing/transport offices.",
+        "count": 11
+      },
+      {
+        "subcategory_id": "bribe_for_approval",
+        "name": "Bribe for approval",
+        "description": "Bribe for plan/scheme approval.",
+        "count": 14
+      },
+      {
+        "subcategory_id": "speed_money",
+        "name": "Speed money",
+        "description": "Small informal payments demanded to avoid delay.",
+        "count": 0
+      }
+    ],
+    "synonyms": [
+      "bribe",
+      "rishwat",
+      "ghoos",
+      "lancha",
+      "money to get work done",
+      "cut money",
+      "ಲಂಚ",
+      "లంచం",
+      "रिश्वत",
+      "asked money to approve",
+      "to clear the file"
+    ],
+    "positive_examples": [
+      "They are demanding a bribe to finish my file at the office near {spot}.",
+      "rishwat mang rahe hain kaam karne ke liye {area} office me",
+      "ಲಂಚ ಕೇಳ್ತಿದ್ದಾರೆ ಕೆಲಸ ಮಾಡಿಕೊಡಲು {spot} ಕಛೇರಿಯಲ್ಲಿ"
+    ],
+    "negative_examples": [
+      "No service delay yet, they demanded the bribe outright near {spot}.",
+      "It is not an extra bus fare, it is RTO bribe near {area}.",
+      "Not a theft on the road, money demanded inside the office near {spot}."
+    ],
+    "confusing_categories": [
+      "unofficial_payment"
+    ],
+    "scenario_count": 104
+  },
+  {
+    "category_id": "unofficial_payment",
+    "parent_category": "GOVERNMENT",
+    "category_name": "Unofficial Payment",
+    "description": "Extra money taken with no official receipt.",
+    "department": "Departmental vigilance (allegations logged as claims)",
+    "severity_guidance": "Extra money demanded without receipt for a required service → high/medium; extra charge at private boundary → medium. Always an unverified allegation.",
+    "subcategories": [
+      {
+        "subcategory_id": "extra_charge_no_receipt",
+        "name": "Extra charge without receipt",
+        "description": "Extra money taken with no official receipt.",
+        "count": 102
+      },
+      {
+        "subcategory_id": "official_demands_extra",
+        "name": "Official demands extra",
+        "description": "Government staff demanding extra payment.",
+        "count": 0
+      },
+      {
+        "subcategory_id": "services_charge_over",
+        "name": "Service charge over and above",
+        "description": "Charged above the notified rate.",
+        "count": 0
+      },
+      {
+        "subcategory_id": "coercion_payment",
+        "name": "Coerced payment",
+        "description": "Work blocked until extra payment made.",
+        "count": 15
+      }
+    ],
+    "synonyms": [
+      "unofficial payment",
+      "extra money",
+      "without receipt",
+      "extra charge",
+      "asked for more",
+      "receipt illa",
+      "ಅನಧಿಕೃತ",
+      "अनौपचारिक",
+      "no receipt",
+      "money without bill"
+    ],
+    "positive_examples": [
+      "They took 500 extra for my certificate near {spot} without any receipt.",
+      "Extra money was collected at the counter near {area} with no bill.",
+      "receipt illa extra money tegedukondare {spot} counter alli"
+    ],
+    "negative_examples": [
+      "Not a road-side bribe for a favor, it is an official fee plus extra without receipt near {spot}.",
+      "The delay is not routine, extra payment was demanded to proceed near {area}.",
+      "The bus pass was overcharged by BMTC staff, not by this office."
+    ],
+    "confusing_categories": [
+      "bribes"
+    ],
+    "scenario_count": 117
+  },
+  {
+    "category_id": "govt_service",
+    "parent_category": "GOVERNMENT",
+    "category_name": "Govt Service",
+    "description": "Application stuck beyond reasonable time.",
+    "department": "Respective Department / CPGRAMS",
+    "severity_guidance": "Public safety or entitlement denied (ration, pension, emergency certificate) → high; file pending beyond limit → medium; procedural delay → low.",
+    "subcategories": [
+      {
+        "subcategory_id": "application_delay",
+        "name": "Application delay",
+        "description": "Application stuck beyond reasonable time.",
+        "count": 48
+      },
+      {
+        "subcategory_id": "staff_unhelpful",
+        "name": "Staff unhelpful / rude",
+        "description": "Office staff uncooperative.",
+        "count": 0
+      },
+      {
+        "subcategory_id": "service_denied",
+        "name": "Service denied",
+        "description": "Entitled service refused.",
+        "count": 31
+      },
+      {
+        "subcategory_id": "online_portal_failure",
+        "name": "Online portal failure",
+        "description": "Government portal not working.",
+        "count": 8
+      },
+      {
+        "subcategory_id": "document_issue",
+        "name": "Document/certificate issue",
+        "description": "Wrong, missing or damaged document.",
+        "count": 38
+      }
+    ],
+    "synonyms": [
+      "government office",
+      "application",
+      "certificate",
+      "delayed approval",
+      "sarkari",
+      "ಸರ್ಕಾರಿ",
+      "ప్రభుత్వ",
+      "सरकारी",
+      "file is pending",
+      "no response from office",
+      "rti"
+    ],
+    "positive_examples": [
+      "My application at the office near {spot} has been pending for two months.",
+      "file pending ide monthgalindalu {area} office alli, update illa",
+      "ಆವೇದನ ಒಂದು ತಿಂಗಳಿಂದ ಪ್ರಕ್ರಿಯೆ ಆಗ್ತಿಲ್ಲ {spot} ಕಛೇರಿಯಲ್ಲಿ"
+    ],
+    "negative_examples": [
+      "Power and water fine, the pending application at {spot} office is the issue.",
+      "My internet works, their government portal itself is down.",
+      "Not a bribe demand, the service was simply refused near {spot}."
+    ],
+    "confusing_categories": [],
+    "scenario_count": 125
+  },
+  {
+    "category_id": "access_language",
+    "parent_category": "ACCESS_INTEGRITY",
+    "category_name": "Access Language",
+    "description": "Officials/service not available in Kannada.",
+    "department": "Department language access / grievance",
+    "severity_guidance": "Denial of essential service due to language → high; inconvenience in communication → medium; suggestion → low.",
+    "subcategories": [
+      {
+        "subcategory_id": "no_kannada",
+        "name": "No Kannada support",
+        "description": "Officials/service not available in Kannada.",
+        "count": 28
+      },
+      {
+        "subcategory_id": "no_local_language",
+        "name": "No local language support",
+        "description": "Service unavailable in any local language.",
+        "count": 56
+      },
+      {
+        "subcategory_id": "english_only",
+        "name": "English-only barrier",
+        "description": "Only English offered where locals struggle.",
+        "count": 6
+      },
+      {
+        "subcategory_id": "communication_failure",
+        "name": "Communication failure",
+        "description": "Two parties cannot understand each other.",
+        "count": 12
+      }
+    ],
+    "synonyms": [
+      "language",
+      "communicate",
+      "understand hindi",
+      "cannot explain",
+      "ಭಾಷೆ",
+      "భాష",
+      "भाषा",
+      "not understanding english",
+      "only kannada",
+      "only telugu"
+    ],
+    "positive_examples": [
+      "The office near {spot} does not have anyone who speaks Kannada.",
+      "ಕನ್ನಡ ಮಾತನಾಡೋರು ಯಾರೂ ಇಲ್ಲ {spot} ಕಛೇರಿಯಲ್ಲಿ, ತುಂಬಾ ಕಷ್ಟ ಆಗ್ತಿದೆ",
+      "Only Hindi and English staff at the {area} counter, local people cannot explain their problem."
+    ],
+    "negative_examples": [
+      "The work itself is fine, the language support missing near {spot} is the complaint.",
+      "No bribery involved, pure inability to communicate near {area}.",
+      "Not a cyber portal issue, the on-site English-only help near {spot} is the problem."
+    ],
+    "confusing_categories": [],
+    "scenario_count": 102
+  },
+  {
+    "category_id": "traffic_accident",
+    "parent_category": "TRAFFIC",
+    "category_name": "Accident",
+    "description": "Two or more vehicles collided.",
+    "department": "Bengaluru City Police / Traffic",
+    "severity_guidance": "Accident with injury or hit-and-run → critical/high; collision without injury → high; minor scrape → medium.",
+    "subcategories": [
+      {
+        "subcategory_id": "vehicle_collision",
+        "name": "Vehicle collision",
+        "description": "Two or more vehicles collided.",
+        "count": 135
+      },
+      {
+        "subcategory_id": "hit_and_run",
+        "name": "Hit and run",
+        "description": "A vehicle hit and fled.",
+        "count": 14
+      },
+      {
+        "subcategory_id": "pedestrian_hit",
+        "name": "Pedestrian knocked down",
+        "description": "A person was hit by a vehicle.",
+        "count": 0
+      },
+      {
+        "subcategory_id": "solo_crash",
+        "name": "Solo crash",
+        "description": "A vehicle crashed on its own.",
+        "count": 41
+      }
+    ],
+    "synonyms": [
+      "accident",
+      "collision",
+      "crashed",
+      "crash",
+      "takkar",
+      "hit and run",
+      "ಅಪಘಾತ",
+      "దుర్ఘటన",
+      "दुर्घटना",
+      "two wheeler hit",
+      "collided"
+    ],
+    "positive_examples": [
+      "A bike and a car collided near {spot} a few minutes ago.",
+      "Two wheeler hit my car on {road}, both vehicles are damaged.",
+      "Two bikes collided near {spot} and both riders fell, one is bleeding."
+    ],
+    "negative_examples": [
+      "No fire, only a bike-car collision near {spot} with injuries.",
+      "The road is fine, the car that hit and ran near {spot} is the issue.",
+      "They were not jaywalking slowly, a speeding vehicle hit the person near {spot}."
+    ],
+    "confusing_categories": [
+      "civic_sense"
+    ],
+    "scenario_count": 190
+  },
+  {
+    "category_id": "traffic_wrong_side",
+    "parent_category": "TRAFFIC",
+    "category_name": "Wrong Side",
+    "description": "A vehicle is driving against traffic.",
+    "department": "Bengaluru City Police (Traffic)",
+    "severity_guidance": "Wrong-side driving creating head-on risk → high/medium; wrong-side parked vehicles → medium.",
+    "subcategories": [
+      {
+        "subcategory_id": "wrong_side_driving",
+        "name": "Wrong-side driving",
+        "description": "A vehicle is driving against traffic.",
+        "count": 137
+      },
+      {
+        "subcategory_id": "wrong_side_parking",
+        "name": "Wrong-side parking",
+        "description": "Vehicles parked facing/against traffic flow.",
+        "count": 42
+      },
+      {
+        "subcategory_id": "wrong_way_pedestrian",
+        "name": "Wrong-way road use",
+        "description": "Road is being used in the wrong direction (jaywalking against flow).",
+        "count": 15
+      }
+    ],
+    "synonyms": [
+      "wrong side",
+      "opposite direction",
+      "oncoming",
+      "ulta chal",
+      "ತಪ್ಪು ಬದಿ",
+      "తప్పు వైపు",
+      "गलत दिशा",
+      "coming in wrong",
+      "driving wrong"
+    ],
+    "positive_examples": [
+      "Vehicles keep coming in the wrong direction on {road}.",
+      "Every evening bikes come wrong side near {spot}, head-on accidents waiting to happen.",
+      "Cars are driving opposite to the one-way on {road} regularly."
+    ],
+    "negative_examples": [
+      "The one-way sign is there, vehicles still drive against it near {spot}.",
+      "No accident yet, but wrong side driving on {road} daily will cause one.",
+      "It is not illegal parking in a slot, the vehicles face the wrong direction on {road}."
+    ],
+    "confusing_categories": [],
+    "scenario_count": 194
+  },
+  {
+    "category_id": "civic_sense",
+    "parent_category": "TRAFFIC",
+    "category_name": "Sense",
+    "description": "Stunts, wheelies or street racing.",
+    "department": "Bengaluru City Police (Traffic Enforcement)",
+    "severity_guidance": "Stunts/racing/drunk driving endangering others → high; signal jump/no helmet observed → medium; minor violations → low.",
+    "subcategories": [
+      {
+        "subcategory_id": "stunts_racing",
+        "name": "Stunts / racing",
+        "description": "Stunts, wheelies or street racing.",
+        "count": 93
+      },
+      {
+        "subcategory_id": "signal_violation",
+        "name": "Signal jumping",
+        "description": "Vehicles crossing red signals.",
+        "count": 59
+      },
+      {
+        "subcategory_id": "no_helmet_seatbelt",
+        "name": "No helmet / triple riding",
+        "description": "Riding without helmet or overloaded.",
+        "count": 59
+      },
+      {
+        "subcategory_id": "drunk_reckless",
+        "name": "Drunk / reckless driving",
+        "description": "Drunk, rash or zigzag driving.",
+        "count": 53
+      },
+      {
+        "subcategory_id": "overspeeding",
+        "name": "Overspeeding",
+        "description": "Speeding in restricted zones.",
+        "count": 13
+      }
+    ],
+    "synonyms": [
+      "stunt",
+      "wheelie",
+      "racing",
+      "overspeeding",
+      "signal",
+      "helmet",
+      "drunk driving",
+      "reckless",
+      "triple riding",
+      "ಸ್ಟಂಟ್",
+      "స్టంట్",
+      "स्टंट"
+    ],
+    "positive_examples": [
+      "Boys are doing wheelies on {road} every night, dangerous for others.",
+      "street racing near {spot} at midnight, bikes at full speed",
+      "stunt kar rahe hain log {road} pe, signal ke paas hi"
+    ],
+    "negative_examples": [
+      "No accident happened yet, the stunts near {spot} are the complaint.",
+      "The signal itself works fine, drivers jumping it near {spot} are the problem.",
+      "Not a police-stop complaint, the drunk driving on {road} is the issue."
+    ],
+    "confusing_categories": [
+      "env_noise",
+      "civic_footpath",
+      "traffic_accident"
+    ],
+    "scenario_count": 277
+  },
+  {
+    "category_id": "traffic_parking",
+    "parent_category": "TRAFFIC",
+    "category_name": "Parking",
+    "description": "Parked vehicles obstruct traffic.",
+    "department": "Bengaluru City Police (Parking enforcement) / BBMP",
+    "severity_guidance": "Blocking hospital/school gate or fire access → high; blocking road → medium; mere no-zone parking → medium; footpath parking → medium.",
+    "subcategories": [
+      {
+        "subcategory_id": "blocking_road",
+        "name": "Blocking the road",
+        "description": "Parked vehicles obstruct traffic.",
+        "count": 92
+      },
+      {
+        "subcategory_id": "no_zone_parking",
+        "name": "No-parking-zone parking",
+        "description": "Parking where it is prohibited.",
+        "count": 62
+      },
+      {
+        "subcategory_id": "blocking_gate",
+        "name": "Blocking a gate/entrance",
+        "description": "Vehicle blocks a gate, hospital, school or driveway.",
+        "count": 30
+      },
+      {
+        "subcategory_id": "footpath_parking",
+        "name": "Footpath parking",
+        "description": "Vehicles parked on the footpath.",
+        "count": 61
+      }
+    ],
+    "synonyms": [
+      "parking",
+      "parked",
+      "blocking the",
+      "ಪಾರ್ಕಿಂಗ್",
+      "పార్కింగ్",
+      "पार्किंग",
+      "vehicle is parked",
+      "cars parked"
+    ],
+    "positive_examples": [
+      "Vehicles are parked on {road} blocking half the street near {spot}.",
+      "two cars parked on road near {area}, traffic squeezing past daily",
+      "A truck parked on {road} near {spot} is causing a jam every evening."
+    ],
+    "negative_examples": [
+      "The road has no pothole, the parked vehicles on {road} near {spot} are the blockage.",
+      "The footpath is intact, vehicles parked ON it near {spot} are the issue.",
+      "Not a wrong-side driving issue, the stationary car blocking our gate near {spot} is."
+    ],
+    "confusing_categories": [],
+    "scenario_count": 245
+  },
+  {
+    "category_id": "traffic_interaction",
+    "parent_category": "TRAFFIC",
+    "category_name": "Interaction",
+    "description": "Citizen stopped with no valid reason given.",
+    "department": "Bengaluru City Police (Traffic)",
+    "severity_guidance": "Vehicle seized/severe harassment → high; stopped without reason → medium; challan receipt issue → medium.",
+    "subcategories": [
+      {
+        "subcategory_id": "arbitrary_stop",
+        "name": "Stopped arbitrarily",
+        "description": "Citizen stopped with no valid reason given.",
+        "count": 31
+      },
+      {
+        "subcategory_id": "challan_no_receipt",
+        "name": "Challan without receipt",
+        "description": "Fine collected but no receipt/challan given.",
+        "count": 122
+      },
+      {
+        "subcategory_id": "receipt_missing",
+        "name": "Receipt missing / demanded",
+        "description": "Official receipt not provided on demand.",
+        "count": 59
+      },
+      {
+        "subcategory_id": "document_harassment",
+        "name": "Document harassment",
+        "description": "Repeated pointless document demands.",
+        "count": 0
+      }
+    ],
+    "synonyms": [
+      "challan",
+      "chalan",
+      "receipt",
+      "traffic police stopped",
+      "stopped me",
+      "fine receipt",
+      "ಚಲಾನ್",
+      "चालान",
+      "cop stopped",
+      "halted by police"
+    ],
+    "positive_examples": [
+      "Traffic police stopped me near {spot} without telling any reason.",
+      "cop stopped our bike near {area}, asked to wait, no reason given",
+      "ಪೊಲೀಸರು ನಿಲ್ಲಿಸಿದರೆ {spot} ಬಳಿ, ಕಾರಣ ಏನೂ ಹೇಳಲಿಲ್ಲ"
+    ],
+    "negative_examples": [
+      "Not a bribe demand, it was an on-the-road traffic fine without receipt near {spot}.",
+      "Nothing was stolen, the officers simply stopped us near {spot} without reason.",
+      "The bus was not involved, only our bike got a receipt-less challan near {spot}."
+    ],
+    "confusing_categories": [
+      "safety_harassment"
+    ],
+    "scenario_count": 212
+  },
+  {
+    "category_id": "bmtc_service",
+    "parent_category": "TRANSPORT",
+    "category_name": "BMTC Service",
+    "description": "Scheduled bus never arrives.",
+    "department": "BMTC (Bangalore Metropolitan Transport Corporation)",
+    "severity_guidance": "Bus endangering passengers (overspeed/crash) → high; breakdown stranding crowd → medium; skipped stop/late → medium.",
+    "subcategories": [
+      {
+        "subcategory_id": "bus_not_coming",
+        "name": "Bus not coming",
+        "description": "Scheduled bus never arrives.",
+        "count": 132
+      },
+      {
+        "subcategory_id": "bus_late",
+        "name": "Bus late / infrequent",
+        "description": "Buses too late or too infrequent.",
+        "count": 82
+      },
+      {
+        "subcategory_id": "bus_skipped_stop",
+        "name": "Bus skipped the stop",
+        "description": "Bus does not stop at a designated stop.",
+        "count": 63
+      },
+      {
+        "subcategory_id": "bus_breakdown",
+        "name": "Bus breakdown",
+        "description": "Bus broke down stranding passengers.",
+        "count": 53
+      },
+      {
+        "subcategory_id": "overcrowding",
+        "name": "Overcrowded bus",
+        "description": "Bus dangerously overcrowded.",
+        "count": 68
+      }
+    ],
+    "synonyms": [
+      "bus did not come",
+      "bus not coming",
+      "bus late",
+      "bus breakdown",
+      "bus skipped",
+      "bus did not stop",
+      "ಬಸ್",
+      "బస్సు",
+      "बस",
+      "bmrtc",
+      "crowded bus",
+      "no bus"
+    ],
+    "positive_examples": [
+      "The bus to {area} has not been coming for the past two hours.",
+      "bus bandidilla {spot} ge, waiting since long",
+      "ಬಸ್ ಬಂದಿಲ್ಲ {spot} ಗೆ ಬೆಳಿಗ್ಗೆಯಿಂದ"
+    ],
+    "negative_examples": [
+      "Metro is fine, the BMTC bus to {area} simply is not coming.",
+      "The bus is running, the complaint is it skipped our stop at {spot}.",
+      "No accident happened, the bus just broke down near {spot}."
+    ],
+    "confusing_categories": [
+      "bmtc_staff",
+      "bmtc_fare_ticket",
+      "metro_service"
+    ],
+    "scenario_count": 398
+  },
+  {
+    "category_id": "bmtc_staff",
+    "parent_category": "TRANSPORT",
+    "category_name": "BMTC Staff",
+    "description": "Conductor rude, abusive or unfair.",
+    "department": "BMTC (Staff conduct) / Internal Grievance",
+    "severity_guidance": "Physical abuse/endangering → high; verbal abuse/refusal → medium; rudeness → low.",
+    "subcategories": [
+      {
+        "subcategory_id": "conductor_misconduct",
+        "name": "Conductor misconduct",
+        "description": "Conductor rude, abusive or unfair.",
+        "count": 97
+      },
+      {
+        "subcategory_id": "driver_misconduct",
+        "name": "Driver misconduct",
+        "description": "Driver rash, abusive or negligent.",
+        "count": 36
+      },
+      {
+        "subcategory_id": "refusal_of_service",
+        "name": "Refusal to stop/service",
+        "description": "Staff refuse to serve or stop.",
+        "count": 20
+      },
+      {
+        "subcategory_id": "staff_argue",
+        "name": "Staff arguing / harassing",
+        "description": "Staff arguing with passengers.",
+        "count": 21
+      }
+    ],
+    "synonyms": [
+      "conductor",
+      "bus driver",
+      "driver misbehaved",
+      "staff rude",
+      "ಕಂಡಕ್ಟರ್",
+      "కండక్టర్",
+      "कंडक्टर",
+      "driver shouted",
+      "ticket kodlilla",
+      "abused passengers"
+    ],
+    "positive_examples": [
+      "The conductor near {spot} was very rude and shouted at elderly passengers.",
+      "conductor abused passengers in the bus near {area} for no reason",
+      "ಕಂಡಕ್ಟರ್ ಅವಾಚ್ಯ ಮಾತನಾಡಿದರೆ {spot} ಬಸ್‌ನಲ್ಲಿ"
+    ],
+    "negative_examples": [
+      "The bus came on time; the conductor behavior near {spot} is the complaint.",
+      "No collision happened, the rash driving by the driver near {spot} is reported.",
+      "He did not demand extra fare, he simply refused to stop near {spot}."
+    ],
+    "confusing_categories": [
+      "bmtc_service"
+    ],
+    "scenario_count": 174
+  },
+  {
+    "category_id": "bmtc_fare_ticket",
+    "parent_category": "TRANSPORT",
+    "category_name": "BMTC Fare Ticket",
+    "description": "More fare than the official rate.",
+    "department": "BMTC (Fares & Ticketing)",
+    "severity_guidance": "Overcharging repeatedly → medium; single no-ticket/no-change → low; pass renewal denial → medium.",
+    "subcategories": [
+      {
+        "subcategory_id": "overcharging",
+        "name": "Overcharging fare",
+        "description": "More fare than the official rate.",
+        "count": 100
+      },
+      {
+        "subcategory_id": "no_ticket_given",
+        "name": "Ticket not given",
+        "description": "Money taken but no ticket issued.",
+        "count": 19
+      },
+      {
+        "subcategory_id": "pass_issue",
+        "name": "Bus pass issue",
+        "description": "Pass renewal/refusal problems.",
+        "count": 45
+      },
+      {
+        "subcategory_id": "no_change",
+        "name": "No change returned",
+        "description": "Conductor does not return balance.",
+        "count": 23
+      }
+    ],
+    "synonyms": [
+      "bus pass",
+      "buspass",
+      "ticket not given",
+      "overcharged",
+      "no change",
+      "fare",
+      "ಟಿಕೆಟ್",
+      "టికెట్",
+      "टिकट",
+      "extra money for ticket",
+      "pass renewal"
+    ],
+    "positive_examples": [
+      "The conductor took 30 rupees for a ride that costs 22 near {spot}.",
+      "bus fare extra tagondu {area} route alli, official rate alli alla",
+      "They are charging more than the printed fare on the {road} route."
+    ],
+    "negative_examples": [
+      "The bus came fine, the extra fare near {spot} is the complaint.",
+      "No argument with staff, just the missing ticket after payment near {spot}.",
+      "Metro pass works, BMTC pass renewal near {area} is delayed."
+    ],
+    "confusing_categories": [
+      "bmtc_service"
+    ],
+    "scenario_count": 187
+  },
+  {
+    "category_id": "metro_service",
+    "parent_category": "TRANSPORT",
+    "category_name": "Metro Service",
+    "description": "Trains delayed or not running.",
+    "department": "BMRCL (Bangalore Metro Rail Corporation)",
+    "severity_guidance": "Platform/escalator safety fault with people at risk → high; train delay/service stop → medium; token/gate issue → low/medium.",
+    "subcategories": [
+      {
+        "subcategory_id": "train_delay",
+        "name": "Train delay / service gap",
+        "description": "Trains delayed or not running.",
+        "count": 115
+      },
+      {
+        "subcategory_id": "escalator_fault",
+        "name": "Escalator/lift fault",
+        "description": "Escalator or lift not working.",
+        "count": 93
+      },
+      {
+        "subcategory_id": "gate_token_issue",
+        "name": "Gate / token issue",
+        "description": "Token, gate or AFC machine problems.",
+        "count": 12
+      },
+      {
+        "subcategory_id": "platform_safety",
+        "name": "Platform safety issue",
+        "description": "Unsafe platform conditions (water, crowd, gap).",
+        "count": 25
+      },
+      {
+        "subcategory_id": "station_cleanliness",
+        "name": "Station cleanliness",
+        "description": "Dirty or unmaintained station.",
+        "count": 43
+      }
+    ],
+    "synonyms": [
+      "metro",
+      "bmrcl",
+      "namma metro",
+      "ಮೆಟ್ರೋ",
+      "మెట్రో",
+      "मेट्रो",
+      "metro gate",
+      "metro train",
+      "metro token",
+      "escalator",
+      "metro platform"
+    ],
+    "positive_examples": [
+      "Metro trains on the {area} line are delayed since morning.",
+      "metro late aagide {spot} station nindalu, crowd full",
+      "ಮೆಟ್ರೋ ತಡವಾಗಿದೆ {spot} ನಲ್ಲಿ, ಸರಿಯಾಗಿ ಓಡ್ತಿಲ್ಲ"
+    ],
+    "negative_examples": [
+      "BMTC buses fine, the metro train delay on the {area} line is the complaint.",
+      "Power in the city is normal, the metro station escalator near {spot} alone is dead.",
+      "Train is running fine, the token gate problem at {spot} is the issue."
+    ],
+    "confusing_categories": [
+      "bmtc_service"
+    ],
+    "scenario_count": 288
+  }
+]

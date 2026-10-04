@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-10-04T22:34:29.183Z",
+  "seed": 20261005,
+  "bank_files": [
+    "city-env.mjs",
+    "roads-water.mjs",
+    "social.mjs",
+    "transport.mjs"
+  ],
+  "total_scenarios": 5767,
+  "unique_scenarios": 5767,
+  "categories": 26,
+  "authored_bases": {
+    "positives": 617,
+    "negatives": 210,
+    "confusions": 129
+  },
+  "rejected_exact_duplicates": 0,
+  "rejected_near_duplicates": 1101,
+  "contradictory_labels": 0,
+  "scenarios_per_category": {
+    "civic_garbage": 289,
+    "env_noise": 225,
+    "civic_stray_animals": 122,
+    "util_power": 231,
+    "traffic_pothole": 255,
+    "civic_footpath": 388,
+    "civic_drainage": 416,
+    "civic_water_supply": 188,
+    "civic_streetlight": 255,
+    "civic_parks": 390,
+    "safety_harassment": 144,
+    "cybercrime": 145,
+    "housing_tenant": 106,
+    "bribes": 104,
+    "unofficial_payment": 117,
+    "govt_service": 125,
+    "access_language": 102,
+    "traffic_accident": 190,
+    "traffic_wrong_side": 194,
+    "civic_sense": 277,
+    "traffic_parking": 245,
+    "traffic_interaction": 212,
+    "bmtc_service": 398,
+    "bmtc_staff": 174,
+    "bmtc_fare_ticket": 187,
+    "metro_service": 288
+  },
+  "scenarios_per_severity": {
+    "medium": 3377,
+    "low": 619,
+    "high": 1602,
+    "critical": 169
+  },
+  "hard_negatives": 1353,
+  "confusion_pairs": 16,
+  "safety_scenarios": 1771,
+  "thin_categories": {},
+  "below_minimum_total": false
+}

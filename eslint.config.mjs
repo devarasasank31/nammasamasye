@@ -39,6 +39,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Compiled eval/debug harness output (scripts/tsconfig.eval.json).
+    ".eval-build/**",
   ]),
 ]);
 

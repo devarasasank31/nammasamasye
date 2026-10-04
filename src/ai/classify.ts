@@ -121,6 +121,55 @@ export function classifyIncident(text: string, language: Language): ScenarioMatc
   return results.sort((a, b) => b.confidence - a.confidence).slice(0, 3);
 }
 
+// Server-first classification: the hybrid local classifier (scenario
+// retrieval + negations + safety rules) runs at /api/classify; if the request
+// fails or returns nothing, fall back to the in-browser keyword map so the
+// report flow never blocks on the network.
+export async function classifyIncidentSmart(text: string, language: Language): Promise<ScenarioMatch[]> {
+  let serverMatches: ScenarioMatch[] = [];
+  try {
+    const timeout = typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal
+      ? AbortSignal.timeout(8000)
+      : undefined;
+    const res = await fetch('/api/classify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, lang: language }),
+      signal: timeout,
+    });
+    if (res.ok) {
+      const data = await res.json() as { matches?: Array<{ scenarioId?: string; scenarioName?: string; confidence?: number; reason?: string }> };
+      if (Array.isArray(data.matches)) {
+        serverMatches = data.matches
+          .filter(m => typeof m.scenarioId === 'string' && typeof m.confidence === 'number')
+          .map(m => ({
+            scenarioId: m.scenarioId!,
+            scenarioName: m.scenarioName || m.scenarioId!,
+            confidence: Math.max(1, Math.min(99, Math.round(m.confidence!))),
+            reason: m.reason || '',
+          }));
+      }
+    }
+  } catch {
+    // offline / timeout — keyword map below still works
+  }
+
+  const localMatches = classifyIncident(text, language);
+
+  if (!serverMatches.length) return localMatches;
+
+  // Merge by scenario id, keep the stronger confidence, rank by confidence.
+  // (confidence 30 is classifyIncident's synthetic "no match" fallback — skip
+  // it so a server match is never pushed down by a made-up entry.)
+  const byId = new Map<string, ScenarioMatch>();
+  for (const m of [...serverMatches, ...localMatches.filter(x => x.confidence > 30)]) {
+    const prev = byId.get(m.scenarioId);
+    if (!prev || m.confidence > prev.confidence) byId.set(m.scenarioId, m);
+  }
+  const merged = [...byId.values()].sort((a, b) => b.confidence - a.confidence);
+  return merged.length ? merged.slice(0, 3) : localMatches;
+}
+
 export function generateAISummary(text: string, answers: Record<string, string>): string {
   const parts = [text];
   for (const [key, value] of Object.entries(answers)) {

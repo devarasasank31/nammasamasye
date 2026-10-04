@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "noEmit": false,
+    "outDir": "../.eval-build",
+    "rootDir": "..",
+    "sourceMap": false,
+    "declaration": false
+  },
+  "include": [
+    "./**/*.ts",
+    "../src/lib/civic-classifier.ts",
+    "../src/lib/civic-types.ts",
+    "../src/lib/trained-scenarios.ts"
+  ]
+}

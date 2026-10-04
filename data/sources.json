@@ -1,0 +1,101 @@
+{
+  "retrieved_at": "2026-10-05",
+  "note": "Public sources used for category taxonomy normalization and complaint-pattern grounding. No PII, no private databases, no login-gated records. Portal category labels used as reference only where records are not openly downloadable.",
+  "sources": [
+    {
+      "source": "BBMP Sahaaya 2.0",
+      "url": "https://sahaaya2.bbmp.gov.in/Grievance/ReportComplaintAck.aspx",
+      "license": "Government portal; taxonomy reference only",
+      "retrieved_via": "fetch",
+      "content": "Bengaluru complaint category/subcategory structure (34 departments, category/subcategory/zone/ward/status)",
+      "usage": "Primary Bengaluru complaint taxonomy normalization; no records scraped",
+      "reachable": true
+    },
+    {
+      "source": "CPGRAMS (Centralized Public Grievance Redress and Monitoring System)",
+      "url": "https://pgportal.gov.in/",
+      "license": "Government of India terms; no open license for records",
+      "retrieved_via": "fetch",
+      "content": "Central grievance portal ministry/category routing structure",
+      "usage": "Grievance category hierarchy reference only; no PII or records collected",
+      "reachable": true
+    },
+    {
+      "source": "DARPG CPGRAMS 7.0 documentation",
+      "url": "https://www.darpg.gov.in/static/uploads/2025/10/d53e2fc58796ddd11c4d10358d889e66.pdf",
+      "license": "Government of India; cite DARPG",
+      "retrieved_via": "search",
+      "content": "1,239 major and 18,762 sub grievance categories",
+      "usage": "Cross-domain category granularity reference",
+      "reachable": true
+    },
+    {
+      "source": "data.gov.in (Open Government Data Platform)",
+      "url": "https://data.gov.in/",
+      "license": "GODL-India (open)",
+      "retrieved_via": "fetch",
+      "content": "CPGRAMS statistics and open civic datasets; grievance-text API restricted",
+      "usage": "Open-data availability check; no restricted text downloaded",
+      "reachable": true
+    },
+    {
+      "source": "Janaagraha iCMyC (I Change My City) via OpenCity",
+      "url": "https://data.opencity.in/dataset/i-change-my-city-data",
+      "license": "CC BY-SA 2.0",
+      "retrieved_via": "fetch",
+      "content": "Bengaluru complaint text with category/subcategory/ward/coordinates structure",
+      "usage": "Complaint phrasing and category pattern grounding (attribution: Janaagraha)",
+      "reachable": true
+    },
+    {
+      "source": "BBMP Grievances dataset via OpenCity",
+      "url": "https://data.opencity.in/dataset/bbmp-grievances-data",
+      "license": "Public Domain (stated by publisher)",
+      "retrieved_via": "fetch",
+      "content": "Ward-level grievance counts by category",
+      "usage": "Category distribution reference; no text/PII used",
+      "reachable": true
+    },
+    {
+      "source": "Seva Sindhu (Government of Karnataka)",
+      "url": "https://sevasindhu.karnataka.gov.in/Sevasindhu/English",
+      "license": "Government of Karnataka terms",
+      "retrieved_via": "search",
+      "content": "Karnataka service catalog including complaint/grievance services",
+      "usage": "Government-service subcategory reference",
+      "reachable": true
+    },
+    {
+      "source": "SF 311 Cases by Category / Request Type",
+      "url": "https://data.sfgov.org/City-Infrastructure/311-Cases-by-Category-Request-Type-Jan-1-2025-to-2025/uiyx-5kqf",
+      "license": "Open Data Commons Public Domain Dedication and License (PDDL)",
+      "retrieved_via": "search",
+      "content": "Category → request-type hierarchy (non-Indian reference jurisdiction)",
+      "usage": "Cross-jurisdiction taxonomy normalization so categories are not overfitted to one city",
+      "reachable": true
+    },
+    {
+      "source": "NYC 311 Service Requests",
+      "url": "https://data.cityofnewyork.us/Social-Services/311-Service-Requests/erm2-nwe9",
+      "license": "NYC Open Data Terms of Use",
+      "retrieved_via": "search",
+      "content": "complaint_type/descriptor hierarchy without PII in the type columns",
+      "usage": "Cross-jurisdiction request-type reference only",
+      "reachable": true
+    },
+    {
+      "source": "Chicago 311 Service Requests",
+      "url": "https://data.cityofchicago.org/Service-Requests/311-Service-Requests/v6vf-nfxy",
+      "license": "See portal Terms of Service",
+      "retrieved_via": "search",
+      "content": "SR_TYPE taxonomy and request-types view",
+      "usage": "Cross-jurisdiction request-type reference only",
+      "reachable": true
+    }
+  ],
+  "excluded": [
+    "Bharatmaps / GIS-gated complaint layers (login-gated)",
+    "Any portal requiring login, CAPTCHA or access control",
+    "Sources exposing personal data (names, phones, emails, addresses)"
+  ]
+}

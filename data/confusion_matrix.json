@@ -1,0 +1,86 @@
+{
+  "pairs": [
+    {
+      "a": "util_power",
+      "b": "civic_streetlight",
+      "note": "Power outage vs streetlight failure (power on, light off)"
+    },
+    {
+      "a": "util_power",
+      "b": "traffic_pothole",
+      "note": "Fallen wire lies on a damaged road"
+    },
+    {
+      "a": "civic_drainage",
+      "b": "civic_water_supply",
+      "note": "Drainage blockage vs water pipe burst"
+    },
+    {
+      "a": "civic_drainage",
+      "b": "traffic_pothole",
+      "note": "Road flooding vs drain overflow"
+    },
+    {
+      "a": "civic_water_supply",
+      "b": "civic_drainage",
+      "note": "Water leakage vs supply disruption"
+    },
+    {
+      "a": "civic_garbage",
+      "b": "civic_parks",
+      "note": "Garbage collection vs illegal dumping in park"
+    },
+    {
+      "a": "traffic_pothole",
+      "b": "civic_footpath",
+      "note": "Road damage vs broken footpath"
+    },
+    {
+      "a": "civic_parks",
+      "b": "civic_garbage",
+      "note": "Tree trimming vs fallen tree/debris"
+    },
+    {
+      "a": "env_noise",
+      "b": "civic_sense",
+      "note": "Construction noise vs traffic violation noise"
+    },
+    {
+      "a": "civic_footpath",
+      "b": "civic_sense",
+      "note": "Illegal construction vs footpath encroachment"
+    },
+    {
+      "a": "bribes",
+      "b": "unofficial_payment",
+      "note": "Bribe demand vs extra charge without receipt"
+    },
+    {
+      "a": "bmtc_service",
+      "b": "bmtc_staff",
+      "note": "Bus service vs conductor behaviour"
+    },
+    {
+      "a": "bmtc_service",
+      "b": "bmtc_fare_ticket",
+      "note": "Bus not coming vs fare/ticket issue"
+    },
+    {
+      "a": "metro_service",
+      "b": "bmtc_service",
+      "note": "Metro service vs BMTC bus service"
+    },
+    {
+      "a": "traffic_accident",
+      "b": "civic_sense",
+      "note": "Accident (happened) vs reckless driving (observed)"
+    },
+    {
+      "a": "safety_harassment",
+      "b": "traffic_interaction",
+      "note": "Being followed vs being stopped by police"
+    }
+  ],
+  "hard_negative_count": 1353,
+  "confusion_example_count": 3613
+}

@@ -10,7 +10,7 @@ import { BMTC_STOPS } from '@/data/bmtc-stops';
 import { METRO_STATION_NAMES } from '@/data/metro-stations';
 import { detectLocationInfo, LocationInfo } from '@/data/wards';
 import { computePriority, severityFor } from '@/lib/priority';
-import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
+import { classifyIncidentSmart, isEmergencyMessage } from '@/ai/classify';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { shouldGuard, guardReply } from '@/lib/chat-guard';
 import { exactContext } from '@/lib/exact-context';
@@ -530,7 +530,7 @@ export default function ReportPage() {
       }
     }
 
-    const matches = classifyIncident(text, replyLang);
+    const matches = await classifyIncidentSmart(text, replyLang);
     setScenarioMatches(matches);
     if (matches.length > 0 && matches[0].confidence > 50) {
       let response = `${t('bot.scenario_match', replyLang)}:\n\n`;
