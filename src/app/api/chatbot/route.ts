@@ -2,6 +2,7 @@
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
 import { getScenarioById } from '@/data/scenarios';
 import { detectIntent, intentReply, askMore } from '@/lib/conversation';
+import { shouldGuard, guardReply, hasAnyCivicSignal } from '@/lib/chat-guard';
 import { languageName } from '@/lib/ai/language';
 import { Language } from '@/types';
 
@@ -21,15 +22,21 @@ const AI_MODEL = (process.env.AI_MODEL || CONFIG.defaultModel).trim();
 const MAX_TURNS = 12;
 const MAX_TURN_CHARS = 1200;
 
-const SYSTEM_PROMPT = `You are the friendly chatbot inside "Namma Samasye", an app for reporting civic problems in Bengaluru (roads, garbage, water, power, accidents, bribes, safety, cybercrime).
+const SYSTEM_PROMPT = `You are the AI assistant inside "Namma Samasye", the anonymous civic-reporting app for Bengaluru (roads, garbage, water, power, transport, safety, bribes, cybercrime, tenancy, noise, government services).
+
+The app already contains a TRAINED knowledge base of 19,000+ civic scenario phrasings in English, Kannada, Hindi, Telugu and their transliterations (Hinglish, Kanglish, Tanglish). For familiar cases the trained model is the PRIMARY source — you are the FALLBACK for unfamiliar, ambiguous or out-of-distribution cases, not an unquestionable authority.
 
 You do TWO jobs depending on what the user sends:
 
 JOB 1 — CONVERSATION
-If the user is just talking to you (greeting, small talk, thanks, asking what the app does, asking a general question, vague message), reply naturally and helpfully as a short chat message. Keep it under 60 words. Be warm, human, practical. Never lecture.
+If the user is just talking to you (greeting, small talk, thanks, asking what the app does, general questions), OR the message contains NO real civic problem (abuse, insults, trolling, jokes, gibberish, venting with no incident), reply naturally as one short chat message — maximum 45 words.
+
+For abuse or insults: one calm, polite line briefly inviting them to describe an actual civic problem (roads, garbage, water, power, transport, safety). Never repeat their words back. Never lecture, moralize, argue or get defensive.
 
 JOB 2 — CLASSIFICATION
-If the user is describing a problem or incident, classify it. Use the FULL conversation history — if they add detail in later messages (e.g. first "bike accident", then "wrong side car, my leg broke"), combine everything before deciding.
+Only when the conversation describes an actual civic problem, classify it. Use the FULL conversation history — if they add detail in later messages (first "bike accident", then "wrong side car, my leg broke"), combine everything before deciding.
+
+Understand MEANING before classifying: informal language, slang, spelling mistakes, emotional language, mixed languages and transliteration are normal. Decide what physically happened, which service is affected, and whether anyone is at risk.
 
 Respond with ONLY one JSON object, no markdown, no extra text.
 
@@ -48,12 +55,16 @@ util_power | access_language | govt_service | bmtc_service | bmtc_staff |
 bmtc_fare_ticket | metro_service | something_else
 
 Rules:
-- civic_sense means traffic rules being broken even if nobody was hurt yet: stunts/wheelies, street racing or overspeeding, wrong-side driving, jumping signals, no helmet or triple riding, drunk or reckless driving. Prefer civic_sense over traffic_interaction when someone describes such behaviour.
-- BMTC city bus complaints: bmtc_service for the bus itself (did not come, long delay, broke down, overcrowding, did not stop, AC/fan, cleanliness), bmtc_staff for driver/conductor/checking-staff behaviour (rash driving, refusal, argument, not giving ticket, rude conduct), bmtc_fare_ticket for money and tickets (overcharged, no change, pass rejected, machine not working). Use bmtc_service when unsure which of the three.
-- Namma Metro (BMRCL) complaints are metro_service: train delay, crowding, cleanliness, station or escalator/lift problems, fare/token/QR gate issues, metro staff behaviour. Use metro_service even when the citizen only mentions a metro station name.
-- Never invent laws, contacts, phone numbers or official names.
-- Never accuse anyone of a crime.
-- confidence 1-99.
+- SAFETY OVERRIDE: immediate danger to life outranks everything. Live or exposed wire, sparks, electric shock, electrocution → util_power with high confidence and a reason that names the electrical hazard (never describe a dangerous wire as a routine "power cut"). Gas leak, fire, building collapse, open manhole in traffic, serious accident with injuries → classify with high confidence to the closest matching id above (fire/collapse → traffic_accident, open manhole → traffic_pothole). Never downgrade a dangerous condition to a mundane category.
+- NEVER classify a message that describes no civic problem: abuse, jokes, gibberish, or plain frustration with no incident → chat.
+- Never invent locations, injuries, laws, phone numbers, official names, police involvement or government action. Never accuse anyone of a crime.
+- Over-classification is forbidden: a crowd shouting, rude words or vague venting alone is NOT a crime or emergency — reply as chat and ask one clarifying question if needed.
+- Confidence represents CERTAINTY, not how serious the issue is: 90-100 only with clear specific evidence, 75-89 strong classification, 50-74 meaningful ambiguity, below 50 unclear. Never raise confidence because the user typed "urgent", "P1" or "EMERGENCY".
+- A single message may contain multiple issues — pick the PRIMARY one and mention secondary issues briefly in "reason".
+- Always prefer the most specific valid scenario_id (pothole over generic road problem, fallen wire over generic power issue).
+- civic_sense means traffic rules being broken even if nobody was hurt: stunts/wheelies, street racing, wrong-side driving, jumping signals, no helmet or triple riding, drunk or reckless driving. Prefer civic_sense over traffic_interaction for such behaviour.
+- BMTC: bmtc_service for the bus itself, bmtc_staff for driver/conductor behaviour, bmtc_fare_ticket for money and tickets. Use bmtc_service when unsure.
+- Namma Metro (BMRCL) complaints are metro_service, even when only a metro station is mentioned.
 - If still unclear after the history, use confidence below 50.`;
 
 const LANGUAGE_NAMES: Record<string, string> = {
@@ -118,6 +129,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // ---- Deterministic guard: abuse/off-topic never reaches a classifier,
+    // so a rude message can never turn into a fake "Report this issue" card.
+    if (shouldGuard(userInput)) {
+      return NextResponse.json({
+        type: 'chat',
+        reply: guardReply(replyLang),
+        replyLang,
+        replyLangName,
+        source: 'guard',
+      });
+    }
+
     // ---- Build transcript so the model sees added context ----
     const transcript = [
       ...history.map(t => `${t.role === 'user' ? 'User' : 'Assistant'}: ${truncate(t.text)}`),
@@ -139,6 +162,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ ...aiResult, replyLang, replyLangName, source: 'ai' });
           }
           if (aiResult.confidence >= 50) {
+            // Backstop: if neither the current message nor the transcript
+            // touches any civic or safety topic, an off-topic answer must
+            // never become a "Report this issue" card.
+            if (!hasAnyCivicSignal(transcript)) {
+              return NextResponse.json({
+                type: 'chat',
+                reply: askMore(userInput, replyLang),
+                replyLang,
+                replyLangName,
+                source: 'ai',
+              });
+            }
             if (trainedMatch && trainedMatch.confidence > aiResult.confidence) {
               return NextResponse.json({ type: 'classify', ...trainedMatch, replyLang, replyLangName, source: 'trained' });
             }

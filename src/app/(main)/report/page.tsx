@@ -12,6 +12,7 @@ import { detectLocationInfo, LocationInfo } from '@/data/wards';
 import { computePriority, severityFor } from '@/lib/priority';
 import { classifyIncident, isEmergencyMessage } from '@/ai/classify';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
+import { shouldGuard, guardReply } from '@/lib/chat-guard';
 import { exactContext } from '@/lib/exact-context';
 import { speechLocale, isLanguage } from '@/lib/ai/language';
 import { t } from '@/lib/translations';
@@ -473,6 +474,13 @@ export default function ReportPage() {
     setInputValue('');
     setOriginalText(heard);
     addUserMessage(heard);
+
+    // Abuse or off-topic rants never reach the classifier (and are never
+    // saved as suggestions) — politely redirect and keep the step open.
+    if (shouldGuard(heard)) {
+      addBotMessage(guardReply(lang));
+      return;
+    }
 
     // Keep it in the database so the next person sees it as a suggestion.
     let reportCount = 1;

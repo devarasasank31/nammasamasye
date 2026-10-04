@@ -758,7 +758,7 @@ const EXTRA_FORMS: Record<string, string[]> = {
   civic_streetlight: ['light illa', 'batti nahi', 'deepam ledu', 'light bandh', 'pole light off', 'street lamp off', 'no lighting'],
   traffic_interaction: ['challan wrong', 'fine wrong', 'cop rude', 'police troubling', 'dl check', 'receipt missing'],
   unofficial_payment: ['extra money', 'unofficial fee', 'paisa maang', 'money asked', 'illegal fee'],
-  safety_harassment: ['troubling me', 'eve tease', 'chhed chhad', 'haadu maadi', 'tang kar raha', 'stalking near'],
+  safety_harassment: ['troubling me', 'eve tease', 'chhed chhad', 'haadu maadi', 'tang kar raha', 'stalking near', 'following me', 'someone following me', 'stalking me', 'picha kar raha', 'piche aa raha hai', 'chance maar raha', 'threatening me', 'gunda giri', 'scared of him'],
   cybercrime: ['otp share', 'fake link', 'online loot', 'upi fraud', 'phishing mail', 'scam call', 'digital arrest'],
   housing_tenant: ['owner trouble', 'deposit wapas', 'rent issue', 'vacate notice', 'landlord problem', 'advance nahi de raha'],
   env_noise: ['sound pollution', 'loud music', 'dj trouble', 'shor sharaba', 'noise complaint', 'horn band'],
@@ -837,8 +837,11 @@ export function matchTrainedScenario(userInput: string): {
       // Exact match or contained in input
       if (input.includes(kw)) {
         matched = true;
-        // Longer keyword matches are more valuable
-        matchQuality = Math.max(matchQuality, kw.length / input.length);
+        // A long phrase (≥10 chars) is a strong signal on its own; short
+        // keywords score by how much of the message they cover.
+        matchQuality = kw.length >= 10
+          ? Math.max(matchQuality, 1)
+          : Math.max(matchQuality, kw.length / input.length);
       }
     }
 

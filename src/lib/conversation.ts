@@ -1,6 +1,8 @@
 // Lightweight conversational intents handled locally so the bot replies
 // instantly and naturally instead of firing every message at the classifier.
 
+import { containsAbuse } from './chat-guard';
+
 export type ChatIntent =
   | 'greeting'
   | 'thanks'
@@ -95,7 +97,10 @@ export function intentReply(intent: string, lang: string): IntentReply {
 // Natural follow-up when the message is still too vague to classify.
 export function askMore(userInput: string, lang: string): string {
   const trimmed = userInput.trim().replace(/\s+/g, ' ').slice(0, 80);
-  const short = trimmed.length > 0 && trimmed.split(' ').length <= 12;
+  // Never quote a rude message back at the citizen — ask plainly instead.
+  const short = !containsAbuse(userInput)
+    && trimmed.length > 0
+    && trimmed.split(' ').length <= 12;
 
   const bank: Record<string, { withEcho: string; plain: string }> = {
     en: {
