@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import { getScenarioById } from '@/data/scenarios';
-import { detectIntent, intentReply, askMore } from '@/lib/conversation';
+import { detectIntent, intentReply, askMore, aiUnavailableReply } from '@/lib/conversation';
 import { shouldGuard, guardReply, hasAnyCivicSignal } from '@/lib/chat-guard';
 import { civicClassify, clarificationQuestion } from '@/lib/civic-classifier';
 import { LocalClassifyResult } from '@/lib/civic-types';
@@ -9,7 +9,10 @@ import { Language } from '@/types';
 
 // Server-side only
 const AI_API_KEY = process.env.AI_API_KEY || process.env.GROQ_API_KEY || '';
-const AI_PROVIDER = (process.env.AI_PROVIDER || 'openai').trim();
+// A Groq key (gsk_...) pointed at api.openai.com 401s silently and the bot
+// answers nothing — auto-select Groq unless the provider is explicit.
+const AI_PROVIDER = (process.env.AI_PROVIDER ||
+  (AI_API_KEY.startsWith('gsk_') ? 'groq' : 'openai')).trim();
 
 const PROVIDER_CONFIG: Record<string, { baseUrl: string; defaultModel: string }> = {
   groq: { baseUrl: 'https://api.groq.com/openai/v1', defaultModel: 'openai/gpt-oss-120b' },
@@ -282,6 +285,19 @@ export async function POST(request: NextRequest) {
     }
 
     logClassify(userInput, local, apiCalled, 'fallback', Date.now() - started);
+    // Nothing civic in the message AND the AI did not answer (offline,
+    // missing key, timeout): be honest about it rather than echoing the
+    // message back as if it were a broken complaint. Messages that do
+    // contain civic words keep the normal "tell me what happened" nudge.
+    if (!local.category && !hasAnyCivicSignal(userInput)) {
+      return NextResponse.json({
+        type: 'chat',
+        reply: aiUnavailableReply(replyLang),
+        replyLang,
+        replyLangName,
+        source: 'fallback',
+      });
+    }
     return NextResponse.json({
       type: 'chat',
       reply: askMore(userInput, replyLang),
@@ -412,6 +428,7 @@ async function callOpenAICompatible(transcript: string, lang: string, local: Loc
       max_tokens: 800,
       temperature: 0.4,
     }),
+    signal: AbortSignal.timeout(15000),
   });
 
   const data = await response.json();
@@ -433,6 +450,7 @@ async function callGemini(transcript: string, lang: string, local: LocalClassify
         contents: [{ role: 'user', parts: [{ text: transcript + buildCandidatesBlock(local) }] }],
         generationConfig: { maxOutputTokens: 800, temperature: 0.4 },
       }),
+      signal: AbortSignal.timeout(15000),
     }
   );
 

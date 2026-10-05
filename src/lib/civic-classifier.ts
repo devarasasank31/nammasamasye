@@ -180,7 +180,7 @@ interface HazardRule {
   boost: number;
 }
 const HAZARD_RULES: HazardRule[] = [
-  { name: 'live_wire', pattern: /\b(live|exposed|open|snapped|broken|low|hanging|dangling) (electric(al)? )?(wire|cable)\b|\b(wire|cable)[^.!?]{0,40}\b(fallen|fell|is fallen|has fallen|down|lying|broke|broken|dropped|hang|hangs|hangs low)\b|\b(fallen|fallen-down|lying|hang(ing)?) (live )?(wire|cable)\b|\bwires? (hang|hangs) (low|down)\b|\b(taar|तार|तीग|ತಂತಿ|தார்|తీಗ)[^.!?]{0,25}\b(came|come|is|has|gira)\b|\btaar (gira|bidd|sadak)/i, unless: /\bnot an? (electric(al)? |live )?(wire|cable)\b|\b(no|not) (live |electric(al)? )?(wire|cable) (down|lying|fallen)\b/i, category: 'util_power', subcategory: 'fallen_wire', severity: 'critical', boost: 0.25 },
+  { name: 'live_wire', pattern: /\b(live|exposed|open|snapped|broken|low|hanging|dangling) (electric(al)? )?(wire|cable)\b|\b(wire|cable)[^.!?]{0,40}\b(fallen|fell|is fallen|has fallen|down|lying|broke|broken|dropped|hang|hangs|hangs low)\b|\b(fallen|fallen-down|lying|hang(ing)?) (live )?(wire|cable)\b|\bwires? (hang|hangs) (low|down)\b|\b(taar|तार|तीग|ತಂತಿ|தார்|తీಗ)[^.!?]{0,25}\b(came|come|is|has|gira)\b|\btaar (gira|bidd|sadak)/i, unless: /\b(not|ledu|ledu|illa|illaa|ill|no) an? (electric(al)? |live )?(wire|cable)\b|\b(no|not) (live |electric(al)? )?(wire|cable) (down|lying|fallen)\b/i, category: 'util_power', subcategory: 'fallen_wire', severity: 'critical', boost: 0.25 },
   { name: 'electric_shock', pattern: /\b(electric( )?shock|getting shocks|shocked people|shock lag|electrocut)/i, category: 'util_power', subcategory: 'fallen_wire', severity: 'critical', boost: 0.3 },
   { name: 'sparking', pattern: /\bspark(ing|s)?\b|\bwire.*(sparking|sparks)\b/i, category: 'util_power', subcategory: 'sparking_wire', severity: 'critical', boost: 0.25 },
   // A manhole ON the footpath is reported as a footpath problem (the authored
@@ -263,6 +263,30 @@ function familyFor(topA: string | null, topB: string | null): string {
   if (has('bmtc_service', 'bmtc_staff', 'bmtc_fare_ticket', 'metro_service')) return 'transport';
   if (has('safety_harassment', 'civic_stray_animals')) return 'safety';
   return 'generic';
+}
+
+// ---------------------------------------------------------------------------
+// Polarity check for adjacent windows: does this token sit next to a
+// negator? ("is NOT collected", "NOT working", "ಇಲ್ಲ", "nahi", "n't")
+const NEG_WINDOW = /(?:^|\s)(no|not|never|without|illa|ledu|nahi|nahin|nhi|ಇಲ್ಲ)(?:\s|$)|n['’]t(?:\s|$)/i;
+function windowNeg(tokens: string[], idx: number): boolean {
+  if (idx < 0) return false;
+  for (let j = Math.max(0, idx - 1); j <= Math.min(tokens.length - 1, idx + 1); j++) {
+    if (NEG_WINDOW.test(' ' + tokens[j] + ' ')) return true;
+  }
+  return false;
+}
+// The row's window must show an explicit positive assertion for the
+// contradiction to mean anything — "garbage IS collected" contradicts
+// "garbage is NOT collected", but "the light is dark" does not contradict
+// "no light" just because the word "not" is missing.
+const ROW_POS = /(?:^|\s)(is|are|was|were|has|have|gets)(?:\s|$)/i;
+function windowPos(tokens: string[], idx: number): boolean {
+  if (idx < 0) return false;
+  for (let j = Math.max(0, idx - 1); j <= Math.min(tokens.length - 1, idx + 1); j++) {
+    if (ROW_POS.test(' ' + tokens[j] + ' ')) return true;
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -361,7 +385,19 @@ export function civicClassify(text: string): LocalClassifyResult {
     // row like "metro station" sitting inside any travel query is freebies.
     else if (rowWords >= 4 && norm.includes(rn)) phrase = 0.35;
     else if (norm.length > 40 && rn.length > 20 && rn.split(' ').filter(w => w && norm.includes(w)).length >= 4) phrase = 0.1;
-    const score = Math.min(1, 0.6 * cov + 0.27 * spec + phrase + 0.08 * Math.min(1, rarest / 5));
+    let score = Math.min(1, 0.6 * cov + 0.27 * spec + phrase + 0.08 * Math.min(1, rarest / 5));
+    // Query/row polarity contradiction on a shared content word: the query
+    // says "garbage is NOT collected" but the row asserts "garbage IS
+    // collected daily …" — that row is borrowing our words for a different
+    // problem, so its evidence is mostly noise.
+    let contradictions = 0;
+    for (const t of qUnique) {
+      if (!rSet.has(t) || GENERIC_TOKENS.has(t)) continue;
+      const qi = qTokens.indexOf(t);
+      const ri = rTokens.indexOf(t);
+      if (windowNeg(qTokens, qi) && !windowNeg(rTokens, ri) && windowPos(rTokens, ri)) contradictions++;
+    }
+    if (contradictions) score = Math.max(0.04, score * 0.45);
     if (score > 0.05) rowScores.set(i, score);
   }
 
@@ -581,7 +617,8 @@ function severityForHazard(hazards: string[], cat: string): Severity | null {
 export function __debugRows(text: string, k = 8): Array<{ score: number; cat: string; sub: string; row: string }> {
   if (!ensureLoaded()) return [];
   const norm = normalize(text);
-  const qUnique = [...new Set(tokenize(norm))];
+  const qTokens = tokenize(norm);
+  const qUnique = [...new Set(qTokens)];
   const cand = new Set<number>();
   const sortedTokens = [...qUnique].sort((a, b) => idfOf(b) - idfOf(a));
   for (const t of sortedTokens.slice(0, 48)) {
@@ -593,7 +630,8 @@ export function __debugRows(text: string, k = 8): Array<{ score: number; cat: st
   const qIdfTotal = qUnique.reduce((s, t) => s + idfOf(t), 0) || 1;
   const out: Array<{ score: number; cat: string; sub: string; row: string }> = [];
   for (const i of cand) {
-    const rSet = new Set(rowTokens[i]);
+    const rTokens = rowTokens[i];
+    const rSet = new Set(rTokens);
     let matchedIdf = 0;
     let matchedCount = 0;
     let rarest = 0;
@@ -622,14 +660,22 @@ export function __debugRows(text: string, k = 8): Array<{ score: number; cat: st
     if (rn === norm || rn.includes(norm)) phrase = 0.35;
     else if (rowWords >= 4 && norm.includes(rn)) phrase = 0.35;
     else if (norm.length > 40 && rn.length > 20 && rn.split(' ').filter(w => w && norm.includes(w)).length >= 4) phrase = 0.1;
-    const score = Math.min(1, 0.6 * cov + 0.27 * spec + phrase + 0.08 * Math.min(1, rarest / 5));
+    let score = Math.min(1, 0.6 * cov + 0.27 * spec + phrase + 0.08 * Math.min(1, rarest / 5));
+    let contradictions = 0;
+    for (const t of qUnique) {
+      if (!rSet.has(t) || GENERIC_TOKENS.has(t)) continue;
+      const qi = qTokens.indexOf(t);
+      const ri = rTokens.indexOf(t);
+      if (windowNeg(qTokens, qi) && !windowNeg(rTokens, ri) && windowPos(rTokens, ri)) contradictions++;
+    }
+    if (contradictions) score = Math.max(0.04, score * 0.45);
     if (score > 0.05) {
       const r = rows![i];
       out.push({
         score,
         cat: r.category,
         sub: r.subcategory,
-        row: `${r.text} | matched=${matchedCount} cov=${cov.toFixed(2)} spec=${spec.toFixed(2)} phrase=${phrase}`,
+        row: `${r.text} | matched=${matchedCount} cov=${cov.toFixed(2)} spec=${spec.toFixed(2)} phrase=${phrase}${contradictions ? ` CONTRA=${contradictions}` : ''}`,
       });
     }
   }

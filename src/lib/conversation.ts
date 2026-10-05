@@ -125,6 +125,19 @@ export function askMore(userInput: string, lang: string): string {
   return short ? entry.withEcho : entry.plain;
 }
 
+// The message had nothing civic in it AND the answer service did not reply
+// (offline, missing key, timeout). Say that honestly instead of echoing the
+// message back as if it were a broken complaint.
+export function aiUnavailableReply(lang: string): string {
+  const bank: Record<string, string> = {
+    en: "Sorry — I couldn't get an answer for that right now. Please try again in a moment, or tell me about a street problem: a pothole, garbage, water logging, a streetlight, an accident…",
+    kn: 'ಕ್ಷಮಿಸಿ — ಈಗ ಉತ್ತರ ಪಡೆಯಲಾಗಲಿಲ್ಲ. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ರಸ್ತೆಯ ಸಮಸ್ಯೆಯನ್ನು ಹೇಳಿ — ಗುಂಡಿ, ಕಸ, ನೀರು ನಿಲುವು, ಸ್ಟ್ರೀಟ್‌ಲೈಟ್, ಅಪಘಾತ…',
+    hi: 'क्षमा करें — अभी जवाब नहीं मिल सका। थोड़ी देर बाद फिर कोशिश करें, या सड़क की समस्या बताएँ — गड्ढा, कूड़ा, जलभराव, स्ट्रीटलाइट, एक्सीडेंट…',
+    te: 'క్షమించండి — ఇప్పుడు సమాధానం రాలేదు. కాసేపటి తర్వాత మళ్లీ ప్రయత్నించండి, లేదా రోడ్డు సమస్య చెప్పండి — గుంత, చెత్త, నీటి నిల్వ, స్ట్రీట్‌లైట్, ప్రమాదం…',
+  };
+  return bank[lang] || bank.en;
+}
+
 function tLang(key: string, lang: string): string {
   const bank: Record<string, Record<string, string>> = {
     greeting: {

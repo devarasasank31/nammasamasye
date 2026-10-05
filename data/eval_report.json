@@ -1,24 +1,24 @@
 {
   "tests_total": 5077,
   "classify_tests": 5035,
-  "local_top1_accuracy": 0.9944,
-  "e2e_simulated_accuracy": 0.9901,
-  "abstained_after_gates": 41,
-  "macro_f1": 0.9948,
+  "local_top1_accuracy": 0.9946,
+  "e2e_simulated_accuracy": 0.9909,
+  "abstained_after_gates": 38,
+  "macro_f1": 0.995,
   "pools": {
     "positive": {
       "n": 3137,
       "local": "3134/3137",
-      "e2e": "3129/3137",
+      "e2e": "3131/3137",
       "local_rate": 0.999,
-      "e2e_rate": 0.9974
+      "e2e_rate": 0.9981
     },
     "hard_negative": {
       "n": 1104,
-      "local": "1088/1104",
-      "e2e": "1075/1104",
-      "local_rate": 0.9855,
-      "e2e_rate": 0.9737
+      "local": "1089/1104",
+      "e2e": "1077/1104",
+      "local_rate": 0.9864,
+      "e2e_rate": 0.9755
     },
     "confusion": {
       "n": 770,
@@ -70,18 +70,18 @@
       "e2e_rate": 1
     }
   },
-  "api_fallback_rate": 0.0292,
-  "local_accepted_rate": 0.984,
-  "clarification_rate": 0.0152,
+  "api_fallback_rate": 0.0274,
+  "local_accepted_rate": 0.9848,
+  "clarification_rate": 0.0146,
   "latency_ms": {
-    "p50": 11,
-    "p95": 17,
-    "p99": 20,
-    "max": 34
+    "p50": 12,
+    "p95": 18,
+    "p99": 22,
+    "max": 72
   },
   "confidence": {
     "correct_mean": 98.8,
-    "wrong_mean": 71.7
+    "wrong_mean": 70.1
   },
   "top_confusions": [
     {
@@ -105,15 +105,11 @@
       "count": 2
     },
     {
-      "pair": "util_power -> env_noise",
+      "pair": "util_power -> civic_garbage",
       "count": 1
     },
     {
       "pair": "civic_streetlight -> safety_harassment",
-      "count": 1
-    },
-    {
-      "pair": "civic_streetlight -> util_power",
       "count": 1
     },
     {
@@ -130,6 +126,10 @@
     },
     {
       "pair": "traffic_wrong_side -> civic_sense",
+      "count": 1
+    },
+    {
+      "pair": "bmtc_service -> civic_sense",
       "count": 1
     }
   ],
@@ -208,11 +208,11 @@
       "cat": "civic_garbage",
       "support": 244,
       "tp": 244,
-      "fp": 0,
+      "fp": 1,
       "fn": 0,
-      "p": 1,
+      "p": 0.9959183673469387,
       "r": 1,
-      "f1": 1
+      "f1": 0.9979550102249488
     },
     {
       "cat": "civic_parks",
@@ -247,12 +247,12 @@
     {
       "cat": "civic_streetlight",
       "support": 205,
-      "tp": 190,
+      "tp": 191,
       "fp": 0,
-      "fn": 15,
+      "fn": 14,
       "p": 1,
-      "r": 0.926829268292683,
-      "f1": 0.9620253164556963
+      "r": 0.9317073170731708,
+      "f1": 0.9646464646464648
     },
     {
       "cat": "civic_water_supply",
@@ -278,11 +278,11 @@
       "cat": "env_noise",
       "support": 190,
       "tp": 190,
-      "fp": 1,
+      "fp": 0,
       "fn": 0,
-      "p": 0.9947643979057592,
+      "p": 1,
       "r": 1,
-      "f1": 0.9973753280839895
+      "f1": 1
     },
     {
       "cat": "govt_service",
@@ -388,11 +388,11 @@
       "cat": "util_power",
       "support": 202,
       "tp": 201,
-      "fp": 1,
+      "fp": 0,
       "fn": 1,
-      "p": 0.995049504950495,
+      "p": 1,
       "r": 0.995049504950495,
-      "f1": 0.995049504950495
+      "f1": 0.9975186104218362
     }
   ],
   "failures": [
@@ -402,9 +402,9 @@
       "text": "We have electricity, but the స్ట్రీట్ లైట్ is not working because its తీగ came down.",
       "expected": "util_power",
       "denied": null,
-      "got": "env_noise",
-      "conf": 65,
-      "margin": 0,
+      "got": "civic_garbage",
+      "conf": 50,
+      "margin": 0.012,
       "clar": true,
       "neg": [
         "util_power:power_outage"
@@ -427,23 +427,6 @@
         "civic_streetlight:light_not_working"
       ],
       "hz": [],
-      "localPass": false,
-      "e2ePass": false
-    },
-    {
-      "pool": "hard_negative",
-      "id": "gen_civic_streetlight_2034",
-      "text": "The fallen thing near the flyover base undi the lamp post itself, ledu an electrical wire lying live.",
-      "expected": "civic_streetlight",
-      "denied": null,
-      "got": "util_power",
-      "conf": 99,
-      "margin": 0,
-      "clar": false,
-      "neg": [],
-      "hz": [
-        "live_wire!"
-      ],
       "localPass": false,
       "e2ePass": false
     },
@@ -843,7 +826,7 @@
       "denied": null,
       "got": "traffic_accident",
       "conf": 99,
-      "margin": 0.33,
+      "margin": 0.345,
       "clar": false,
       "neg": [],
       "hz": [],
