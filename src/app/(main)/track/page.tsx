@@ -7,13 +7,9 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Language, Incident } from '@/types';
 import { getIncidentsBySession } from '@/services/incident';
 import { getOrCreateSession } from '@/services/session';
-import { ArrowLeft, MessageSquare, Search, Home, CheckCircle, FileText, Clock } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Search, Home, FileText, Clock } from 'lucide-react';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { getStatusBadgeClass } from '@/lib/status-colors';
-import {
-  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
-} from 'recharts';
-import { buildDailySeries } from '@/lib/analytics';
 
 function subcategoryLabel(id: string, lang: Language): string {
   const scn = getScenarioById(id);
@@ -69,13 +65,10 @@ export default function TrackPage() {
     router.push(`/track/${searchId.trim().toUpperCase()}`);
   };
 
-  const daily = buildDailySeries(incidents);
-  const resolvedCount = incidents.filter(i => i.status === 'RESOLVED' || i.status === 'CLOSED').length;
-  const openCount = incidents.length - resolvedCount;
+  const openCount = incidents.filter(i => i.status !== 'RESOLVED' && i.status !== 'CLOSED').length;
 
   const summary = [
     { id: 'filed', label: t('track.reported', lang), value: incidents.length, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { id: 'resolved', label: t('track.resolved', lang), value: resolvedCount, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
     { id: 'open', label: t('track.open', lang), value: openCount, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
   ];
 
@@ -114,58 +107,17 @@ export default function TrackPage() {
           </button>
         </div>
 
-        {/* My dashboard: totals + day-by-day reports vs resolved */}
+        {/* My dashboard: quick totals */}
         {!loading && incidents.length > 0 && (
-          <>
-            <div className="grid grid-cols-3 gap-3" data-testid="track-dashboard">
-              {summary.map(s => (
-                <div key={s.label} data-testid={`track-kpi-${s.id}`} className={`${s.bg} border border-gray-100 rounded-2xl p-4`}>
-                  <s.icon size={18} className={s.color} />
-                  <div className="text-2xl font-bold text-gray-900 mt-2">{s.value}</div>
-                  <div className="text-[11px] text-gray-500 mt-0.5">{s.label}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm" data-testid="track-by-day">
-              <h2 className="font-bold text-gray-900 text-sm mb-3">{t('track.by_day', lang)}</h2>
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={daily} margin={{ top: 4, right: 8, bottom: 0, left: -24 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#eef2f7" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9ca3af' }} tickFormatter={v => String(v).slice(5)} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#9ca3af' }} />
-                    <Tooltip labelFormatter={v => String(v)} />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="reports" name={t('track.day_reports', lang)} fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                    <Line dataKey="resolved" name={t('track.day_resolved', lang)} stroke="#16a34a" strokeWidth={2} dot={{ r: 2 }} />
-                  </ComposedChart>
-                </ResponsiveContainer>
+          <div className="grid grid-cols-2 gap-3" data-testid="track-dashboard">
+            {summary.map(s => (
+              <div key={s.label} data-testid={`track-kpi-${s.id}`} className={`${s.bg} border border-gray-100 rounded-2xl p-4`}>
+                <s.icon size={18} className={s.color} />
+                <div className="text-2xl font-bold text-gray-900 mt-2">{s.value}</div>
+                <div className="text-[11px] text-gray-500 mt-0.5">{s.label}</div>
               </div>
-
-              <h2 className="font-bold text-gray-900 text-sm mt-4 mb-2">{t('track.day_header', lang)}</h2>
-              <div className="max-h-52 overflow-y-auto rounded-xl border border-gray-100">
-                <table className="w-full text-xs">
-                  <thead className="bg-gray-50 text-gray-500 sticky top-0">
-                    <tr>
-                      <th className="text-left font-medium px-3 py-2">{t('track.day_date', lang)}</th>
-                      <th className="text-right font-medium px-3 py-2">{t('track.day_registered', lang)}</th>
-                      <th className="text-right font-medium px-3 py-2">{t('track.day_resolved', lang)}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...daily].reverse().map(d => (
-                      <tr key={d.date} className="border-t border-gray-100">
-                        <td className="px-3 py-1.5 font-mono text-gray-600">{d.date.slice(5)}</td>
-                        <td className="px-3 py-1.5 text-right font-semibold text-gray-900">{d.reports}</td>
-                        <td className="px-3 py-1.5 text-right font-semibold text-green-600">{d.resolved}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </>
+            ))}
+          </div>
         )}
 
         {/* Incidents List */}

@@ -162,7 +162,7 @@ export default function LandingPage() {
 
   return (
     <div className={`landing-ka min-h-screen ${bg} ${text} transition-colors duration-300`}>
-      {/* Scroll-driven backdrop: Badami to Bengaluru */}
+      {/* Quiet brand backdrop: wash, glows, grid, grain */}
       <LandingBackground darkMode={darkMode} />
 
       {/* Navbar */}

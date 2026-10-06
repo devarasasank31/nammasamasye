@@ -174,3 +174,20 @@ body {
   background: #ffce00;
   box-shadow: 0 0 0 4px rgba(228, 30, 32, 0.3);
 }
+
+/* Landing backdrop: slow drifting brand glows */
+@keyframes ns-drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(7vw, 5vh, 0) scale(1.1); }
+}
+
+@keyframes ns-drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-7vw, -5vh, 0) scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ns-bg-glow {
+    animation: none !important;
+  }
+}
