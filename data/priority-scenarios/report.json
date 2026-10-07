@@ -1,0 +1,828 @@
+{
+  "generated_at": "2026-10-06T13:08:58.109Z",
+  "generator": "scripts/priority/generate-priority-dataset.mjs",
+  "seed": 20261006,
+  "archetypes": 47,
+  "places": {
+    "train": 36,
+    "eval": 18,
+    "overlap": []
+  },
+  "fillers": 5,
+  "duplicates_skipped": 1050,
+  "targets": {
+    "train": {
+      "P1": 2000,
+      "P2": 2500,
+      "P3": 3500,
+      "P4": 1500,
+      "OOD": 500
+    },
+    "eval": {
+      "P1": 200,
+      "P2": 250,
+      "P3": 350,
+      "P4": 150,
+      "OOD": 50
+    }
+  },
+  "capacity": {
+    "train": {
+      "P1::accident_fracture": {
+        "archetype": "accident_fracture",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::accident_unconscious": {
+        "archetype": "accident_unconscious",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::accident_bleeding": {
+        "archetype": "accident_bleeding",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::live_wire_fallen": {
+        "archetype": "live_wire_fallen",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::electric_shock": {
+        "archetype": "electric_shock",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::fire_shop": {
+        "archetype": "fire_shop",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::cylinder_blast": {
+        "archetype": "cylinder_blast",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::building_collapse": {
+        "archetype": "building_collapse",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::people_trapped_lift": {
+        "archetype": "people_trapped_lift",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::open_manhole": {
+        "archetype": "open_manhole",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::drowning": {
+        "archetype": "drowning",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::gas_leak": {
+        "archetype": "gas_leak",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::stabbing": {
+        "archetype": "stabbing",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::severe_bleeding_road": {
+        "archetype": "severe_bleeding_road",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P1::road_cave_in": {
+        "archetype": "road_cave_in",
+        "expected": "P1",
+        "rows": 2000,
+        "target": 2000,
+        "short": false
+      },
+      "P2::severe_waterlogging": {
+        "archetype": "severe_waterlogging",
+        "expected": "P2",
+        "rows": 2500,
+        "target": 2500,
+        "short": false
+      },
+      "P2::sewage_overflow_blocked": {
+        "archetype": "sewage_overflow_blocked",
+        "expected": "P2",
+        "rows": 2160,
+        "target": 2500,
+        "short": true
+      },
+      "P2::dog_attack_bitten": {
+        "archetype": "dog_attack_bitten",
+        "expected": "P2",
+        "rows": 2160,
+        "target": 2500,
+        "short": true
+      },
+      "P2::pothole_fall_broken_arm": {
+        "archetype": "pothole_fall_broken_arm",
+        "expected": "P2",
+        "rows": 2160,
+        "target": 2500,
+        "short": true
+      },
+      "P2::assault_stick_bleeding": {
+        "archetype": "assault_stick_bleeding",
+        "expected": "P2",
+        "rows": 2160,
+        "target": 2500,
+        "short": true
+      },
+      "P2::street_fight_bleeding": {
+        "archetype": "street_fight_bleeding",
+        "expected": "P2",
+        "rows": 2160,
+        "target": 2500,
+        "short": true
+      },
+      "P3::streetlight_out": {
+        "archetype": "streetlight_out",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::garbage_not_collected": {
+        "archetype": "garbage_not_collected",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::pothole_routine": {
+        "archetype": "pothole_routine",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::waterlogging_mild": {
+        "archetype": "waterlogging_mild",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::sewage_mild": {
+        "archetype": "sewage_mild",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::power_outage": {
+        "archetype": "power_outage",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::water_supply_cut": {
+        "archetype": "water_supply_cut",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::noise_complaint": {
+        "archetype": "noise_complaint",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::bus_not_come": {
+        "archetype": "bus_not_come",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::govt_file_pending": {
+        "archetype": "govt_file_pending",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::bribe_demand": {
+        "archetype": "bribe_demand",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::stalking_daily": {
+        "archetype": "stalking_daily",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::cyber_otp_fraud": {
+        "archetype": "cyber_otp_fraud",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::minor_crash_no_injury": {
+        "archetype": "minor_crash_no_injury",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::stray_dog_bitten_minor": {
+        "archetype": "stray_dog_bitten_minor",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::housing_deposit": {
+        "archetype": "housing_deposit",
+        "expected": "P3",
+        "rows": 2160,
+        "target": 3500,
+        "short": true
+      },
+      "P3::negation_wire_supply_cut": {
+        "archetype": "negation_wire_supply_cut",
+        "expected": "P3",
+        "rows": 905,
+        "target": 3500,
+        "short": true
+      },
+      "P3::negation_no_accident_clear": {
+        "archetype": "negation_no_accident_clear",
+        "expected": "P3",
+        "rows": 205,
+        "target": 3500,
+        "short": true
+      },
+      "P4::suggestion": {
+        "archetype": "suggestion",
+        "expected": "P4",
+        "rows": 1500,
+        "target": 1500,
+        "short": false
+      },
+      "P4::thanks_fixed": {
+        "archetype": "thanks_fixed",
+        "expected": "P4",
+        "rows": 1500,
+        "target": 1500,
+        "short": false
+      },
+      "P4::request_info": {
+        "archetype": "request_info",
+        "expected": "P4",
+        "rows": 1440,
+        "target": 1500,
+        "short": true
+      },
+      "P4::well_done": {
+        "archetype": "well_done",
+        "expected": "P4",
+        "rows": 1500,
+        "target": 1500,
+        "short": false
+      },
+      "OOD::ood_lost_item": {
+        "archetype": "ood_lost_item",
+        "expected": "OOD",
+        "rows": 500,
+        "target": 500,
+        "short": false
+      },
+      "OOD::ood_office_timings": {
+        "archetype": "ood_office_timings",
+        "expected": "OOD",
+        "rows": 500,
+        "target": 500,
+        "short": false
+      },
+      "OOD::ood_park_programme": {
+        "archetype": "ood_park_programme",
+        "expected": "OOD",
+        "rows": 500,
+        "target": 500,
+        "short": false
+      },
+      "OOD::ood_birth_record": {
+        "archetype": "ood_birth_record",
+        "expected": "OOD",
+        "rows": 500,
+        "target": 500,
+        "short": false
+      }
+    },
+    "eval": {
+      "P1::accident_fracture": {
+        "archetype": "accident_fracture",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::accident_unconscious": {
+        "archetype": "accident_unconscious",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::accident_bleeding": {
+        "archetype": "accident_bleeding",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::live_wire_fallen": {
+        "archetype": "live_wire_fallen",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::electric_shock": {
+        "archetype": "electric_shock",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::fire_shop": {
+        "archetype": "fire_shop",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::cylinder_blast": {
+        "archetype": "cylinder_blast",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::building_collapse": {
+        "archetype": "building_collapse",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::people_trapped_lift": {
+        "archetype": "people_trapped_lift",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::open_manhole": {
+        "archetype": "open_manhole",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::drowning": {
+        "archetype": "drowning",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::gas_leak": {
+        "archetype": "gas_leak",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::stabbing": {
+        "archetype": "stabbing",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::severe_bleeding_road": {
+        "archetype": "severe_bleeding_road",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P1::road_cave_in": {
+        "archetype": "road_cave_in",
+        "expected": "P1",
+        "rows": 200,
+        "target": 200,
+        "short": false
+      },
+      "P2::severe_waterlogging": {
+        "archetype": "severe_waterlogging",
+        "expected": "P2",
+        "rows": 250,
+        "target": 250,
+        "short": false
+      },
+      "P2::sewage_overflow_blocked": {
+        "archetype": "sewage_overflow_blocked",
+        "expected": "P2",
+        "rows": 250,
+        "target": 250,
+        "short": false
+      },
+      "P2::dog_attack_bitten": {
+        "archetype": "dog_attack_bitten",
+        "expected": "P2",
+        "rows": 250,
+        "target": 250,
+        "short": false
+      },
+      "P2::pothole_fall_broken_arm": {
+        "archetype": "pothole_fall_broken_arm",
+        "expected": "P2",
+        "rows": 250,
+        "target": 250,
+        "short": false
+      },
+      "P2::assault_stick_bleeding": {
+        "archetype": "assault_stick_bleeding",
+        "expected": "P2",
+        "rows": 250,
+        "target": 250,
+        "short": false
+      },
+      "P2::street_fight_bleeding": {
+        "archetype": "street_fight_bleeding",
+        "expected": "P2",
+        "rows": 250,
+        "target": 250,
+        "short": false
+      },
+      "P3::streetlight_out": {
+        "archetype": "streetlight_out",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::garbage_not_collected": {
+        "archetype": "garbage_not_collected",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::pothole_routine": {
+        "archetype": "pothole_routine",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::waterlogging_mild": {
+        "archetype": "waterlogging_mild",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::sewage_mild": {
+        "archetype": "sewage_mild",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::power_outage": {
+        "archetype": "power_outage",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::water_supply_cut": {
+        "archetype": "water_supply_cut",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::noise_complaint": {
+        "archetype": "noise_complaint",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::bus_not_come": {
+        "archetype": "bus_not_come",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::govt_file_pending": {
+        "archetype": "govt_file_pending",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::bribe_demand": {
+        "archetype": "bribe_demand",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::stalking_daily": {
+        "archetype": "stalking_daily",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::cyber_otp_fraud": {
+        "archetype": "cyber_otp_fraud",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::minor_crash_no_injury": {
+        "archetype": "minor_crash_no_injury",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::stray_dog_bitten_minor": {
+        "archetype": "stray_dog_bitten_minor",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::housing_deposit": {
+        "archetype": "housing_deposit",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::negation_wire_supply_cut": {
+        "archetype": "negation_wire_supply_cut",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P3::negation_no_accident_clear": {
+        "archetype": "negation_no_accident_clear",
+        "expected": "P3",
+        "rows": 350,
+        "target": 350,
+        "short": false
+      },
+      "P4::suggestion": {
+        "archetype": "suggestion",
+        "expected": "P4",
+        "rows": 150,
+        "target": 150,
+        "short": false
+      },
+      "P4::thanks_fixed": {
+        "archetype": "thanks_fixed",
+        "expected": "P4",
+        "rows": 150,
+        "target": 150,
+        "short": false
+      },
+      "P4::request_info": {
+        "archetype": "request_info",
+        "expected": "P4",
+        "rows": 150,
+        "target": 150,
+        "short": false
+      },
+      "P4::well_done": {
+        "archetype": "well_done",
+        "expected": "P4",
+        "rows": 150,
+        "target": 150,
+        "short": false
+      },
+      "OOD::ood_lost_item": {
+        "archetype": "ood_lost_item",
+        "expected": "OOD",
+        "rows": 50,
+        "target": 50,
+        "short": false
+      },
+      "OOD::ood_office_timings": {
+        "archetype": "ood_office_timings",
+        "expected": "OOD",
+        "rows": 50,
+        "target": 50,
+        "short": false
+      },
+      "OOD::ood_park_programme": {
+        "archetype": "ood_park_programme",
+        "expected": "OOD",
+        "rows": 50,
+        "target": 50,
+        "short": false
+      },
+      "OOD::ood_birth_record": {
+        "archetype": "ood_birth_record",
+        "expected": "OOD",
+        "rows": 50,
+        "target": 50,
+        "short": false
+      }
+    }
+  },
+  "splits": {
+    "train": {
+      "total": 86910,
+      "byPriority": {
+        "P1": 30000,
+        "P2": 13300,
+        "P3": 35670,
+        "P4": 5940,
+        "OOD": 2000
+      },
+      "byLanguage": {
+        "hl": 15080,
+        "kn": 14507,
+        "te": 14549,
+        "en": 27757,
+        "hi": 15017
+      },
+      "byArchetype": {
+        "accident_fracture": 2000,
+        "accident_unconscious": 2000,
+        "accident_bleeding": 2000,
+        "live_wire_fallen": 2000,
+        "electric_shock": 2000,
+        "fire_shop": 2000,
+        "cylinder_blast": 2000,
+        "building_collapse": 2000,
+        "people_trapped_lift": 2000,
+        "open_manhole": 2000,
+        "drowning": 2000,
+        "gas_leak": 2000,
+        "stabbing": 2000,
+        "severe_bleeding_road": 2000,
+        "road_cave_in": 2000,
+        "severe_waterlogging": 2500,
+        "sewage_overflow_blocked": 2160,
+        "dog_attack_bitten": 2160,
+        "pothole_fall_broken_arm": 2160,
+        "assault_stick_bleeding": 2160,
+        "street_fight_bleeding": 2160,
+        "streetlight_out": 2160,
+        "garbage_not_collected": 2160,
+        "pothole_routine": 2160,
+        "waterlogging_mild": 2160,
+        "sewage_mild": 2160,
+        "power_outage": 2160,
+        "water_supply_cut": 2160,
+        "noise_complaint": 2160,
+        "bus_not_come": 2160,
+        "govt_file_pending": 2160,
+        "bribe_demand": 2160,
+        "stalking_daily": 2160,
+        "cyber_otp_fraud": 2160,
+        "minor_crash_no_injury": 2160,
+        "stray_dog_bitten_minor": 2160,
+        "housing_deposit": 2160,
+        "negation_wire_supply_cut": 905,
+        "negation_no_accident_clear": 205,
+        "suggestion": 1500,
+        "thanks_fixed": 1500,
+        "request_info": 1440,
+        "well_done": 1500,
+        "ood_lost_item": 500,
+        "ood_office_timings": 500,
+        "ood_park_programme": 500,
+        "ood_birth_record": 500
+      }
+    },
+    "eval": {
+      "total": 11600,
+      "byPriority": {
+        "P1": 3000,
+        "P2": 1500,
+        "P3": 6300,
+        "P4": 600,
+        "OOD": 200
+      },
+      "byLanguage": {
+        "hi": 2047,
+        "te": 1966,
+        "kn": 2007,
+        "en": 3595,
+        "hl": 1985
+      },
+      "byArchetype": {
+        "accident_fracture": 200,
+        "accident_unconscious": 200,
+        "accident_bleeding": 200,
+        "live_wire_fallen": 200,
+        "electric_shock": 200,
+        "fire_shop": 200,
+        "cylinder_blast": 200,
+        "building_collapse": 200,
+        "people_trapped_lift": 200,
+        "open_manhole": 200,
+        "drowning": 200,
+        "gas_leak": 200,
+        "stabbing": 200,
+        "severe_bleeding_road": 200,
+        "road_cave_in": 200,
+        "severe_waterlogging": 250,
+        "sewage_overflow_blocked": 250,
+        "dog_attack_bitten": 250,
+        "pothole_fall_broken_arm": 250,
+        "assault_stick_bleeding": 250,
+        "street_fight_bleeding": 250,
+        "streetlight_out": 350,
+        "garbage_not_collected": 350,
+        "pothole_routine": 350,
+        "waterlogging_mild": 350,
+        "sewage_mild": 350,
+        "power_outage": 350,
+        "water_supply_cut": 350,
+        "noise_complaint": 350,
+        "bus_not_come": 350,
+        "govt_file_pending": 350,
+        "bribe_demand": 350,
+        "stalking_daily": 350,
+        "cyber_otp_fraud": 350,
+        "minor_crash_no_injury": 350,
+        "stray_dog_bitten_minor": 350,
+        "housing_deposit": 350,
+        "negation_wire_supply_cut": 350,
+        "negation_no_accident_clear": 350,
+        "suggestion": 150,
+        "thanks_fixed": 150,
+        "request_info": 150,
+        "well_done": 150,
+        "ood_lost_item": 50,
+        "ood_office_timings": 50,
+        "ood_park_programme": 50,
+        "ood_birth_record": 50
+      }
+    }
+  },
+  "label_policy": "labels by construction from archetype.expected; never engine-derived (agreement is measured, not baked in)"
+}

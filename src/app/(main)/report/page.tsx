@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Language, IncidentCategory, AttachmentMeta } from '@/types';
+import { Language, IncidentCategory, AttachmentMeta, PriorityAnalysisEnvelope } from '@/types';
 import { getStoredLanguage, setStoredLanguage, getOrCreateSession, LANGUAGE_EVENT } from '@/services/session';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { BANGALORE_AREAS } from '@/data/bengaluru';
@@ -684,6 +684,34 @@ export default function ReportPage() {
       lang,
     });
 
+    // ONE orchestrated priority result: local deterministic engine +
+    // KB retrieval + AI validation. Any failure falls back silently to
+    // the local engine — a report must never be lost to a network hiccup.
+    let priorityAnalysis: PriorityAnalysisEnvelope | undefined;
+    const priorityText = originalText || answers.what_happened || Object.values(answers).join(' ');
+    try {
+      const res = await fetch('/api/priority', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: priorityText,
+          category: selectedScenario.parent,
+          subcategory: selectedScenario.id,
+          answers,
+          language: lang,
+        }),
+        signal: AbortSignal.timeout(25000),
+      });
+      if (res.ok) {
+        const p = (await res.json()) as { ok?: boolean; analysis?: PriorityAnalysisEnvelope['analysis']; source?: string };
+        if (p?.ok && p.analysis) {
+          priorityAnalysis = { analysis: p.analysis, source: p.source || 'local', created_at: new Date().toISOString() };
+        }
+      }
+    } catch {
+      // Local-only path — recomputeDerived re-derives the priority.
+    }
+
     const incident = await createIncident({
       session_id: sessionId,
       category_id: selectedScenario.parent,
@@ -707,6 +735,7 @@ export default function ReportPage() {
       zone: locationInfo?.zone,
       police_station: locationInfo?.policeStation,
       ward_distance_km: locationInfo?.wardDistanceKm,
+      priority_analysis: priorityAnalysis,
     });
     if (incident) {
       setIncidentId(incident.incident_id);

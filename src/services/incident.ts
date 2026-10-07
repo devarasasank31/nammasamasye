@@ -1,4 +1,4 @@
-﻿import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta, IncidentStats, PublicIncident } from '@/types';
+﻿import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta, IncidentStats, PublicIncident, PriorityAnalysisEnvelope } from '@/types';
 import { isDemoMode } from '@/lib/supabase';
 import { demoStore } from '@/lib/demo-store';
 import { trainedSeverity } from '@/lib/trained-severity';
@@ -29,6 +29,7 @@ export async function createIncident(data: {
   zone?: string;
   police_station?: string;
   ward_distance_km?: number;
+  priority_analysis?: PriorityAnalysisEnvelope;
 }): Promise<Incident | null> {
   if (isDemoMode) {
     return demoStore.createIncident(data);

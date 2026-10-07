@@ -1,6 +1,6 @@
 ﻿import {
   Language, Incident, IncidentStatus, Session, Evidence, StatusHistory, AdminNote,
-  AttachmentMeta, CategoryParent, PublicIncident,
+  AttachmentMeta, CategoryParent, PublicIncident, PriorityAnalysisEnvelope,
 } from '@/types';
 import { computePriority } from '@/lib/priority';
 import { trainedSeverity } from '@/lib/trained-severity';
@@ -100,6 +100,9 @@ function recomputeDerived(): void {
       answers: inc.answers,
       supportCount: support,
       clusterSize: cluster,
+      // Reuse the exact analysis (facts + retrieval + AI) captured at creation
+      // instead of re-extracting — community bump still applies on top.
+      analysis: inc.priority_analysis?.analysis,
     });
     inc.priority = res.level;
     inc.priority_base = res.baseLevel;
@@ -194,6 +197,8 @@ export const demoStore = {
     zone?: string;
     police_station?: string;
     ward_distance_km?: number;
+    /** ONE priority result from /api/priority — reused on every recompute. */
+    priority_analysis?: PriorityAnalysisEnvelope;
   }): Incident {
     const now = new Date().toISOString();
     const incId = genIncidentId();
@@ -231,6 +236,7 @@ export const demoStore = {
       zone: data.zone,
       police_station: data.police_station,
       ward_distance_km: data.ward_distance_km,
+      priority_analysis: data.priority_analysis,
       support_count: 0,
       flag_count: 0,
       created_at: now,

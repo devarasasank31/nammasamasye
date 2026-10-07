@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDemoMode } from '@/lib/supabase';
 import { demoStore } from '@/lib/demo-store';
-import { Language } from '@/types';
+import { Language, PriorityAnalysisEnvelope } from '@/types';
+import { runPriorityPipeline } from '@/lib/priority-engine/pipeline';
 
 interface IncidentBody {
   session_id?: string;
@@ -37,6 +38,24 @@ export async function POST(req: NextRequest) {
     }
 
     if (isDemoMode) {
+      // Same ONE priority result as /api/priority (local → retrieval → AI).
+      // Degraded to local-only if the pipeline cannot run.
+      let priority_analysis: PriorityAnalysisEnvelope | undefined;
+      const reportText = body.original_text || '';
+      if (reportText.trim().length >= 4) {
+        try {
+          const p = await runPriorityPipeline({
+            text: reportText,
+            category: body.category_id || 'OTHER',
+            subcategory: body.subcategory || 'other',
+            answers: body.answers,
+            language: body.language,
+          });
+          priority_analysis = { analysis: p.analysis, source: p.source, created_at: new Date().toISOString() };
+        } catch (err) {
+          console.warn('[incidents] priority pipeline unavailable:', err);
+        }
+      }
       const incident = demoStore.createIncident({
         session_id: body.session_id,
         category_id: body.category_id,
@@ -57,6 +76,7 @@ export async function POST(req: NextRequest) {
         ai_confidence: body.ai_confidence,
         ai_reason: body.ai_reason,
         ai_context: body.ai_context,
+        priority_analysis,
       });
       return NextResponse.json({ incident });
     }

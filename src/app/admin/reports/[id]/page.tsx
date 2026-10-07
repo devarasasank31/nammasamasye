@@ -260,6 +260,64 @@ export default function AdminIncidentDetailPage() {
               </div>
             </div>
 
+            {/* Priority analysis audit trail (engine + retrieval + AI) */}
+            {incident.priority_analysis && (() => {
+              const pa = incident.priority_analysis;
+              const a = pa.analysis;
+              const b = a.breakdown;
+              const dims = ([
+                ['life safety', b.lifeSafety, b.weights.lifeSafety],
+                ['injury', b.injury, b.weights.injury],
+                ['danger', b.immediateDanger, b.weights.immediateDanger],
+                ['exposure', b.publicExposure, b.weights.publicExposure],
+                ['people', b.population, b.weights.population],
+                ['access', b.emergencyAccess, b.weights.emergencyAccess],
+                ['infra', b.infraCriticality, b.weights.infraCriticality],
+                ['persistence', b.persistence, b.weights.persistence],
+              ] as [string, number, number][]).filter(([, v]) => v > 0);
+              return (
+                <div className="rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-bold text-sm text-gray-900">Priority analysis</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-white border border-indigo-200 text-indigo-700 font-semibold uppercase">{pa.source}</span>
+                  </div>
+                  {pa.source !== 'local' && (
+                    <p className="text-xs text-gray-700">
+                      Local engine: <b>{a.basePriority}</b> → final: <b>{a.priority}</b>
+                      {a.provider !== 'local' ? ` (validated by ${a.provider}${a.model ? ` ${a.model}` : ''})` : ''}
+                    </p>
+                  )}
+                  <div className="text-xs text-gray-700">
+                    Confidence — classification {a.confidences.classification}% · severity {a.confidences.severity}% · priority {a.confidences.priority}% · retrieval {a.confidences.retrieval}% · AI {a.confidences.ai ?? '—'}% · {a.latencyMs ?? '-'} ms
+                  </div>
+                  {a.safetyOverride && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {a.safetyRules.map(r => (
+                        <span key={r} className="text-[11px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 font-semibold">{r.replace(/_/g, ' ')}</span>
+                      ))}
+                    </div>
+                  )}
+                  {dims.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {dims.map(([label, v, w]) => (
+                        <span key={label} className="text-[11px] px-2 py-0.5 rounded-full bg-white border border-gray-300 text-gray-700">{label} {v}/{w}</span>
+                      ))}
+                    </div>
+                  )}
+                  {a.retrieval?.matched && a.retrieval.top[0] && (
+                    <p className="text-xs text-gray-700">
+                      KB match: <b>{a.retrieval.top[0].id}</b> → {a.retrieval.top[0].expectedPriority}
+                      {' '}(similarity {Math.round(a.retrieval.top[0].score * 100)}%, top-3 agreement {Math.round(a.retrieval.agreement * 100)}%)
+                    </p>
+                  )}
+                  {a.outOfDistribution && (
+                    <p className="text-xs text-amber-700 font-semibold">Unrecognised report — human review required.</p>
+                  )}
+                  <p className="text-[11px] text-gray-500">Captured {new Date(pa.created_at).toLocaleString()} · non-LLM facts and the safety override are final; the AI layer can only escalate, never downgrade.</p>
+                </div>
+              );
+            })()}
+
             {/* Spam / abuse moderation score */}
             <div className={`rounded-xl border p-4 ${
               incident.risk_level === 'critical' ? 'bg-red-50 border-red-200'

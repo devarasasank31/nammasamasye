@@ -1,0 +1,794 @@
+{
+  "generated_at": "2026-10-07T12:59:01.502Z",
+  "engine": "src/lib/priority-engine (local deterministic pipeline)",
+  "regression": {
+    "total": 26,
+    "passed": 26,
+    "failures": [],
+    "results": [
+      {
+        "id": "drunk-driver-leg-break",
+        "suite": "spec-57",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 80,
+          "safetyOverride": true,
+          "safetyRules": [
+            "accident_serious_injury"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "vehicle_collision",
+          "injuries": [
+            "suspected_fracture"
+          ],
+          "multiIncident": false,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "BBMP Road Infrastructure",
+            "Emergency Medical Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "streetlight-not-working",
+        "suite": "spec-57",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "streetlight_outage",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BESCOM Street Lighting"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "live-wire-fallen-road",
+        "suite": "spec-57",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 60,
+          "safetyOverride": true,
+          "safetyRules": [
+            "electrical_hazard"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "electrical_hazard",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BESCOM",
+            "BESCOM Electrical Safety"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "unconscious-after-accident",
+        "suite": "spec-57",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 84,
+          "safetyOverride": true,
+          "safetyRules": [
+            "accident_serious_injury",
+            "unconscious"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "vehicle_collision",
+          "injuries": [
+            "suspected_unconscious"
+          ],
+          "multiIncident": false,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "BBMP Road Infrastructure",
+            "Emergency Medical Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "building-collapsed-people-trapped",
+        "suite": "spec-57",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 61,
+          "safetyOverride": true,
+          "safetyRules": [
+            "person_trapped",
+            "structural_collapse"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "structural_collapse",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "BBMP Road Infrastructure",
+            "BBMP Building Permission",
+            "Karnataka Fire & Emergency Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "accident-yesterday-everyone-fine",
+        "suite": "spec-57",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "vehicle_collision",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "BBMP Road Infrastructure",
+            "Emergency Medical Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "negation-no-live-wire",
+        "suite": "spec-45",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "unknown",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BESCOM"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "negation-power-is-fine",
+        "suite": "spec-45",
+        "expected": "not-P1",
+        "actual": "P4",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 17,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "ROUTINE",
+          "incidentType": "unknown",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BESCOM"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "negation-not-fire",
+        "suite": "spec-45",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "unknown",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP Solid Waste Management"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "negation-no-injuries-in-crash",
+        "suite": "spec-45",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "unknown",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "BBMP Road Infrastructure"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "cause-sewer-burst-flooding",
+        "suite": "spec-45",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 51,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "sewage_contamination",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BWSSB Sewerage"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "cause-underground-water-main-break",
+        "suite": "spec-45",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 70,
+          "safetyOverride": true,
+          "safetyRules": [
+            "structural_collapse"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "structural_collapse",
+          "injuries": [],
+          "multiIncident": true,
+          "departments": [
+            "BWSSB Water Supply",
+            "BBMP Building Permission",
+            "Karnataka Fire & Emergency Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "multi-accident-and-garbage",
+        "suite": "spec-45",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 44,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "vehicle_collision",
+          "injuries": [],
+          "multiIncident": true,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "BBMP Road Infrastructure",
+            "Emergency Medical Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "allegation-intoxicated-official",
+        "suite": "spec-45",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "govt_service",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Lokayukta / Vigilance"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "hn-open-drain-near-house",
+        "suite": "hard-negative",
+        "expected": "not-P1",
+        "actual": "P4",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 17,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "ROUTINE",
+          "incidentType": "unknown",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BWSSB Sewerage"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "hn-broken-divisional-road",
+        "suite": "hard-negative",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "unknown",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP Road Infrastructure"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "hn-pothole-school-zone",
+        "suite": "hard-negative",
+        "expected": "not-P1",
+        "actual": "P2",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 60,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "RAPID",
+          "incidentType": "road_hazard",
+          "injuries": [
+            "suspected_general"
+          ],
+          "multiIncident": false,
+          "departments": [
+            "BBMP Road Infrastructure"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "hn-dog-bite-routine",
+        "suite": "hard-negative",
+        "expected": "not-P1",
+        "actual": "P4",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 17,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "ROUTINE",
+          "incidentType": "unknown",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP Animal Control"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "hn-noisy-hospital-road",
+        "suite": "hard-negative",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "noise",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "KSPCC / BBMP"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "hn-manhole-cover-in-place",
+        "suite": "hard-negative",
+        "expected": "not-P1",
+        "actual": "P4",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 17,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "ROUTINE",
+          "incidentType": "unknown",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BWSSB Sewerage"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "kn-streetlight-broken",
+        "suite": "hard-negative",
+        "expected": "not-P1",
+        "actual": "P4",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 17,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "ROUTINE",
+          "incidentType": "unknown",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BESCOM Street Lighting"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "hi-pothole-road",
+        "suite": "hard-negative",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 38,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "road_hazard",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP Road Infrastructure"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "te-live-wire-fell",
+        "suite": "spec-57",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 55,
+          "safetyOverride": true,
+          "safetyRules": [
+            "electrical_hazard"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "electrical_hazard",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BESCOM",
+            "BESCOM Electrical Safety"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "hi-unconscious-accident",
+        "suite": "spec-57",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 84,
+          "safetyOverride": true,
+          "safetyRules": [
+            "accident_serious_injury",
+            "unconscious",
+            "severe_bleeding"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "vehicle_collision",
+          "injuries": [
+            "suspected_unconscious",
+            "suspected_bleeding"
+          ],
+          "multiIncident": false,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "BBMP Road Infrastructure",
+            "Emergency Medical Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "kn-no-accident",
+        "suite": "hard-negative",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "road_hazard",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP Road Infrastructure"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "hinglish-fell-from-bike",
+        "suite": "spec-45",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 57,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "vehicle_collision",
+          "injuries": [
+            "suspected_bleeding"
+          ],
+          "multiIncident": false,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "BBMP Road Infrastructure",
+            "Emergency Medical Services"
+          ],
+          "requiresHumanReview": false
+        }
+      }
+    ]
+  },
+  "unseen": {
+    "file": "C:\\Users\\satya\\Documents\\Default Project\\nammasamasye\\data\\priority-scenarios\\eval-unseen.jsonl",
+    "total": 11600,
+    "band_total": 11400,
+    "byPriority": {
+      "P1": 3000,
+      "P2": 1500,
+      "P3": 6300,
+      "P4": 600
+    },
+    "accuracy": 0.8454,
+    "overall_accuracy": 0.848,
+    "macro_f1": 0.7976,
+    "p1_false_negative_rate": 0.0567,
+    "perPriority": {
+      "P1": {
+        "support": 3000,
+        "precision": 1,
+        "recall": 0.9433,
+        "f1": 0.9708,
+        "false_negatives": 170
+      },
+      "P2": {
+        "support": 1500,
+        "precision": 1,
+        "recall": 0.8547,
+        "f1": 0.9216,
+        "false_negatives": 218
+      },
+      "P3": {
+        "support": 6300,
+        "precision": 0.9576,
+        "recall": 0.7817,
+        "f1": 0.8608,
+        "false_negatives": 1375
+      },
+      "P4": {
+        "support": 600,
+        "precision": 0.2797,
+        "recall": 1,
+        "f1": 0.4372,
+        "false_negatives": 0
+      }
+    },
+    "confusion": {
+      "P1": {
+        "P1": 2830,
+        "P2": 0,
+        "P3": 0,
+        "P4": 170
+      },
+      "P2": {
+        "P1": 0,
+        "P2": 1282,
+        "P3": 218,
+        "P4": 0
+      },
+      "P3": {
+        "P1": 0,
+        "P2": 0,
+        "P3": 4925,
+        "P4": 1375
+      },
+      "P4": {
+        "P1": 0,
+        "P2": 0,
+        "P3": 0,
+        "P4": 600
+      }
+    },
+    "byLanguage": {
+      "hi": {
+        "total": 2013,
+        "correct": 1794,
+        "accuracy": 0.8912
+      },
+      "te": {
+        "total": 1931,
+        "correct": 1589,
+        "accuracy": 0.8229
+      },
+      "kn": {
+        "total": 1963,
+        "correct": 1687,
+        "accuracy": 0.8594
+      },
+      "en": {
+        "total": 3555,
+        "correct": 3055,
+        "accuracy": 0.8594
+      },
+      "hl": {
+        "total": 1938,
+        "correct": 1512,
+        "accuracy": 0.7802
+      }
+    },
+    "hardNegative": {
+      "total": 11400,
+      "correct": 9637,
+      "accuracy": 0.8454
+    },
+    "negation": {
+      "total": 700,
+      "correct": 700,
+      "accuracy": 1
+    },
+    "ood": {
+      "total": 200,
+      "correctlyEscalated": 200,
+      "recognisedAsOod": 200,
+      "escalated_rate": 1,
+      "recognised_rate": 1
+    },
+    "latency_ms": {
+      "p50": 6.01,
+      "p95": 13.83,
+      "p99": 15.79,
+      "max": 22.72
+    }
+  },
+  "agreement": {
+    "split": "train",
+    "file": "C:\\Users\\satya\\Documents\\Default Project\\nammasamasye\\data\\priority-scenarios\\train.jsonl",
+    "total": 86910,
+    "agree": 86910,
+    "agreement": 1,
+    "perExpected": {
+      "P1": {
+        "total": 30000,
+        "agree": 30000,
+        "agreement": 1
+      },
+      "P2": {
+        "total": 13300,
+        "agree": 13300,
+        "agreement": 1
+      },
+      "P3": {
+        "total": 35670,
+        "agree": 35670,
+        "agreement": 1
+      },
+      "P4": {
+        "total": 5940,
+        "agree": 5940,
+        "agreement": 1
+      },
+      "OOD": {
+        "total": 2000,
+        "agree": 2000,
+        "agreement": 1
+      }
+    },
+    "perLanguage": {
+      "hl": {
+        "total": 15080,
+        "agree": 15080,
+        "agreement": 1
+      },
+      "kn": {
+        "total": 14507,
+        "agree": 14507,
+        "agreement": 1
+      },
+      "te": {
+        "total": 14549,
+        "agree": 14549,
+        "agreement": 1
+      },
+      "en": {
+        "total": 27757,
+        "agree": 27757,
+        "agreement": 1
+      },
+      "hi": {
+        "total": 15017,
+        "agree": 15017,
+        "agreement": 1
+      }
+    },
+    "mismatchTally": {},
+    "mismatches": []
+  },
+  "ai_layer": {
+    "note": "Gemini/OpenRouter runs in /api/priority at runtime; this offline harness measures the deterministic engine. Provider failure modes are covered by scripts/priority/provider-failure cases in the API layer tests.",
+    "configured_provider": "(unset → local only)"
+  }
+}

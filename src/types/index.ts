@@ -29,6 +29,18 @@ export const SEVERITY_RANK: Record<SeverityLevel, number> = {
 
 export type EvidenceType = 'image' | 'video' | 'audio' | 'document' | 'link';
 
+/**
+ * Full audit trail of the ONE priority result: deterministic analysis,
+ * scenario retrieval, AI validation and which branch produced the band.
+ * Stored with the incident (demo mode) and shown on the admin detail page.
+ */
+export interface PriorityAnalysisEnvelope {
+  analysis: import('../lib/priority-engine/types').PriorityAnalysis;
+  /** local | safety-override | ai-escalation | ai-ood */
+  source: string;
+  created_at: string;
+}
+
 export type CategoryParent =
   | 'TRAFFIC'
   | 'CIVIC'
@@ -110,6 +122,8 @@ export interface Incident {
   priority_score?: number;
   priority_reason?: string;
   sla_days?: number;
+  /** Engine + retrieval + AI audit trail captured by /api/priority. */
+  priority_analysis?: PriorityAnalysisEnvelope;
   /** Citizen support (upvotes) and moderation signals from the public feed. */
   support_count?: number;
   flag_count?: number;
