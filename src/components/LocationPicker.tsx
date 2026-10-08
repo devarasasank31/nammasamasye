@@ -136,8 +136,10 @@ async function searchPlaces(q: string, lang: string, signal?: AbortSignal): Prom
 }
 
 async function reverseGeocode(lat: number, lng: number): Promise<string> {
+  // Each hop is capped: if a provider hangs the button must not stay
+  // disabled forever — worst case we fall through to plain coordinates.
   try {
-    const res = await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}`);
+    const res = await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}`, { signal: AbortSignal.timeout(6000) });
     if (res.ok) {
       const d = await res.json();
       const p = d.features?.[0]?.properties;
@@ -148,7 +150,7 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
     }
   } catch {}
   try {
-    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, { signal: AbortSignal.timeout(6000) });
     if (res.ok) {
       const d = await res.json();
       if (d.display_name) return d.display_name;
@@ -176,6 +178,9 @@ export default function LocationPicker({ onPick, onCancel, lang = 'en', initial 
   const [mapError, setMapError] = useState('');
 
   const acRef = useRef<AbortController | null>(null);
+  // Monotonic token so a slow reverse response for an OLD pin can never
+  // overwrite the address of a newer pin.
+  const resolveTokenRef = useRef(0);
 
   const placePin = useCallback(function placePinImpl(lat: number, lng: number, resolve: boolean) {
     const map = mapRef.current;
@@ -199,7 +204,9 @@ export default function LocationPicker({ onPick, onCancel, lang = 'en', initial 
 
     if (resolve) {
       setResolving(true);
+      const token = ++resolveTokenRef.current;
       reverseGeocode(lat, lng).then(addr => {
+        if (resolveTokenRef.current !== token) return; // a newer pin superseded
         setPicked({ lat, lng, address: addr });
         setResolving(false);
       });
