@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimit, clientIp } from '@/lib/security';
+import { rateLimit, clientIp, dailyAllow, LIMITS } from '@/lib/security';
 import { containsPII, redactPII } from '@/lib/ai-context';
 import { matchContextRows } from '@/data/context-corpus';
 
@@ -143,7 +143,9 @@ async function callGemini(system: string, user: string): Promise<string | null> 
  * falls back to null so the feed can use its offline template.
  */
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`ai_ctx:${clientIp(request.headers)}`, 30, 60_000)) {
+  const ip = clientIp(request.headers);
+  if (!rateLimit(`ai_ctx:${ip}`, 30, 60_000) ||
+      !dailyAllow(`ai_ctx_day:${ip}`, LIMITS.contextPerDay)) {
     return NextResponse.json({ context: null, error: 'rate limited' }, { status: 429 });
   }
 

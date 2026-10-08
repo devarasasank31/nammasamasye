@@ -8,6 +8,7 @@
 // ============================================================
 
 import { runPriorityPipeline } from '@/lib/priority-engine/pipeline';
+import { rateLimit, clientIp, dailyAllow, LIMITS } from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,6 +23,12 @@ interface PriorityRequestBody {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const ip = clientIp(request.headers);
+  if (!rateLimit(`pri:${ip}`, LIMITS.classifyPerMinute, 60_000) ||
+      !dailyAllow(`pri_day:${ip}`, LIMITS.classifyPerDay)) {
+    return Response.json({ ok: false, error: 'rate limited' }, { status: 429 });
+  }
+
   let body: PriorityRequestBody;
   try {
     body = (await request.json()) as PriorityRequestBody;

@@ -79,3 +79,51 @@ export function clientIp(headers: Headers): string {
   if (forwarded) return forwarded.split(',')[0].trim();
   return headers.get('x-real-ip') || 'unknown';
 }
+
+// --- Per-user daily budgets -------------------------------------------------
+// Shared AI keys have a finite daily token quota. Every citizen gets a small
+// personal allowance so one heavy user cannot drain the pool for everyone.
+// Counters reset at UTC midnight and live in memory (fine for a single
+// server; each instance protects itself).
+
+export const LIMITS = {
+  /** Chatbot requests per IP. */
+  chatPerMinute: 15,
+  chatPerDay: 120,
+  /** External AI calls per IP per day (soft — chatbot keeps working locally). */
+  aiCallsPerDay: 30,
+  /** Translation per IP. */
+  translatePerMinute: 15,
+  translatePerDay: 60,
+  /** Post-report context summary per IP. */
+  contextPerDay: 50,
+  /** Incident submission per IP (spam guard). */
+  incidentPerHour: 10,
+  incidentPerDay: 30,
+  /** Local classify / priority endpoints per IP. */
+  classifyPerMinute: 20,
+  classifyPerDay: 200,
+};
+
+const dailyCounters = new Map<string, { day: string; count: number }>();
+const MAX_DAILY_KEYS = 50_000;
+
+/** Returns true (and consumes one unit) if the key is still under `limit`
+ *  for the current UTC day. */
+export function dailyAllow(key: string, limit: number): boolean {
+  const day = new Date().toISOString().slice(0, 10);
+  const entry = dailyCounters.get(key);
+
+  if (!entry || entry.day !== day) {
+    if (dailyCounters.size >= MAX_DAILY_KEYS) {
+      for (const [k, v] of dailyCounters) {
+        if (v.day !== day) dailyCounters.delete(k);
+      }
+    }
+    dailyCounters.set(key, { day, count: 1 });
+    return true;
+  }
+  if (entry.count >= limit) return false;
+  entry.count += 1;
+  return true;
+}

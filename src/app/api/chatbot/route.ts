@@ -7,6 +7,7 @@ import { civicClassify, clarificationQuestion } from '@/lib/civic-classifier';
 import { LocalClassifyResult } from '@/lib/civic-types';
 import { languageName } from '@/lib/ai/language';
 import { Language } from '@/types';
+import { rateLimit, clientIp, dailyAllow, LIMITS } from '@/lib/security';
 
 // Server-side only — AI_API_KEY may hold several comma-separated keys; the
 // ring rotates to the next key when one is rejected, out of daily quota or
@@ -139,6 +140,22 @@ function looksLikeGeneralQuestion(text: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  // Per-citizen limits: the AI keys behind this endpoint are shared by every
+  // user, so each IP gets a small personal allowance (see LIMITS in security).
+  const ip = clientIp(request.headers);
+  if (!rateLimit(`chat:${ip}`, LIMITS.chatPerMinute, 60_000)) {
+    return NextResponse.json(
+      { reply: 'You are sending messages too quickly — please wait a minute and try again.', error: 'rate_limited' },
+      { status: 429 }
+    );
+  }
+  if (!dailyAllow(`chat:${ip}`, LIMITS.chatPerDay)) {
+    return NextResponse.json(
+      { reply: "You've reached today's chat limit. It resets at midnight UTC — you can still file reports from the Report page.", error: 'daily_limit' },
+      { status: 429 }
+    );
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -286,7 +303,11 @@ export async function POST(request: NextRequest) {
 
     // ---- External AI fallback (validated, cached, candidate-scoped) ---------
     let aiResult: AIResult | null = null;
-    if (hasAIKeys && (!local.category || local.confidence < trustGate || local.margin < MARGIN_TRUST)) {
+    // Soft AI budget per IP: when a citizen's daily AI allowance is spent the
+    // bot still answers from the local classifier/cache — it just skips the
+    // external call so one user cannot drain the shared keys.
+    if (hasAIKeys && dailyAllow(`ai:${ip}`, LIMITS.aiCallsPerDay) &&
+        (!local.category || local.confidence < trustGate || local.margin < MARGIN_TRUST)) {
       const cacheKey = `${replyLang}|${normalizeCacheKey(transcript)}`;
       const cached = aiCacheGet(cacheKey);
       if (cached) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { detectReplyLanguage, languageName, isLanguage } from '@/lib/ai/language';
 import { Language } from '@/types';
+import { rateLimit, clientIp, dailyAllow, LIMITS } from '@/lib/security';
 
 // Translation runs on the same provider the chatbot uses, so any language can
 // be turned into any other without a paid translation service. AI_API_KEY may
@@ -43,6 +44,12 @@ If the text is already in ${name}, copy it into "translated" unchanged.`;
 }
 
 export async function POST(request: NextRequest) {
+  const ip = clientIp(request.headers);
+  if (!rateLimit(`tr:${ip}`, LIMITS.translatePerMinute, 60_000) ||
+      !dailyAllow(`tr:${ip}`, LIMITS.translatePerDay)) {
+    return NextResponse.json({ error: 'rate limited' }, { status: 429 });
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
