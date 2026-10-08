@@ -42,3 +42,6 @@ next-env.d.ts
 
 # eval build output
 .eval-build/
+
+# runtime server data (app reviews, etc.)
+.data/

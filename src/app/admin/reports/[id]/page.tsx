@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Incident, IncidentStatus, StatusHistory, Evidence, AdminNote } from '@/types';
 import { getIncidentInternal, getIncidentEvidence, getStatusHistory, getAdminNotes, addAdminNote, updateIncidentStatus } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
-import { ArrowLeft, CheckCircle, ExternalLink, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
+import { ArrowLeft, CheckCircle, ExternalLink, Users, BarChart3, FileText, Shield, LogOut, MessageSquare } from 'lucide-react';
 import { getStatusBadgeClass, getStatusColor } from '@/lib/status-colors';
 import { formatIncidentWhen } from '@/lib/incident-when';
 import AttachmentGallery from '@/components/AttachmentGallery';
@@ -126,6 +126,7 @@ export default function AdminIncidentDetailPage() {
             {[
               { icon: BarChart3, label: 'Dashboard', href: '/admin/dashboard' },
               { icon: FileText, label: 'All Reports', href: '/admin/reports' },
+              { icon: MessageSquare, label: 'App Reviews', href: '/admin/feedback' },
               { icon: Users, label: 'Users / Sessions', href: '/admin/users' },
               { icon: Shield, label: 'Resources', href: '/admin/resources' },
               { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },

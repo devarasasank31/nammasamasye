@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getDashboardStats } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
 import { IncidentStats } from '@/types';
-import { Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
+import { Users, BarChart3, FileText, Shield, LogOut, MessageSquare } from 'lucide-react';
 
 export default function AdminAnalyticsPage() {
   const router = useRouter();
@@ -45,6 +45,7 @@ export default function AdminAnalyticsPage() {
             {[
               { icon: BarChart3, label: 'Dashboard', href: '/admin/dashboard' },
               { icon: FileText, label: 'All Reports', href: '/admin/reports' },
+              { icon: MessageSquare, label: 'App Reviews', href: '/admin/feedback' },
               { icon: Users, label: 'Users / Sessions', href: '/admin/users' },
               { icon: Shield, label: 'Resources', href: '/admin/resources' },
               { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },

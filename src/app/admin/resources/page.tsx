@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { isDemoMode } from '@/lib/supabase';
-import { Trash2, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
+import { Trash2, Users, BarChart3, FileText, Shield, LogOut, MessageSquare } from 'lucide-react';
 
 interface Resource {
   id: string;
@@ -79,6 +79,7 @@ export default function AdminResourcesPage() {
             {[
               { icon: BarChart3, label: 'Dashboard', href: '/admin/dashboard' },
               { icon: FileText, label: 'All Reports', href: '/admin/reports' },
+              { icon: MessageSquare, label: 'App Reviews', href: '/admin/feedback' },
               { icon: Users, label: 'Users / Sessions', href: '/admin/users' },
               { icon: Shield, label: 'Resources', href: '/admin/resources' },
               { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },

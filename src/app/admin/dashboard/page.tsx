@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   BarChart3, FileText, AlertCircle, Clock, CheckCircle, XCircle, TrendingUp, Eye,
   Shield, Users, LogOut, Flag, UsersRound, MapPinned, Layers,
-  ShieldAlert, FileJson, FileSpreadsheet, AlertTriangle,
-} from 'lucide-react';
+  ShieldAlert, FileJson, FileSpreadsheet, AlertTriangle, MessageSquare } from 'lucide-react';
 import { getAllIncidents, exportAllData } from '@/services/incident';
 import { exportRowsToCsv, exportRowsToJson, downloadTextFile, getCivicPulse } from '@/lib/analytics';
 import { seedDemoData } from '@/lib/demo-store';
@@ -330,6 +329,7 @@ export default function AdminDashboard() {
   const navItems = [
     { icon: BarChart3, label: 'Dashboard', href: '/admin/dashboard' },
     { icon: FileText, label: 'All Reports', href: '/admin/reports' },
+    { icon: MessageSquare, label: 'App Reviews', href: '/admin/feedback' },
     { icon: Users, label: 'Users / Sessions', href: '/admin/users' },
     { icon: Shield, label: 'Resources', href: '/admin/resources' },
     { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },

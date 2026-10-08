@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
-import { demoStore, FeedbackRecord } from '@/lib/demo-store';
-import { rateLimit, clientIp, dailyAllow, isExemptIp, LIMITS } from '@/lib/security';
+import { FeedbackRecord } from '@/lib/demo-store';
+import { feedbackStore } from '@/lib/feedback-store';
+import {
+  rateLimit,
+  clientIp,
+  dailyAllow,
+  isExemptIp,
+  LIMITS,
+  ADMIN_SESSION_COOKIE,
+  isValidAdminSessionToken,
+} from '@/lib/security';
 import { appendFeedbackRow } from '@/lib/google-sheets';
 
 // App/website feedback — NOT civic incidents (those go through /api/incidents).
-// Flow: validate → mint Feedback ID → save (demo-store) → sync row to the
-// user's Google Sheet "App Issues" tab (dedupe by Feedback ID, retry+queue).
+// Flow: validate → mint Feedback ID → save to the durable .data store (admin
+// page reads it) → sync row to the user's Google Sheet "App Issues" tab
+// (dedupe by Feedback ID, retry+queue) when credentials are configured.
 
 const ISSUE_TYPES = ['page', 'login', 'search', 'language', 'performance', 'broken', 'other'] as const;
 const SEVERITIES = ['low', 'medium', 'high', 'critical'] as const;
@@ -88,7 +98,7 @@ export async function POST(req: NextRequest) {
     let feedbackId = '';
     for (let i = 0; i < 5; i++) {
       feedbackId = `FB-${ymd}-${randomBytes(2).toString('hex').toUpperCase()}`;
-      if (!demoStore.getFeedbacks().some(f => f.feedback_id === feedbackId)) break;
+      if (!feedbackStore.has(feedbackId)) break;
     }
 
     const record: FeedbackRecord = {
@@ -104,7 +114,7 @@ export async function POST(req: NextRequest) {
       status: 'New',
       created_at: new Date().toISOString(),
     };
-    demoStore.addFeedback(record);
+    feedbackStore.add(record);
 
     const sheet = await appendFeedbackRow([
       record.feedback_id,
@@ -130,4 +140,16 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Admin listing — every review from every browser (durable .data store).
+ * The proxy does not guard /api/*, so the admin cookie is checked here.
+ */
+export async function GET(req: NextRequest) {
+  const token = req.cookies.get(ADMIN_SESSION_COOKIE)?.value;
+  if (!isValidAdminSessionToken(token)) {
+    return NextResponse.json({ error: 'Admin login required.' }, { status: 401 });
+  }
+  return NextResponse.json({ feedbacks: feedbackStore.getAll() });
 }

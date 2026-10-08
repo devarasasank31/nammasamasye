@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAllIncidents } from '@/services/incident';
 import { seedDemoData } from '@/lib/demo-store';
-import { Users, FileText, Globe, LogOut, BarChart3, Shield } from 'lucide-react';
+import { Users, FileText, Globe, LogOut, BarChart3, Shield, MessageSquare } from 'lucide-react';
 import { getStatusBadgeClass } from '@/lib/status-colors';
 import { IncidentStatus } from '@/types';
 
@@ -82,6 +82,7 @@ export default function AdminUsersPage() {
             {[
               { icon: BarChart3, label: 'Dashboard', href: '/admin/dashboard' },
               { icon: FileText, label: 'All Reports', href: '/admin/reports' },
+              { icon: MessageSquare, label: 'App Reviews', href: '/admin/feedback' },
               { icon: Users, label: 'Users / Sessions', href: '/admin/users' },
               { icon: Shield, label: 'Resources', href: '/admin/resources' },
               { icon: BarChart3, label: 'Analytics', href: '/admin/analytics' },
