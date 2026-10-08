@@ -41,6 +41,7 @@ The app runs a TRAINED local classifier FIRST over 5,000+ civic scenarios (Engli
 
 JOB 1 — CONVERSATION (the default)
 If the message is not a civic problem (greeting, thanks, small talk, general question, joke), reply as chat in at most 60 words (up to 100 for a real knowledge question). Answer helpfully and correctly. Never invent facts, statistics, live data, prices, phone numbers, laws or official names — if you are not sure, say so honestly in one line. For abuse or insults: one calm, polite line inviting them to describe an actual civic problem; never repeat their words, never lecture.
+The LATEST message decides: if it is a general question or small talk that does not describe a NEW civic problem, reply as chat — older complaints in the conversation must never turn a question into a classification.
 
 JOB 2 — CLASSIFICATION
 Classify ONLY when the conversation describes an actual civic problem. Use the full history — if they add detail later, combine it before deciding. Understand MEANING: informal language, slang, spelling mistakes, mixed languages and transliteration are normal.
@@ -121,6 +122,17 @@ LANGUAGE
 interface Turn {
   role: 'user' | 'bot';
   text: string;
+}
+
+// A follow-up that is plainly a general question — no civic content of its
+// own — must be ANSWERED, never re-classified from the older complaint
+// sitting in the history ("who is the president of india" coming back as a
+// 99% harassment card was exactly that bug).
+function looksLikeGeneralQuestion(text: string): boolean {
+  const s = text.trim();
+  if (!s || hasAnyCivicSignal(s)) return false;
+  return s.includes('?') ||
+    /^(who|what|when|where|why|how|which|whose|whom|is|are|was|were|do|does|did|can|could|would|should|will|tell|explain|define|name|give|say|please)\b/i.test(s);
 }
 
 export async function POST(request: NextRequest) {
@@ -238,8 +250,11 @@ export async function POST(request: NextRequest) {
     ].join('\n');
 
     // ---- Local hybrid classifier (retrieval + negations + safety) -----------
+    // A general question is classified from ITS OWN words only — the older
+    // complaint in the history must never be re-classified as the answer.
+    const generalQuestion = looksLikeGeneralQuestion(userInput);
     let local = civicClassify(userInput);
-    if ((!local.category || local.confidence < LOCAL_ACCEPT) && history.length) {
+    if (!generalQuestion && (!local.category || local.confidence < LOCAL_ACCEPT) && history.length) {
       const deeper = civicClassify(transcript);
       if (deeper.confidence > local.confidence) local = deeper;
     }
@@ -256,7 +271,7 @@ export async function POST(request: NextRequest) {
     const acceptGate = negatedNoHazard ? 70 : LOCAL_ACCEPT;
 
     // ---- Strong local result: answer instantly, no API round-trip -----------
-    if (local.category && local.confidence >= trustGate && !local.needs_clarification) {
+    if (!generalQuestion && local.category && local.confidence >= trustGate && !local.needs_clarification) {
       logClassify(userInput, local, false, 'local_scenario', Date.now() - started);
       return NextResponse.json(classifyPayload(local, 'local_scenario', replyLang, replyLangName));
     }
@@ -271,7 +286,11 @@ export async function POST(request: NextRequest) {
       } else {
         apiCalled = true;
         try {
-          aiResult = await callAI(transcript, replyLang, local);
+          // For a plain question, tell the model explicitly: chat only.
+          const aiInput = generalQuestion
+            ? transcript + '\n\n[LATEST MESSAGE: a general question, not a civic complaint. Reply ONLY with {"type":"chat","reply":"..."}. Do not classify.]'
+            : transcript;
+          aiResult = await callAI(aiInput, replyLang, local);
           if (aiResult) aiCacheSet(cacheKey, aiResult);
         } catch (err) {
           console.log('AI API error:', err);
@@ -280,7 +299,7 @@ export async function POST(request: NextRequest) {
 
       if (aiResult && aiResult.type === 'chat') {
         // A strong-enough local civic match beats an AI "this is just chat".
-        if (local.category && local.confidence >= acceptGate && !local.needs_clarification) {
+        if (!generalQuestion && local.category && local.confidence >= acceptGate && !local.needs_clarification) {
           logClassify(userInput, local, apiCalled, 'local_scenario', Date.now() - started);
           return NextResponse.json(classifyPayload(local, 'local_scenario', replyLang, replyLangName));
         }
@@ -299,7 +318,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (aiResult && aiResult.type === 'classify') {
-        const valid = validateAI(aiResult, local, transcript) &&
+        const valid = !generalQuestion && validateAI(aiResult, local, transcript) &&
           (!negatedNoHazard || aiResult.confidence >= 70);
         if (valid && aiResult.confidence >= 50 && aiResult.confidence > local.confidence + 4) {
           const payload = {
@@ -340,12 +359,12 @@ export async function POST(request: NextRequest) {
     }
 
     // ---- Local acceptance / clarification / fallback ------------------------
-    if (local.category && local.confidence >= acceptGate && !local.needs_clarification) {
+    if (!generalQuestion && local.category && local.confidence >= acceptGate && !local.needs_clarification) {
       logClassify(userInput, local, apiCalled, 'local_scenario', Date.now() - started);
       return NextResponse.json(classifyPayload(local, 'local_scenario', replyLang, replyLangName));
     }
 
-    if (local.category && local.needs_clarification && local.confidence >= 45 && local.clarification_family) {
+    if (!generalQuestion && local.category && local.needs_clarification && local.confidence >= 45 && local.clarification_family) {
       const q = clarificationQuestion(local.clarification_family, replyLang);
       logClassify(userInput, local, apiCalled, 'local_clarify', Date.now() - started);
       return NextResponse.json({
@@ -361,7 +380,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Moderate single-candidate evidence without ambiguity → accept it.
-    if (local.category && local.confidence >= acceptGate) {
+    if (!generalQuestion && local.category && local.confidence >= acceptGate) {
       logClassify(userInput, local, apiCalled, 'local_scenario', Date.now() - started);
       return NextResponse.json(classifyPayload(local, 'local_scenario', replyLang, replyLangName));
     }
@@ -371,7 +390,7 @@ export async function POST(request: NextRequest) {
     // missing key, timeout): be honest about it rather than echoing the
     // message back as if it were a broken complaint. Messages that do
     // contain civic words keep the normal "tell me what happened" nudge.
-    if (!local.category && !hasAnyCivicSignal(userInput)) {
+    if (generalQuestion || (!local.category && !hasAnyCivicSignal(userInput))) {
       return NextResponse.json({
         type: 'chat',
         reply: aiUnavailableReply(replyLang),

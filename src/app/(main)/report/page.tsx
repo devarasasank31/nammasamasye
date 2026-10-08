@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Language, IncidentCategory, AttachmentMeta, PriorityAnalysisEnvelope } from '@/types';
+import { Language, IncidentCategory, AttachmentMeta, PriorityAnalysisEnvelope, PriorityLevel } from '@/types';
 import { getStoredLanguage, setStoredLanguage, getOrCreateSession, LANGUAGE_EVENT } from '@/services/session';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { BANGALORE_AREAS } from '@/data/bengaluru';
@@ -12,7 +12,7 @@ import { detectLocationInfo, LocationInfo } from '@/data/wards';
 import { computePriority, severityFor } from '@/lib/priority';
 import { classifyIncidentSmart, isEmergencyMessage } from '@/ai/classify';
 import { matchTrainedScenario } from '@/lib/trained-scenarios';
-import { shouldGuard, guardReply } from '@/lib/chat-guard';
+import { shouldGuard, guardReply, hasAnyCivicSignal } from '@/lib/chat-guard';
 import { exactContext } from '@/lib/exact-context';
 import { speechLocale, isLanguage } from '@/lib/ai/language';
 import { t } from '@/lib/translations';
@@ -36,6 +36,13 @@ interface ChatMessage {
   text: string;
   timestamp: Date;
 }
+
+// Calendar day for the WHEN step (local time, no UTC shift).
+const dayISO = (offsetDays = 0): string => {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 const categoryButtons = [
   { id: 'traffic_accident', icon: '🚗', label: 'Traffic / Accident', labelKn: 'ಸಂಚಾರ / ಅಪಘಾತ', labelHi: 'ट्रैफिक / दुर्घटना', labelTe: 'ట్రాఫిక్ / ప్రమాదం' },
@@ -198,6 +205,16 @@ export default function ReportPage() {
   const [aiContext, setAiContext] = useState<string | null>(null);
   const aiContextTriedRef = useRef(false);
   const aiContextPromiseRef = useRef<Promise<string | null> | null>(null);
+  // Review-step priority — the SAME /api/priority pipeline the submission
+  // runs, so the citizen sees the real level and its real reason. Tagged with
+  // the inputs it was computed for; a stale result never renders.
+  const [priorityPreview, setPriorityPreview] = useState<{
+    level: PriorityLevel;
+    slaDays: number;
+    reason: string;
+    scenarioId: string;
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     if (chatRef.current) {
@@ -236,6 +253,63 @@ export default function ReportPage() {
     })();
     aiContextPromiseRef.current = generate;
   }, [step, selectedScenario, lang, locationInfo, location, originalText, answers]);
+
+  // Priority preview — runs the real engine (/api/priority: retrieval + AI
+  // validation) with EXACTLY the inputs submission will use, so preview and
+  // final priority can never disagree. No description → nothing to judge →
+  // no priority shown (never invent one for an empty report).
+  useEffect(() => {
+    if (step !== 'review' || !selectedScenario) return;
+    const text = originalText || answers.what_happened || Object.values(answers).join(' ');
+    // No description → the render hides the box entirely (never invent a
+    // priority for an empty report), so there is nothing to fetch here.
+    if (text.trim().length < 4) return;
+    const scenario = selectedScenario;
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/priority', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text,
+            category: scenario.parent,
+            subcategory: scenario.id,
+            answers,
+            language: lang,
+          }),
+          signal: AbortSignal.timeout(25000),
+        });
+        if (res.ok) {
+          const p = (await res.json()) as { ok?: boolean; analysis?: PriorityAnalysisEnvelope['analysis'] };
+          if (alive && p?.ok && p.analysis) {
+            const pv = computePriority({
+              category: scenario.parent,
+              subcategory: scenario.id,
+              text,
+              answers,
+              analysis: p.analysis,
+            });
+            setPriorityPreview({ level: pv.level, slaDays: pv.slaDays, reason: pv.reason, scenarioId: scenario.id, text });
+            return;
+          }
+        }
+      } catch {
+        // Offline / timeout — local engine fallback below.
+      }
+      if (!alive) return;
+      const pv = computePriority({
+        category: scenario.parent,
+        subcategory: scenario.id,
+        text,
+        answers,
+      });
+      setPriorityPreview({ level: pv.level, slaDays: pv.slaDays, reason: pv.reason, scenarioId: scenario.id, text });
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [step, selectedScenario, originalText, answers, lang]);
 
   const addBotMessage = useCallback((text: string) => {
     setMessages(prev => [...prev, {
@@ -358,6 +432,8 @@ export default function ReportPage() {
     if (detected) {
       setWhenMode(detected);
       setWhenPrefilled(true);
+      if (detected === 'today') setWhenDate(dayISO(0));
+      else if (detected === 'yesterday') setWhenDate(dayISO(-1));
     }
   };
 
@@ -525,18 +601,23 @@ export default function ReportPage() {
       return;
     }
 
-    // Keep it in the database so the next person sees it as a suggestion.
+    // Keep it in the database so the next person sees it as a suggestion —
+    // but only real problems: a greeting or a knowledge question must never
+    // appear as someone else's "suggestion".
     let reportCount = 1;
-    try {
-      const res = await fetch('/api/custom-problems', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: heard, language: lang }),
-      });
-      const saved = (await res.json()) as { count?: number };
-      if (typeof saved.count === 'number' && saved.count > 0) reportCount = saved.count;
-    } catch {}
-    const freshSuggestions = await loadCustomSuggestions();
+    let freshSuggestions = customSuggestions;
+    if (isCustomIssue || hasAnyCivicSignal(heard)) {
+      try {
+        const res = await fetch('/api/custom-problems', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: heard, language: lang }),
+        });
+        const saved = (await res.json()) as { count?: number };
+        if (typeof saved.count === 'number' && saved.count > 0) reportCount = saved.count;
+      } catch {}
+      freshSuggestions = await loadCustomSuggestions();
+    }
 
     let text = heard;
     if (voiceTextRef.current) {
@@ -570,6 +651,57 @@ export default function ReportPage() {
         addBotMessage(reply);
         startScenario(custom, undefined, heard);
         return;
+      }
+    }
+
+    // A message with no civic content is conversation, not a complaint —
+    // answer it honestly instead of forcing a category picker ("president
+    // of india" must come back with the answer, not with a scenario list).
+    if (!hasAnyCivicSignal(text)) {
+      try {
+        const history = messages.slice(-8).map(m => ({ role: m.role, text: m.text }));
+        const res = await fetch('/api/chatbot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userInput: text, lang: replyLang, history }),
+          signal: AbortSignal.timeout(15000),
+        });
+        if (res.ok) {
+          const chat = (await res.json()) as {
+            type?: string;
+            reply?: string;
+            scenario_id?: string;
+            confidence?: number;
+            reason?: string;
+          };
+          const scenario = chat.type === 'classify' && chat.scenario_id
+            ? getScenarioById(chat.scenario_id)
+            : null;
+          if (scenario) {
+            // The assistant recognised an actual complaint inside the words.
+            const confidence = Math.max(1, Math.min(99, Math.round(chat.confidence || 60)));
+            setScenarioMatches([{
+              scenarioId: scenario.id,
+              scenarioName: getScenarioName(scenario, replyLang),
+              confidence,
+              reason: chat.reason || '',
+            }]);
+            let response = `${t('bot.scenario_match', replyLang)}:\n\n`;
+            response += `1. ${getScenarioName(scenario, replyLang)} — ${confidence}%\n   ${chat.reason || ''}\n\n`;
+            response += `\n${t('bot.disclaimer', replyLang)}\n\n${t('bot.select_scenario', replyLang)}`;
+            addBotMessage(response);
+            setStep('scenario_match');
+            return;
+          }
+          if (typeof chat.reply === 'string' && chat.reply.trim()) {
+            // A question was answered — it must not become the report text.
+            setOriginalText('');
+            addBotMessage(chat.reply.trim());
+            return;
+          }
+        }
+      } catch {
+        // Offline — fall through to the normal category picker below.
       }
     }
 
@@ -1181,7 +1313,11 @@ export default function ReportPage() {
               {(['today', 'yesterday', 'specific', 'unknown'] as WhenMode[]).map(mode => (
                 <button
                   key={mode}
-                  onClick={() => setWhenMode(mode)}
+                  onClick={() => {
+                    setWhenMode(mode);
+                    if (mode === 'today') setWhenDate(dayISO(0));
+                    else if (mode === 'yesterday') setWhenDate(dayISO(-1));
+                  }}
                   className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition ${
                     whenMode === mode
                       ? 'bg-primary text-white border-primary'
@@ -1196,22 +1332,25 @@ export default function ReportPage() {
               ))}
             </div>
 
-            {/* Calendar + time picker — day known for every mode except
-                right_now/unknown; time optional (EXACT vs APPROXIMATE). */}
+            {/* Calendar + time picker — both available for every day mode
+                (today/yesterday come prefilled; editing the date switches to
+                "specific"); time optional (EXACT vs APPROXIMATE). */}
             {whenMode && whenMode !== 'right_now' && whenMode !== 'unknown' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {whenMode === 'specific' && (
-                  <label className="text-xs text-gray-600 space-y-1">
-                    <span className="font-medium">{t('report.when_date_label', lang)}</span>
-                    <input
-                      type="date"
-                      value={whenDate}
-                      max={new Date().toISOString().slice(0, 10)}
-                      onChange={e => setWhenDate(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
-                    />
-                  </label>
-                )}
+                <label className="text-xs text-gray-600 space-y-1">
+                  <span className="font-medium">{t('report.when_date_label', lang)}</span>
+                  <input
+                    type="date"
+                    value={whenDate}
+                    max={new Date().toISOString().slice(0, 10)}
+                    onChange={e => {
+                      setWhenDate(e.target.value);
+                      // A different day than "today/yesterday" is a specific date.
+                      if (whenMode === 'today' || whenMode === 'yesterday') setWhenMode('specific');
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+                  />
+                </label>
                 <label className="text-xs text-gray-600 space-y-1">
                   <span className="font-medium">{t('report.when_time_label', lang)}</span>
                   <input
@@ -1272,28 +1411,38 @@ export default function ReportPage() {
               </div>
             )}
 
-            {/* Priority preview — explained, not hidden */}
+            {/* Priority preview — the real engine result (same /api/priority
+                call as submission) with its actual reason. Nothing described
+                yet → nothing to judge → no priority shown. */}
             {selectedScenario && (() => {
-              const pv = computePriority({
+              const priorityText = originalText || answers.what_happened || Object.values(answers).join(' ');
+              if (priorityText.trim().length < 4) return null;
+              const local = computePriority({
                 category: selectedScenario.parent,
                 subcategory: selectedScenario.id,
-                text: `${originalText} ${answers.what_happened || ''}`,
+                text: priorityText,
                 answers,
               });
-              const color = pv.level === 'P1' ? 'bg-red-100 text-red-700 border-red-300'
-                : pv.level === 'P2' ? 'bg-orange-100 text-orange-700 border-orange-300'
-                : pv.level === 'P3' ? 'bg-amber-100 text-amber-800 border-amber-300'
+              const shown = priorityPreview &&
+                priorityPreview.scenarioId === selectedScenario.id &&
+                priorityPreview.text === priorityText
+                ? priorityPreview
+                : { level: local.level, slaDays: local.slaDays, reason: local.reason };
+              const color = shown.level === 'P1' ? 'bg-red-100 text-red-700 border-red-300'
+                : shown.level === 'P2' ? 'bg-orange-100 text-orange-700 border-orange-300'
+                : shown.level === 'P3' ? 'bg-amber-100 text-amber-800 border-amber-300'
                 : 'bg-gray-100 text-gray-700 border-gray-300';
               return (
                 <div className={`text-xs rounded-xl border p-3 ${color}`}>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-semibold">{t('report.priority', lang)}: {pv.level}</span>
-                    <span>{t('report.sla', lang)}: {pv.slaDays} {t('report.days', lang)}</span>
+                    <span className="font-semibold">{t('report.priority', lang)}: {shown.level}</span>
+                    <span>{t('report.sla', lang)}: {shown.slaDays} {t('report.days', lang)}</span>
                   </div>
-                  <p className="mt-1 opacity-80">{severityFor(pv.level) === 'critical' ? t('report.priority_critical', lang)
-                    : severityFor(pv.level) === 'high' ? t('report.priority_high', lang)
-                    : severityFor(pv.level) === 'medium' ? t('report.priority_medium', lang)
+                  <p className="mt-1 opacity-80">{severityFor(shown.level) === 'critical' ? t('report.priority_critical', lang)
+                    : severityFor(shown.level) === 'high' ? t('report.priority_high', lang)
+                    : severityFor(shown.level) === 'medium' ? t('report.priority_medium', lang)
                     : t('report.priority_low', lang)}</p>
+                  {shown.reason && <p className="mt-1 text-[11px] leading-snug opacity-90">{shown.reason}</p>}
                 </div>
               );
             })()}
