@@ -1332,36 +1332,55 @@ export default function ReportPage() {
               ))}
             </div>
 
-            {/* Calendar + time picker — both available for every day mode
-                (today/yesterday come prefilled; editing the date switches to
-                "specific"); time optional (EXACT vs APPROXIMATE). */}
-            {whenMode && whenMode !== 'right_now' && whenMode !== 'unknown' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className="text-xs text-gray-600 space-y-1">
-                  <span className="font-medium">{t('report.when_date_label', lang)}</span>
-                  <input
-                    type="date"
-                    value={whenDate}
-                    max={new Date().toISOString().slice(0, 10)}
-                    onChange={e => {
-                      setWhenDate(e.target.value);
-                      // A different day than "today/yesterday" is a specific date.
-                      if (whenMode === 'today' || whenMode === 'yesterday') setWhenMode('specific');
-                    }}
-                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
-                  />
-                </label>
-                <label className="text-xs text-gray-600 space-y-1">
-                  <span className="font-medium">{t('report.when_time_label', lang)}</span>
-                  <input
-                    type="time"
-                    value={whenTime}
-                    onChange={e => setWhenTime(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
-                  />
-                </label>
-              </div>
-            )}
+            {/* Calendar + time picker — ALWAYS visible on this step (the
+                citizen asked "when did this happen", so the date and time
+                inputs must be right there). Picking a date or time makes it
+                a specific date & time; today/yesterday come prefilled. */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="text-xs text-gray-600 space-y-1">
+                <span className="font-medium">{t('report.when_date_label', lang)}</span>
+                <input
+                  type="date"
+                  value={whenDate || dayISO(0)}
+                  max={new Date().toISOString().slice(0, 10)}
+                  onFocus={() => {
+                    if (whenMode === null) {
+                      setWhenMode('specific');
+                      setWhenDate(prev => prev || dayISO(0));
+                    }
+                  }}
+                  onChange={e => {
+                    setWhenDate(e.target.value);
+                    // A chosen calendar day is a specific date.
+                    if (whenMode !== 'specific') setWhenMode('specific');
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+                />
+              </label>
+              <label className="text-xs text-gray-600 space-y-1">
+                <span className="font-medium">{t('report.when_time_label', lang)}</span>
+                <input
+                  type="time"
+                  value={whenTime}
+                  onFocus={() => {
+                    if (whenMode === null) {
+                      setWhenMode('specific');
+                      setWhenDate(prev => prev || dayISO(0));
+                    }
+                  }}
+                  onChange={e => {
+                    setWhenTime(e.target.value);
+                    // A clock time only counts once a day is known — take the
+                    // prefilled day unless the answer was right_now/unknown.
+                    if (whenMode === null || whenMode === 'right_now' || whenMode === 'unknown') {
+                      setWhenMode('specific');
+                      setWhenDate(prev => prev || dayISO(0));
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+                />
+              </label>
+            </div>
 
             <button
               onClick={() => {
