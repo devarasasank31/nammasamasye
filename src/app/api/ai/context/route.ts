@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimit, clientIp, dailyAllow, LIMITS } from '@/lib/security';
+import { rateLimit, clientIp, dailyAllow, isExemptIp, LIMITS } from '@/lib/security';
 import { containsPII, redactPII } from '@/lib/ai-context';
 import { matchContextRows } from '@/data/context-corpus';
 
@@ -144,8 +144,9 @@ async function callGemini(system: string, user: string): Promise<string | null> 
  */
 export async function POST(request: NextRequest) {
   const ip = clientIp(request.headers);
-  if (!rateLimit(`ai_ctx:${ip}`, 30, 60_000) ||
-      !dailyAllow(`ai_ctx_day:${ip}`, LIMITS.contextPerDay)) {
+  if (!isExemptIp(ip) &&
+      (!rateLimit(`ai_ctx:${ip}`, 30, 60_000) ||
+       !dailyAllow(`ai_ctx_day:${ip}`, LIMITS.contextPerDay))) {
     return NextResponse.json({ context: null, error: 'rate limited' }, { status: 429 });
   }
 

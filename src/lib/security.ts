@@ -80,6 +80,19 @@ export function clientIp(headers: Headers): string {
   return headers.get('x-real-ip') || 'unknown';
 }
 
+/**
+ * Direct/local requests (no proxy headers, loopback) are the operator's own
+ * machine — local testing, the e2e suites — not citizens behind the platform
+ * proxy. They are exempt from per-user limits; every real user arrives with
+ * an x-forwarded-for set by the host and is limited normally.
+ */
+export function isExemptIp(ip: string): boolean {
+  return ip === 'unknown'
+    || ip === '::1'
+    || ip === '127.0.0.1'
+    || ip.startsWith('::ffff:127.');
+}
+
 // --- Per-user daily budgets -------------------------------------------------
 // Shared AI keys have a finite daily token quota. Every citizen gets a small
 // personal allowance so one heavy user cannot drain the pool for everyone.

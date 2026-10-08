@@ -3,7 +3,7 @@ import { isDemoMode } from '@/lib/supabase';
 import { demoStore } from '@/lib/demo-store';
 import { Language, PriorityAnalysisEnvelope, IncidentTimePrecision } from '@/types';
 import { runPriorityPipeline } from '@/lib/priority-engine/pipeline';
-import { rateLimit, clientIp, dailyAllow, LIMITS } from '@/lib/security';
+import { rateLimit, clientIp, dailyAllow, isExemptIp, LIMITS } from '@/lib/security';
 
 interface IncidentBody {
   session_id?: string;
@@ -35,8 +35,9 @@ interface IncidentBody {
 export async function POST(req: NextRequest) {
   // Spam guard: a citizen files a handful of real reports a day, not hundreds.
   const ip = clientIp(req.headers);
-  if (!rateLimit(`inc:${ip}`, LIMITS.incidentPerHour, 60 * 60 * 1000) ||
-      !dailyAllow(`inc_day:${ip}`, LIMITS.incidentPerDay)) {
+  if (!isExemptIp(ip) &&
+      (!rateLimit(`inc:${ip}`, LIMITS.incidentPerHour, 60 * 60 * 1000) ||
+       !dailyAllow(`inc_day:${ip}`, LIMITS.incidentPerDay))) {
     return NextResponse.json({ error: 'Too many reports from this device today. Please try again later.' }, { status: 429 });
   }
 

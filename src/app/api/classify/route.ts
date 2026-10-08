@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { civicClassify } from '@/lib/civic-classifier';
 import { getScenarioById, getScenarioName } from '@/data/scenarios';
 import { Language } from '@/types';
-import { rateLimit, clientIp, dailyAllow, LIMITS } from '@/lib/security';
+import { rateLimit, clientIp, dailyAllow, isExemptIp, LIMITS } from '@/lib/security';
 
 const VALID_LANGS = new Set(['en', 'kn', 'hi', 'te']);
 
 export async function POST(request: NextRequest) {
   const ip = clientIp(request.headers);
-  if (!rateLimit(`cls:${ip}`, LIMITS.classifyPerMinute, 60_000) ||
-      !dailyAllow(`cls_day:${ip}`, LIMITS.classifyPerDay)) {
+  if (!isExemptIp(ip) &&
+      (!rateLimit(`cls:${ip}`, LIMITS.classifyPerMinute, 60_000) ||
+       !dailyAllow(`cls_day:${ip}`, LIMITS.classifyPerDay))) {
     return NextResponse.json({ error: 'rate limited' }, { status: 429 });
   }
 

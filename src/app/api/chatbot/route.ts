@@ -7,7 +7,7 @@ import { civicClassify, clarificationQuestion } from '@/lib/civic-classifier';
 import { LocalClassifyResult } from '@/lib/civic-types';
 import { languageName } from '@/lib/ai/language';
 import { Language } from '@/types';
-import { rateLimit, clientIp, dailyAllow, LIMITS } from '@/lib/security';
+import { rateLimit, clientIp, dailyAllow, isExemptIp, LIMITS } from '@/lib/security';
 
 // Server-side only — AI_API_KEY may hold several comma-separated keys; the
 // ring rotates to the next key when one is rejected, out of daily quota or
@@ -46,6 +46,11 @@ The app runs a TRAINED local classifier FIRST over 5,000+ civic scenarios (Engli
 JOB 1 — CONVERSATION (the default)
 If the message is not a civic problem (greeting, thanks, small talk, general question, joke), reply as chat in at most 60 words (up to 100 for a real knowledge question). Answer helpfully and correctly. Never invent facts, statistics, live data, prices, phone numbers, laws or official names — if you are not sure, say so honestly in one line. For abuse or insults: one calm, polite line inviting them to describe an actual civic problem; never repeat their words, never lecture.
 The LATEST message decides: if it is a general question or small talk that does not describe a NEW civic problem, reply as chat — older complaints in the conversation must never turn a question into a classification.
+
+FRESHNESS — your training data has a cutoff; "current" facts keep changing after it:
+- Who holds an office RIGHT NOW (Chief Minister, Prime Minister, President, Governor, minister, commissioner), latest sports results, prices, exchange rates, "latest"/"now"/"currently" questions, scheme deadlines and exam dates all age quickly.
+- For those, give the most recent answer you are confident of, then add ONE short sentence: "This may be outdated — please verify with an official source." (write that sentence in the reply language).
+- NEVER present a time-sensitive fact with false certainty. If you are not sure the person or figure is still current, say plainly that your information may be old.
 
 JOB 2 — CLASSIFICATION
 Classify ONLY when the conversation describes an actual civic problem. Use the full history — if they add detail later, combine it before deciding. Understand MEANING: informal language, slang, spelling mistakes, mixed languages and transliteration are normal.
@@ -142,18 +147,21 @@ function looksLikeGeneralQuestion(text: string): boolean {
 export async function POST(request: NextRequest) {
   // Per-citizen limits: the AI keys behind this endpoint are shared by every
   // user, so each IP gets a small personal allowance (see LIMITS in security).
+  // Direct/local requests (no proxy header) are the operator's own machine.
   const ip = clientIp(request.headers);
-  if (!rateLimit(`chat:${ip}`, LIMITS.chatPerMinute, 60_000)) {
-    return NextResponse.json(
-      { reply: 'You are sending messages too quickly — please wait a minute and try again.', error: 'rate_limited' },
-      { status: 429 }
-    );
-  }
-  if (!dailyAllow(`chat:${ip}`, LIMITS.chatPerDay)) {
-    return NextResponse.json(
-      { reply: "You've reached today's chat limit. It resets at midnight UTC — you can still file reports from the Report page.", error: 'daily_limit' },
-      { status: 429 }
-    );
+  if (!isExemptIp(ip)) {
+    if (!rateLimit(`chat:${ip}`, LIMITS.chatPerMinute, 60_000)) {
+      return NextResponse.json(
+        { reply: 'You are sending messages too quickly — please wait a minute and try again.', error: 'rate_limited' },
+        { status: 429 }
+      );
+    }
+    if (!dailyAllow(`chat:${ip}`, LIMITS.chatPerDay)) {
+      return NextResponse.json(
+        { reply: "You've reached today's chat limit. It resets at midnight UTC — you can still file reports from the Report page.", error: 'daily_limit' },
+        { status: 429 }
+      );
+    }
   }
 
   let body: Record<string, unknown>;
@@ -306,7 +314,7 @@ export async function POST(request: NextRequest) {
     // Soft AI budget per IP: when a citizen's daily AI allowance is spent the
     // bot still answers from the local classifier/cache — it just skips the
     // external call so one user cannot drain the shared keys.
-    if (hasAIKeys && dailyAllow(`ai:${ip}`, LIMITS.aiCallsPerDay) &&
+    if (hasAIKeys && (isExemptIp(ip) || dailyAllow(`ai:${ip}`, LIMITS.aiCallsPerDay)) &&
         (!local.category || local.confidence < trustGate || local.margin < MARGIN_TRUST)) {
       const cacheKey = `${replyLang}|${normalizeCacheKey(transcript)}`;
       const cached = aiCacheGet(cacheKey);
@@ -316,8 +324,15 @@ export async function POST(request: NextRequest) {
         apiCalled = true;
         try {
           // For a plain question, tell the model explicitly: chat only.
+          // Time-sensitive questions (current officeholders, latest X) also
+          // get a freshness nudge — the model's training data ages.
+          const timeSensitive = /\b(chief\s*minister|prime\s*minister|president|governor|current(?:ly)?|latest|now|today|this\s*year|20\d\d|score|price|rate|exchange|who\s+is\s+the)\b/i;
           const aiInput = generalQuestion
-            ? transcript + '\n\n[LATEST MESSAGE: a general question, not a civic complaint. Reply ONLY with {"type":"chat","reply":"..."}. Do not classify.]'
+            ? transcript +
+              '\n\n[LATEST MESSAGE: a general question, not a civic complaint. Reply ONLY with {"type":"chat","reply":"..."}. Do not classify.]' +
+              (timeSensitive.test(userInput)
+                ? ' [TIME-SENSITIVE TOPIC: your training data may be stale for this. Give the most recent answer you know, then add one short sentence saying it may be outdated and should be verified with an official source.]'
+                : '')
             : transcript;
           aiResult = await callAI(aiInput, replyLang, local);
           if (aiResult) aiCacheSet(cacheKey, aiResult);
