@@ -34,7 +34,7 @@ export function detectIntent(text: string): ChatIntent | null {
   ];
 
   const THANKS_EXACT = ['thanks', 'thx', 'thanku', 'dhanyavad', 'shukriya', 'nandri', 'thanksu'];
-  const THANKS_PHRASE = ['thank you', 'thank u', 'thanks a lot', 'dhanyavadagalu', 'dhanyavadha', 'thankyou'];
+  const THANKS_PHRASE = ['thank you', 'thank u', 'thanks a lot', 'dhanyavadagalu', 'dhanyavadha', 'thankyou', 'thanks for your', 'thanks for the'];
 
   const HELP_PHRASE = [
     'what can you do', 'what can you help', 'how does this work', 'how to use',

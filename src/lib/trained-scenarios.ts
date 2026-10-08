@@ -834,8 +834,13 @@ export function matchTrainedScenario(userInput: string): {
 
     for (const keyword of scenario.keywords) {
       const kw = keyword.toLowerCase();
-      // Exact match or contained in input
-      if (input.includes(kw)) {
+      // Exact match or contained in input. Very short keywords (EC, DUI) must
+      // be whole words — 'EC' as a substring matches inside "recipe" and
+      // turns a cooking question into a government-service signal.
+      const hit = kw.length <= 3
+        ? new RegExp(`(?:^|[^a-z0-9])${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:$|[^a-z0-9])`).test(input)
+        : input.includes(kw);
+      if (hit) {
         matched = true;
         // A long phrase (≥10 chars) is a strong signal on its own; short
         // keywords score by how much of the message they cover.

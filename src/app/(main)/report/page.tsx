@@ -664,7 +664,9 @@ export default function ReportPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userInput: text, lang: replyLang, history }),
-          signal: AbortSignal.timeout(15000),
+          // The server may wait out one rate-limit window (≤8s) before
+          // answering — the client must outlive that retry.
+          signal: AbortSignal.timeout(28000),
         });
         if (res.ok) {
           const chat = (await res.json()) as {

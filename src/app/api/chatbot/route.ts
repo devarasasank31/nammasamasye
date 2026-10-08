@@ -271,7 +271,12 @@ export async function POST(request: NextRequest) {
     const acceptGate = negatedNoHazard ? 70 : LOCAL_ACCEPT;
 
     // ---- Strong local result: answer instantly, no API round-trip -----------
-    if (!generalQuestion && local.category && local.confidence >= trustGate && !local.needs_clarification) {
+    // A high score with a NEAR-TIE (margin below MARGIN_TRUST) is not strong
+    // enough to skip the tie-breaker — e.g. "stray dog chasing commuters"
+    // scored 85 for bmtc_staff against stray_animals at 61. Only a clear,
+    // confident leader short-circuits the AI.
+    if (!generalQuestion && local.category && local.confidence >= trustGate &&
+        local.margin >= MARGIN_TRUST && !local.needs_clarification) {
       logClassify(userInput, local, false, 'local_scenario', Date.now() - started);
       return NextResponse.json(classifyPayload(local, 'local_scenario', replyLang, replyLangName));
     }
@@ -320,7 +325,14 @@ export async function POST(request: NextRequest) {
       if (aiResult && aiResult.type === 'classify') {
         const valid = !generalQuestion && validateAI(aiResult, local, transcript) &&
           (!negatedNoHazard || aiResult.confidence >= 70);
-        if (valid && aiResult.confidence >= 50 && aiResult.confidence > local.confidence + 4) {
+        // When local is a NEAR-TIE (margin below MARGIN_TRUST) it has not
+        // actually earned its high score — a validated AI answer of 65+ is
+        // allowed to correct it (e.g. stray dog vs bmtc_staff at 85 vs 61).
+        // A clear local leader still keeps the +4 protection.
+        const beatsLocal = local.margin < MARGIN_TRUST
+          ? aiResult.confidence >= 65
+          : aiResult.confidence > local.confidence + 4;
+        if (valid && aiResult.confidence >= 50 && beatsLocal) {
           const payload = {
             type: 'classify' as const,
             scenario_id: aiResult.scenario_id,
@@ -464,8 +476,10 @@ function validateAI(r: Extract<AIResult, { type: 'classify' }>, local: LocalClas
   const denied = local.negations_applied.filter(k => k.startsWith(r.scenario_id + ':'));
   const localTop = local.top[0];
   if (denied.length && localTop && localTop.category !== r.scenario_id && r.confidence < 85) return false;
-  // A strong local candidate outranks a weaker AI guess.
-  if (localTop && localTop.category !== r.scenario_id && localTop.score > 0.62 && r.confidence < 75) return false;
+  // A strong local candidate outranks a weaker AI guess — but when the local
+  // result is itself a near-tie (margin below MARGIN_TRUST) it is not strong
+  // evidence, so only the negation rule applies.
+  if (local.margin >= MARGIN_TRUST && localTop && localTop.category !== r.scenario_id && localTop.score > 0.62 && r.confidence < 75) return false;
   return true;
 }
 
@@ -514,30 +528,43 @@ async function callAI(transcript: string, lang: string, local: LocalClassifyResu
 }
 
 async function callOpenAICompatible(transcript: string, lang: string, local: LocalClassifyResult): Promise<AIResult | null> {
-  const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${AI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [
-        { role: 'system', content: buildSystemPrompt(lang) },
-        { role: 'user', content: transcript + buildCandidatesBlock(local) },
-      ],
-      max_tokens: 800,
-      temperature: 0.4,
-    }),
-    signal: AbortSignal.timeout(15000),
-  });
+  // The free-tier key has a small tokens-per-minute quota (8k TPM ≈ 4 calls
+  // per minute with our ~2k-token prompt). A 429 says exactly how long to
+  // wait — one bounded retry turns a throttled call (and its wrong fallback
+  // answer) into the correct reply.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${AI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        messages: [
+          { role: 'system', content: buildSystemPrompt(lang) },
+          { role: 'user', content: transcript + buildCandidatesBlock(local) },
+        ],
+        max_tokens: 800,
+        temperature: 0.4,
+      }),
+      signal: AbortSignal.timeout(attempt === 0 ? 12000 : 10000),
+    });
 
-  const data = await response.json();
-  if (!response.ok) {
-    console.log('API error:', data.error?.message || response.statusText);
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) return normalise(data.choices?.[0]?.message?.content);
+
+    const msg = String(data.error?.message || response.statusText || '');
+    if (response.status === 429 && attempt === 0) {
+      const suggested = /try again in ([\d.]+)s/i.exec(msg);
+      const waitSec = Math.min(suggested ? Number(suggested[1]) : 6, 8);
+      await new Promise(r => setTimeout(r, Math.ceil(waitSec * 1000)));
+      continue;
+    }
+    console.log('API error:', msg);
     return null;
   }
-  return normalise(data.choices?.[0]?.message?.content);
+  return null;
 }
 
 async function callGemini(transcript: string, lang: string, local: LocalClassifyResult): Promise<AIResult | null> {
