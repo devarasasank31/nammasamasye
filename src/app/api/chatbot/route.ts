@@ -12,7 +12,7 @@ import { rateLimit, clientIp, dailyAllow, isExemptIp, LIMITS } from '@/lib/secur
 // Server-side only — AI_API_KEY may hold several comma-separated keys; the
 // ring rotates to the next key when one is rejected, out of daily quota or
 // rate-limited (see src/lib/ai-keys.ts).
-import { AI_KEYS, hasAIKeys, keyRing, markKeyGood, keyTag } from '@/lib/ai-keys';
+import { AI_KEYS, hasAIKeys, keyRing, markKeyGood, markKeyQuotaDead, keyTag } from '@/lib/ai-keys';
 
 // A Groq key (gsk_...) pointed at api.openai.com 401s silently and the bot
 // answers nothing — auto-select Groq unless the provider is explicit.
@@ -606,6 +606,7 @@ async function callOpenAICompatible(transcript: string, lang: string, local: Loc
       const msg = String(data.error?.message || response.statusText || '');
       if (response.status === 401) {
         console.log('API error (invalid key)' + tag + ':', msg);
+        markKeyQuotaDead(key);
         continue;
       }
       if (response.status === 429) {
@@ -613,6 +614,7 @@ async function callOpenAICompatible(transcript: string, lang: string, local: Loc
         // next key. A per-minute (TPM) limit clears almost at once.
         if (/tokens per day|\bTPD\b/i.test(msg)) {
           console.log('API error (daily quota)' + tag + ':', msg);
+          markKeyQuotaDead(key);
           continue;
         }
         if (k < keyCount - 1) {
@@ -664,6 +666,11 @@ async function callGemini(transcript: string, lang: string, local: LocalClassify
       if (response.ok) {
         markKeyGood(key);
         return normalise(data.candidates?.[0]?.content?.parts?.[0]?.text);
+      }
+      // Gemini "RESOURCE_EXHAUSTED" quota errors behave like Groq TPD —
+      // cool the key so the ring skips it for a few minutes.
+      if (response.status === 429 || /quota|RESOURCE_EXHAUSTED/i.test(String(data.error?.message || ''))) {
+        markKeyQuotaDead(key);
       }
       console.log('Gemini API error' + tag + ':', data.error?.message);
     } catch (e) {

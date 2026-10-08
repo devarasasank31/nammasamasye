@@ -7,7 +7,7 @@ import { rateLimit, clientIp, dailyAllow, isExemptIp, LIMITS } from '@/lib/secur
 // be turned into any other without a paid translation service. AI_API_KEY may
 // hold several comma-separated keys; the ring fails over between them.
 
-import { hasAIKeys, keyRing, markKeyGood, keyTag } from '@/lib/ai-keys';
+import { hasAIKeys, keyRing, markKeyGood, markKeyQuotaDead, keyTag } from '@/lib/ai-keys';
 
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'openai').trim();
 
@@ -138,6 +138,11 @@ async function callOpenAICompatible(text: string, target: Language): Promise<Tra
       if (response.ok) {
         markKeyGood(key);
         return normalise(data.choices?.[0]?.message?.content, target);
+      }
+      // Invalid key or daily quota: cool it so later requests skip it.
+      if (response.status === 401 || response.status === 429 ||
+          /tokens per day|\bTPD\b|quota/i.test(String(data.error?.message || ''))) {
+        markKeyQuotaDead(key);
       }
       console.log('Translate API error' + keyTag(k, ring.length) + ':', data.error?.message || response.statusText);
     } catch (e) {

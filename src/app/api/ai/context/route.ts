@@ -6,7 +6,7 @@ import { matchContextRows } from '@/data/context-corpus';
 // Server-side only — same provider the chatbot uses. AI_API_KEY may hold
 // several comma-separated keys; the ring fails over between them.
 
-import { hasAIKeys, keyRing, markKeyGood } from '@/lib/ai-keys';
+import { hasAIKeys, keyRing, markKeyGood, markKeyQuotaDead } from '@/lib/ai-keys';
 
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'openai').trim();
 
@@ -97,6 +97,11 @@ async function callOpenAICompatible(system: string, user: string): Promise<strin
       if (response.ok) {
         markKeyGood(key);
         return data.choices?.[0]?.message?.content ?? null;
+      }
+      // Invalid key or daily quota: cool it so later requests skip it.
+      if (response.status === 401 || response.status === 429 ||
+          /tokens per day|\bTPD\b|quota/i.test(String(data.error?.message || ''))) {
+        markKeyQuotaDead(key);
       }
     } catch {
       // network/timeout — try the next key

@@ -19,10 +19,32 @@ export const hasAIKeys = parsed.length > 0;
 
 let goodIdx = 0;
 
+// A key that hit its daily quota (TPD) or was rejected is put in a short
+// cooldown so new requests skip it instead of burning a call on it. The
+// cooldown is brief (not until UTC midnight) because free-tier quota can
+// flap — the platform sometimes frees a few tokens — and a cooled-down key
+// is still tried as a last resort when nothing else is left.
+const QUOTA_COOLDOWN_MS = 5 * 60 * 1000;
+const quotaDeadUntil = new Map<string, number>();
+
+/** Remember that a key is exhausted/rejected for a few minutes. */
+export function markKeyQuotaDead(key: string): void {
+  quotaDeadUntil.set(key, Date.now() + QUOTA_COOLDOWN_MS);
+}
+
+function isQuotaDead(key: string): boolean {
+  const until = quotaDeadUntil.get(key);
+  return until !== undefined && Date.now() < until;
+}
+
 /** Keys to try for one request, starting from the last-known-good key. */
 export function keyRing(): string[] {
   if (parsed.length === 0) return [''];
-  return parsed.map((_, i) => parsed[(goodIdx + i) % parsed.length]);
+  const ordered = parsed.map((_, i) => parsed[(goodIdx + i) % parsed.length]);
+  const live = ordered.filter(k => !isQuotaDead(k));
+  // Everything cooling down: try anyway — the quota may have flapped back.
+  if (live.length === 0) return ordered;
+  return [...live, ...ordered.filter(k => isQuotaDead(k))];
 }
 
 /** Remember a working key so future calls start there. */
