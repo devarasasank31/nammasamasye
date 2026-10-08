@@ -176,6 +176,9 @@ export default function ReportPage() {
   const [whenDate, setWhenDate] = useState('');
   const [whenTime, setWhenTime] = useState('');
   const [whenPrefilled, setWhenPrefilled] = useState(false);
+  // WHEN opens right after WHERE; the rest of the workflow resumes from here.
+  const [whenCaptured, setWhenCaptured] = useState(false);
+  const [whenResumeIdx, setWhenResumeIdx] = useState<number | null>(null);
   // What the citizen sees after submitting: place + assigned priority.
   const [submitSummary, setSubmitSummary] = useState<{
     ward: string;
@@ -313,46 +316,74 @@ export default function ReportPage() {
     }
   };
 
+  // Asks workflow question `idx`: the bot line, then auto-opens the map or
+  // the evidence panel for that question type (after `delay` ms of typing).
+  const askWorkflowQuestion = (scenario: IncidentCategory, idx: number, delay = 300) => {
+    const q = scenario.workflow[idx];
+    if (!q) return;
+    setCurrentQuestionIdx(idx);
+    const ask = () => {
+      addBotMessage(q.text[lang] || q.text.en);
+      if (q.type === 'evidence') {
+        evidenceOpenTimer.current = window.setTimeout(() => {
+          evidenceOpenTimer.current = null;
+          setShowEvidenceForm(true);
+        }, 300);
+      }
+      if (q.type === 'location') {
+        addBotMessage(t('bot.map_hint', lang));
+        locationOpenTimer.current = window.setTimeout(() => {
+          locationOpenTimer.current = null;
+          setShowLocationPicker(true);
+        }, 300);
+      }
+    };
+    if (delay > 0) setTimeout(ask, delay);
+    else ask();
+  };
+
+  // WHEN — the date/time chooser. Opens right after WHERE so every report
+  // runs what happened -> where -> when -> details -> final check, and the
+  // remaining workflow questions resume from `resumeIdx` on Continue.
+  const openWhenStep = (resumeIdx: number) => {
+    setWhenResumeIdx(resumeIdx);
+    addBotMessage(t('bot.when_ask', lang));
+    setStep('when');
+    // Prefill from the citizen's own words (incl. emergencies → ONGOING),
+    // so the common case is one tap — never blocking emergency guidance.
+    const described = originalText || Object.values(answers).join(' ');
+    const detected = isEmergencyMessage(described)
+      ? 'right_now'
+      : extractIncidentWhen(described);
+    if (detected) {
+      setWhenMode(detected);
+      setWhenPrefilled(true);
+    }
+  };
+
   const moveToNextQuestion = () => {
     if (!selectedScenario) return;
     clearQuestionTimers();
     setShowEvidenceForm(false);
     setShowLocationPicker(false);
+    const scenario = selectedScenario;
     const nextIdx = currentQuestionIdx + 1;
-    if (nextIdx < selectedScenario.workflow.length) {
-      setCurrentQuestionIdx(nextIdx);
-      const nextQ = selectedScenario.workflow[nextIdx];
+    const answeredQ = scenario.workflow[currentQuestionIdx];
+    // After WHERE (answered, skipped or picked) comes WHEN — before details.
+    if (answeredQ?.type === 'location' && !whenCaptured) {
+      setTimeout(() => openWhenStep(nextIdx), 300);
+      return;
+    }
+    if (nextIdx < scenario.workflow.length) {
+      askWorkflowQuestion(scenario, nextIdx);
+    } else if (whenCaptured) {
       setTimeout(() => {
-        addBotMessage(nextQ.text[lang] || nextQ.text.en);
-        if (nextQ.type === 'evidence') {
-          evidenceOpenTimer.current = window.setTimeout(() => {
-            evidenceOpenTimer.current = null;
-            setShowEvidenceForm(true);
-          }, 300);
-        }
-        if (nextQ.type === 'location') {
-          addBotMessage(t('bot.map_hint', lang));
-          locationOpenTimer.current = window.setTimeout(() => {
-            locationOpenTimer.current = null;
-            setShowLocationPicker(true);
-          }, 300);
-        }
+        addBotMessage(t('bot.review_before_submit', lang));
+        setStep('review');
       }, 300);
     } else {
-      setTimeout(() => {
-        addBotMessage(t('bot.when_ask', lang));
-        setStep('when');
-        // Prefill from the citizen's own words (incl. emergencies → ONGOING),
-        // so the common case is one tap — never blocking emergency guidance.
-        const described = originalText || Object.values(answers).join(' ');
-        const detected = isEmergencyMessage(described)
-          ? 'right_now'
-          : extractIncidentWhen(described);
-        if (detected) {
-          setWhenMode(detected);
-          setWhenPrefilled(true);
-        }
-      }, 300);
+      // Safety net: a flow without an answered location still gets its WHEN.
+      setTimeout(() => openWhenStep(nextIdx), 300);
     }
   };
 
@@ -399,29 +430,25 @@ export default function ReportPage() {
     ].includes(lower);
   };
 
-  // Starts a scenario's workflow at its first question
-  const startScenario = (scenario: IncidentCategory, label?: string) => {
+  // Starts a scenario's workflow. `knownText` is the description already
+  // typed in the free-text step (passed explicitly because React state from
+  // the same handler is still stale when the match path calls this).
+  const startScenario = (scenario: IncidentCategory, label?: string, knownText?: string) => {
     clearQuestionTimers();
     setSelectedScenario(scenario);
     if (label) addUserMessage(label);
-    const firstQ = scenario.workflow[0];
-    if (firstQ) {
-      addBotMessage(firstQ.text[lang] || firstQ.text.en);
+    setWhenCaptured(false);
+    setWhenResumeIdx(null);
+    let startIdx = 0;
+    const described = knownText ?? originalText;
+    if (described && scenario.workflow[0]?.id === 'what_happened') {
+      // Their own words already are the answer — don't ask it twice.
+      setAnswers(prev => ({ ...prev, what_happened: described }));
+      startIdx = 1;
+    }
+    if (scenario.workflow[startIdx]) {
       setStep('workflow');
-      setCurrentQuestionIdx(0);
-      if (firstQ.type === 'evidence') {
-        evidenceOpenTimer.current = window.setTimeout(() => {
-          evidenceOpenTimer.current = null;
-          setShowEvidenceForm(true);
-        }, 300);
-      }
-      if (firstQ.type === 'location') {
-        addBotMessage(t('bot.map_hint', lang));
-        locationOpenTimer.current = window.setTimeout(() => {
-          locationOpenTimer.current = null;
-          setShowLocationPicker(true);
-        }, 300);
-      }
+      askWorkflowQuestion(scenario, startIdx, 0);
     }
   };
 
@@ -541,7 +568,7 @@ export default function ReportPage() {
           reply += `\n\n${t('bot.also_reported_before', replyLang)}\n${others.map(s => `${s.text} ×${s.count}`).join('\n')}`;
         }
         addBotMessage(reply);
-        startScenario(custom);
+        startScenario(custom, undefined, heard);
         return;
       }
     }
@@ -565,7 +592,7 @@ export default function ReportPage() {
       ? getScenarioById(trained.scenario_id)
       : null;
     if (scenario) {
-      startScenario(scenario, getScenarioName(scenario, replyLang));
+      startScenario(scenario, getScenarioName(scenario, replyLang), text);
       return;
     }
 
@@ -1120,7 +1147,8 @@ export default function ReportPage() {
           </div>
         )}
 
-        {/* WHEN — incident date/time, captured before Review (spec §12/§13) */}
+        {/* WHEN — date/time chooser, right after WHERE so the flow reads
+            what happened -> where -> when -> details -> review (spec §12/§13) */}
         {step === 'when' && (
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-sm">
             <div className="flex items-center gap-2">
@@ -1198,8 +1226,16 @@ export default function ReportPage() {
 
             <button
               onClick={() => {
-                addBotMessage(t('bot.review_before_submit', lang));
-                setStep('review');
+                setWhenCaptured(true);
+                const resume = whenResumeIdx;
+                if (selectedScenario && resume !== null && resume < selectedScenario.workflow.length) {
+                  // WHERE and WHEN are done — remaining detail questions now.
+                  setStep('workflow');
+                  askWorkflowQuestion(selectedScenario, resume);
+                } else {
+                  addBotMessage(t('bot.review_before_submit', lang));
+                  setStep('review');
+                }
               }}
               disabled={!whenMode || (whenMode === 'specific' && !whenDate)}
               className="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-40"
@@ -1261,7 +1297,9 @@ export default function ReportPage() {
                 </div>
               );
             })()}
-            {Object.entries(answers).map(([k, v]) => {
+            {Object.entries(answers)
+              .filter(([k, v]) => !(k === 'what_happened' && v === originalText))
+              .map(([k, v]) => {
               const q = selectedScenario?.workflow.find(w => w.id === k);
               const label = q ? (q.text[lang] || q.text.en).replace(/\?+$/, '') : k.replace(/_/g, ' ');
               return (

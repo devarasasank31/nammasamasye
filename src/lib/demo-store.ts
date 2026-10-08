@@ -6,6 +6,7 @@ import { computePriority } from '@/lib/priority';
 import { trainedSeverity } from '@/lib/trained-severity';
 import { buildClusters } from '@/lib/clusters';
 import { assessRisk, RiskLevel } from '@/lib/spam';
+import { redactPII } from '@/lib/ai-context';
 import {
   buildDailySeries as buildSeries,
   getCivicPulse as getTodaysPulse,
@@ -416,6 +417,7 @@ export const demoStore = {
 
   // --- Public issue feed (sanitised) ---
   toPublicFeedItem(i: Incident): PublicIncident {
+    const text = (i.original_text || '').trim();
     return {
       incident_id: i.incident_id,
       category_id: i.category_id,
@@ -428,6 +430,9 @@ export const demoStore = {
       priority: i.priority || 'P3',
       severity: i.severity || 'medium',
       ai_context: i.ai_context,
+      // The citizen's own words, PII stripped at the store boundary — the
+      // feed shows real reports, never a canned category summary.
+      original_text: text ? redactPII(text) : undefined,
       status: i.status,
       support_count: i.support_count || 0,
       flag_count: i.flag_count || 0,

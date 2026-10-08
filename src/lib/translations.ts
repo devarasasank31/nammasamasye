@@ -106,7 +106,7 @@ const translations: Record<string, Record<Language, string>> = {
 
   // Public issue feed (support / flag)
   'feed.title': { en: 'Public Issue Feed', kn: 'ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆ ಫೀಡ್', hi: 'सार्वजनिक समस्या फ़ीड', te: 'పబ్లిక్ సమస్య ఫీడ్' },
-  'feed.subtitle': { en: 'Each issue shows a short AI summary with its severity — no names, no contact details, no photos.', kn: 'ಪ್ರತಿ ಸಮಸ್ಯೆಗೆ ತೀವ್ರತೆಯೊಂದಿಗೆ ಸಣ್ಣ AI ಸಾರಾಂಶ ಕಾಣಿಸುತ್ತದೆ — ಹೆಸರು, ಸಂಪರ್ಕ, ಫೋಟೋ ಇಲ್ಲ.', hi: 'हर समस्या के साथ गंभीरता और छोटा AI सारांश दिखता है — न नाम, न संपर्क, न फ़ोटो।', te: 'ప్రతి సమస్యకు తీవ్రత మరియు చిన్న AI సారాంశం కనిపిస్తుంది — పేర్లు, సంప్రదింపులు, ఫోటోలు లేవు.' },
+  'feed.subtitle': { en: 'Each issue shows what citizens actually reported, with its severity — no names, no contact details, no photos.', kn: 'ಪ್ರತಿ ಸಮಸ್ಯೆಗೆ ನಾಗರಿಕರು ಬರೆದಿರುವ ನಿಜವಾದ ವರದಿ ಮತ್ತು ತೀವ್ರತೆ ಕಾಣಿಸುತ್ತದೆ — ಹೆಸರು, ಸಂಪರ್ಕ, ಫೋಟೋ ಇಲ್ಲ.', hi: 'हर समस्या में नागरिकों की असली रिपोर्ट और गंभीरता दिखती है — न नाम, न संपर्क, न फ़ोटो।', te: 'ప్రతి సమస్యలో పౌరులు నిజంగా రాసిన నివేదిక మరియు తీవ్రత కనిపిస్తుంది — పేర్లు, సంప్రదింపులు, ఫోటోలు లేవు.' },
   'feed.loading': { en: 'Loading public feed...', kn: 'ಸಾರ್ವಜನಿಕ ಫೀಡ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ...', hi: 'सार्वजनिक फ़ीड लोड हो रहा है...', te: 'పబ్లిక్ ఫీడ్ లోడ్ అవుతోంది...' },
   'feed.empty': { en: 'No public issues yet — be the first to report one.', kn: 'ಇನ್ನೂ ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆಗಳಿಲ್ಲ — ನೀವೇ ಮೊದಲಿಗರಾಗಿ ವರದಿ ಮಾಡಿ.', hi: 'अभी कोई सार्वजनिक समस्या नहीं — पहली रिपोर्ट आप करें।', te: 'ఇంకా పబ్లిక్ సమస్యలు లేవు — మీరే మొదటిగా నివేదించండి.' },
   'feed.support': { en: 'Support', kn: 'ಬೆಂಬಲ', hi: 'समर्थन', te: 'మద్దతు' },

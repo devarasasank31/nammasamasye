@@ -11,7 +11,6 @@ export const scenarios: IncidentCategory[] = [
     icon: '🚗',
     workflow: [
       { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'injured', text: { en: 'Was anyone injured?', kn: 'ಯಾರಿಗಾದರೂ ಗಾಯವಾಗಿದೆಯೇ?', hi: 'कोई घायल हुआ?', te: 'ఎవరైనా గాయపడ్డారా?' }, type: 'boolean', required: true },
       { id: 'vehicles', text: { en: 'Were vehicles involved? If yes, describe.', kn: 'ವಾಹನಗಳು ಭಾಗಿಯಾಗಿವೆಯೇ? ಹೌದಾದರೆ ವಿವರಿಸಿ.', hi: 'क्या वाहन शामिल थे? हाँ तो बताएं।', te: 'వాహనాలు పాల్గొన్నాయా? అవును అయితే వివరించండి.' }, type: 'text', required: false },
@@ -32,7 +31,6 @@ export const scenarios: IncidentCategory[] = [
     icon: '🚗',
     workflow: [
       { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'vehicle_details', text: { en: 'Describe the vehicle if possible.', kn: 'ಸಾಧ್ಯವಾದರೆ ವಾಹನವನ್ನು ವಿವರಿಸಿ.', hi: 'संभव हो तो वाहन बताएं।', te: 'సాధ్యమైతే వాహనాన్ని వివరించండి.' }, type: 'text', required: false },
       { id: 'evidence', text: { en: 'Any evidence (photo/video)?', kn: 'ಯಾವುದಾದರೂ ಸಾಕ್ಷ್ಯ (ಫೋಟೋ/ವೀಡಿಯೋ)?', hi: 'कोई सबूत (फ़ोटो/वीडियो)?', te: 'ఏదైనా సాక్ష్యం (ఫోటో/వీడియో)?' }, type: 'evidence', required: false },
@@ -49,6 +47,7 @@ export const scenarios: IncidentCategory[] = [
     icon: '🚨',
     workflow: [
       { id: 'what_happened', text: { en: 'What did you see?', kn: 'ಏನು ಕಂಡಿರಿ?', hi: 'आपने क्या देखा?', te: 'మీరు ఏమి చూశారు?' }, type: 'text', required: true },
+      { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'violation', text: { en: 'What rule was being broken?', kn: 'ಯಾವ ನಿಯಮವನ್ನು ಮುರಿಯಲಾಗುತ್ತಿತ್ತು?', hi: 'कौन सा नियम तोड़ा जा रहा था?', te: 'ఏ నియమం ఉల్లంఘించబడుతోంది?' }, type: 'select', required: true, options: [
         { label: { en: 'Stunts / wheelies', kn: 'ಸ್ಟಂಟ್ / ವೀಲಿ', hi: 'स्टंट / व्हीली', te: 'స్టంట్ / వీలీ' }, value: 'stunts' },
         { label: { en: 'Wrong-side driving', kn: 'ತಪ್ಪು ಬದಿಯಲ್ಲಿ ಚಾಲನೆ', hi: 'गलत दिशा में गाड़ी चलाना', te: 'తప్పు వైపు డ్రైవింగ్' }, value: 'wrong_side' },
@@ -58,8 +57,6 @@ export const scenarios: IncidentCategory[] = [
         { label: { en: 'Drunk / reckless driving', kn: 'ಮದ್ಯಪಾನದಲ್ಲಿ / ಅಪಾಯಕಾರಿ ಚಾಲನೆ', hi: 'शराब पीकर / लापरवाही चालना', te: 'మద్యం / నిర్లక్ష్య డ్రైవింగ్' }, value: 'drunk' },
         { label: { en: 'Other violation', kn: 'ಬೇರೆ ಉಲ್ಲಂಘನೆ', hi: 'अन्य उल्लंघन', te: 'ఇతర ఉల్లంఘన' }, value: 'other' },
       ]},
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
-      { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'vehicle_details', text: { en: 'Describe the vehicle or person if possible.', kn: 'ಸಾಧ್ಯವಾದರೆ ವಾಹನ ಅಥವಾ ವ್ಯಕ್ತಿಯನ್ನು ವಿವರಿಸಿ.', hi: 'संभव हो तो वाहन या व्यक्ति बताएं।', te: 'సాధ్యమైతే వాహనం లేదా వ్యక్తిని వివరించండి.' }, type: 'text', required: false },
       { id: 'registration', text: { en: 'Do you know the vehicle registration number?', kn: 'ವಾಹನ ನೋಂದಣಿ ಸಂಖ್ಯೆ ಗೊತ್ತಿದೆಯೇ?', hi: 'वाहन रजिस्ट्रेशन नंबर पता है?', te: 'వాహన రిజిస్ట్రేషన్ నంబర్ తెలుసా?' }, type: 'text', required: false },
       { id: 'endangering', text: { en: 'Was anyone put at risk?', kn: 'ಯಾರಿಗಾದರೂ ಅಪಾಯವಾಗಿತ್ತೇ?', hi: 'किसी को खतरा हुआ था?', te: 'ఎవరికైనా ప్రమాదం జరిగిందా?' }, type: 'boolean', required: false },
@@ -76,6 +73,7 @@ export const scenarios: IncidentCategory[] = [
     nameTe: 'గుంత / రోడ్డు దెబ్బతినడం',
     icon: '🕳️',
     workflow: [
+      { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
       { id: 'where', text: { en: 'Where is the pothole?', kn: 'ಗುಂಡಿ ಎಲ್ಲಿದೆ?', hi: 'गड्ढा कहाँ है?', te: 'గుంత ఎక్కడ ఉంది?' }, type: 'location', required: true },
       { id: 'photo', text: { en: 'Please share a photo.', kn: 'ದಯವಿಟ್ಟು ಫೋಟೋ ಹಂಚಿಕೊಳ್ಳಿ.', hi: 'कृपया फ़ोटो साझा करें।', te: 'దయచేసి ఫోటో షేర్ చేయండి.' }, type: 'evidence', required: true },
       { id: 'severity', text: { en: 'How severe is it?', kn: 'ಎಷ್ಟು ಗಂಭೀರ?', hi: 'कितना गंभीर है?', te: 'ఎంత తీవ్రంగా ఉంది?' }, type: 'select', required: true, options: [
@@ -97,6 +95,7 @@ export const scenarios: IncidentCategory[] = [
     nameTe: 'చెత్త',
     icon: '🗑️',
     workflow: [
+      { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
       { id: 'where', text: { en: 'Where is the garbage?', kn: 'ಕಸ ಎಲ್ಲಿದೆ?', hi: 'कचरा कहाँ है?', te: 'చెత్త ఎక్కడ ఉంది?' }, type: 'location', required: true },
       { id: 'photo', text: { en: 'Please share a photo.', kn: 'ದಯವಿಟ್ಟು ಫೋಟೋ ಹಂಚಿಕೊಳ್ಳಿ.', hi: 'कृपया फ़ोटो साझा करें।', te: 'దయచేసి ఫోటో షేర్ చేయండి.' }, type: 'evidence', required: false },
       { id: 'recurring', text: { en: 'Is this recurring?', kn: 'ಇದು ಪುನರಾವರ್ತಿತವೇ?', hi: 'क्या यह बार-बार हो रहा है?', te: 'ఇది పునరావృతమవుతోందా?' }, type: 'boolean', required: false },
@@ -118,6 +117,7 @@ export const scenarios: IncidentCategory[] = [
     nameTe: 'చట్టవిరుద్ధ పార్కింగ్',
     icon: '🅿️',
     workflow: [
+      { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
       { id: 'where', text: { en: 'Where is the illegal parking?', kn: 'ಅಕ್ರಮ ಪಾರ್ಕಿಂಗ್ ಎಲ್ಲಿದೆ?', hi: 'अवैध पार्किंग कहाँ है?', te: 'చట్టవిరుద్ధ పార్కింగ్ ఎక్కడ ఉంది?' }, type: 'location', required: true },
       { id: 'vehicle', text: { en: 'Vehicle details if known.', kn: 'ತಿಳಿದಿದ್ದರೆ ವಾಹನ ವಿವರ.', hi: 'वाहन विवरण यदि पता हो।', te: 'తెలిసితే వాహన వివరాలు.' }, type: 'text', required: false },
       { id: 'photo', text: { en: 'Photo evidence?', kn: 'ಫೋಟೋ ಸಾಕ್ಷ್ಯ?', hi: 'फ़ोटो सबूत?', te: 'ఫోటో సాక్ష్యం?' }, type: 'evidence', required: false },
@@ -133,6 +133,7 @@ export const scenarios: IncidentCategory[] = [
     nameTe: 'వీధి దీపం ఆగిపోవడం',
     icon: '💡',
     workflow: [
+      { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
       { id: 'where', text: { en: 'Where is the streetlight issue?', kn: 'ರಸ್ತೆ ದೀಪ ಸಮಸ್ಯೆ ಎಲ್ಲಿದೆ?', hi: 'स्ट्रीटलाइट कहाँ बंद है?', te: 'వీధి దీపం సమస్య ఎక్కడ ఉంది?' }, type: 'location', required: true },
       { id: 'photo', text: { en: 'Photo evidence?', kn: 'ಫೋಟೋ ಸಾಕ್ಷ್ಯ?', hi: 'फ़ोटो सबूत?', te: 'ఫోటో సాక్ష్యం?' }, type: 'evidence', required: false },
       { id: 'how_long', text: { en: 'How long has it been like this?', kn: 'ಎಷ್ಟು ದಿನಗಳಿಂದ ಹೀಗಿದೆ?', hi: 'कितने दिनों से ऐसा है?', te: 'ఎన్ని రోజులుగా ఇలా ఉంది?' }, type: 'text', required: false },
@@ -149,7 +150,6 @@ export const scenarios: IncidentCategory[] = [
     icon: '👮',
     workflow: [
       { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'reason', text: { en: 'Reason stated for the stop?', kn: 'ನಿಲ್ಲಿಸಲು ಹೇಳಿದ ಕಾರಣ?', hi: 'रोकने का बताया गया कारण?', te: 'ఆపడానికి చెప్పిన కారణం?' }, type: 'text', required: false },
       { id: 'challan', text: { en: 'Was a challan issued?', kn: 'ಚಲಾನ್ ನೀಡಲಾಗಿದೆಯೇ?', hi: 'क्या चालान कटा?', te: 'చలాన్ జారీ చేయబడిందా?' }, type: 'boolean', required: false },
@@ -169,7 +169,6 @@ export const scenarios: IncidentCategory[] = [
     workflow: [
       { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
       { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'interaction_type', text: { en: 'Type of official interaction?', kn: 'ಯಾವ ರೀತಿಯ ಅಧಿಕೃತ ಸಂವಹನ?', hi: 'किस प्रकार की आधिकारिक बातचीत?', te: 'ఏ రకమైన అధికారిక సంభాషణ?' }, type: 'text', required: true },
       { id: 'amount', text: { en: 'Amount allegedly requested?', kn: 'ಆರೋಪಿತವಾಗಿ ಕೋರಿದ ಮೊತ್ತ?', hi: 'कथित राशि?', te: 'ఆరోపించబడిన మొత్తం?' }, type: 'text', required: false },
       { id: 'challan', text: { en: 'Was an official challan/receipt mentioned?', kn: 'ಅಧಿಕೃತ ಚಲಾನ್/ರಸೀದಿ ಉಲ್ಲೇಖಿಸಲಾಗಿದೆಯೇ?', hi: 'क्या आधिकारिक चालान/रसीद का उल्लेख हुआ?', te: 'అధికారిక చలాన్/రసీదు ప్రస్తావించబడిందా?' }, type: 'boolean', required: false },
@@ -189,7 +188,6 @@ export const scenarios: IncidentCategory[] = [
     icon: '🛡️',
     workflow: [
       { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'immediate_danger', text: { en: 'Are you in immediate danger right now?', kn: 'ನೀವು ಈಗ ತಕ್ಷಣದ ಅಪಾಯದಲ್ಲಿದ್ದೀರಾ?', hi: 'क्या आप अभी तुरंत खतरे में हैं?', te: 'మీరు ఇప్పుడు వెంటనే ప్రమాదంలో ఉన్నారా?' }, type: 'boolean', required: true },
       { id: 'evidence', text: { en: 'Any evidence available?', kn: 'ಯಾವುದಾದರೂ ಸಾಕ್ಷ್ಯ?', hi: 'कोई सबूत?', te: 'ఏదైనా సాక్ష్యం?' }, type: 'evidence', required: false },
@@ -206,7 +204,7 @@ export const scenarios: IncidentCategory[] = [
     icon: '💻',
     workflow: [
       { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
+      { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'platform', text: { en: 'Which platform/service was involved?', kn: 'ಯಾವ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್/ಸೇವೆ?', hi: 'कौन सा प्लेटफ़ॉर्म/सेवा?', te: 'ఏ ప్లాట్‌ఫారమ్/సేవ?' }, type: 'text', required: false },
       { id: 'transaction_info', text: { en: 'Transaction info if relevant?', kn: 'ಸಂಬಂಧಿತವಾಗಿದ್ದರೆ ವ್ಯವಹಾರ ಮಾಹಿತಿ?', hi: 'लेन-देन की जानकारी?', te: 'సంబంధితమైతే లావాదేవీ సమాచారం?' }, type: 'text', required: false },
       { id: 'screenshots', text: { en: 'Screenshots or evidence?', kn: 'ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳು ಅಥವಾ ಸಾಕ್ಷ್ಯ?', hi: 'स्क्रीनशॉट या सबूत?', te: 'స్క్రీన్‌షాట్‌లు లేదా సాక్ష్యం?' }, type: 'evidence', required: false },
@@ -225,7 +223,7 @@ export const scenarios: IncidentCategory[] = [
     icon: '🏠',
     workflow: [
       { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: false },
+      { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'agreement', text: { en: 'Is there a rental agreement?', kn: 'ಬಾಡಿಗೆ ಒಪ್ಪಂದ ಇದೆಯೇ?', hi: 'क्या किराया समझौता है?', te: 'కిరాయి ఒప్పందం ఉందా?' }, type: 'boolean', required: false },
       { id: 'communication', text: { en: 'Communication evidence?', kn: 'ಸಂವಹನ ಸಾಕ್ಷ್ಯ?', hi: 'संचार सबूत?', te: 'కమ్యూనికేషన్ సాక్ష్యం?' }, type: 'evidence', required: false },
       { id: 'payment_info', text: { en: 'Payment information if voluntarily provided?', kn: 'ಸ್ವಯಂಪ್ರೇರಿತವಾಗಿ ನೀಡಿದರೆ ಪಾವತಿ ಮಾಹಿತಿ?', hi: 'भुगतान जानकारी यदि स्वेच्छा से?', te: 'స్వచ్ఛందంగా ఇస్తే చెల్లింపు సమాచారం?' }, type: 'text', required: false },
@@ -243,9 +241,9 @@ export const scenarios: IncidentCategory[] = [
     nameTe: 'ధ్వని కాలుష్యం',
     icon: '🔊',
     workflow: [
+      { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
       { id: 'where', text: { en: 'Where is the noise issue?', kn: 'ಶಬ್ದ ಸಮಸ್ಯೆ ಎಲ್ಲಿದೆ?', hi: 'शोर कहाँ है?', te: 'ధ్వని సమస్య ఎక్కడ ఉంది?' }, type: 'location', required: true },
       { id: 'what_source', text: { en: 'What is the source of noise?', kn: 'ಶಬ್ದದ ಮೂಲ ಯಾವುದು?', hi: 'शोर का स्रोत क्या है?', te: 'ధ్వని మూలం ఏమిటి?' }, type: 'text', required: true },
-      { id: 'when', text: { en: 'When does it occur?', kn: 'ಯಾವಾಗ ಆಗುತ್ತದೆ?', hi: 'कब होता है?', te: 'ఎప్పుడు జరుగుతుంది?' }, type: 'text', required: false },
       { id: 'evidence', text: { en: 'Any evidence?', kn: 'ಯಾವುದಾದರೂ ಸಾಕ್ಷ್ಯ?', hi: 'कोई सबूत?', te: 'ఏదైనా సాక్ష్యం?' }, type: 'evidence', required: false },
       { id: 'additional', text: { en: 'Additional information?', kn: 'ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'अतिरिक्त जानकारी?', te: 'అదనపు సమాచారం?' }, type: 'text', required: false },
     ],
@@ -259,8 +257,8 @@ export const scenarios: IncidentCategory[] = [
     nameTe: 'విద్యుత్ అంతరాయం',
     icon: '⚡',
     workflow: [
+      { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
       { id: 'where', text: { en: 'Where is the power outage?', kn: 'ವಿದ್ಯುತ್ ಅವನತಿ ಎಲ್ಲಿದೆ?', hi: 'बिजली गुल कहाँ है?', te: 'విద్యుత్ అంతరాయం ఎక్కడ ఉంది?' }, type: 'location', required: true },
-      { id: 'when', text: { en: 'When did it start?', kn: 'ಯಾವಾಗ ಪ್ರಾರಂಭವಾಯಿತು?', hi: 'कब शुरू हुआ?', te: 'ఎప్పుడు మొదలైంది?' }, type: 'text', required: true },
       { id: 'area_wide', text: { en: 'Is it area-wide?', kn: 'ಪ್ರದೇಶಾದ್ಯಂತ ಇದೆಯೇ?', hi: 'क्या यह पूरे इलाके में है?', te: 'ఇది ప్రాంతవ్యాప్తంగా ఉందా?' }, type: 'boolean', required: false },
       { id: 'evidence', text: { en: 'Any evidence?', kn: 'ಯಾವುದಾದರೂ ಸಾಕ್ಷ್ಯ?', hi: 'कोई सबूत?', te: 'ఏదైనా సాక్ష్యం?' }, type: 'evidence', required: false },
       { id: 'additional', text: { en: 'Additional information?', kn: 'ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'अतिरिक्त जानकारी?', te: 'అదనపు సమాచారం?' }, type: 'text', required: false },
@@ -277,7 +275,6 @@ export const scenarios: IncidentCategory[] = [
     workflow: [
       { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
       { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: false },
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: false },
       { id: 'additional', text: { en: 'Additional information?', kn: 'ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'अतिरिक्त जानकारी?', te: 'అదనపు సమాచారం?' }, type: 'text', required: false },
     ],
   },
@@ -291,9 +288,8 @@ export const scenarios: IncidentCategory[] = [
     icon: '📄',
     workflow: [
       { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
-      { id: 'service_type', text: { en: 'Which government service?', kn: 'ಯಾವ ಸರ್ಕಾರಿ ಸೇವೆ?', hi: 'कौन सी सरकारी सेवा?', te: 'ఏ ప్రభుత్వ సేవ?' }, type: 'text', required: true },
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: false },
       { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: false },
+      { id: 'service_type', text: { en: 'Which government service?', kn: 'ಯಾವ ಸರ್ಕಾರಿ ಸೇವೆ?', hi: 'कौन सी सरकारी सेवा?', te: 'ఏ ప్రభుత్వ సేవ?' }, type: 'text', required: true },
       { id: 'additional', text: { en: 'Additional information?', kn: 'ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'अतिरिक्त जानकारी?', te: 'అదనపు సమాచారం?' }, type: 'text', required: false },
     ],
   },
@@ -306,8 +302,8 @@ export const scenarios: IncidentCategory[] = [
     nameTe: 'ఫుట్‌పాత్ / పాదచారి సమస్య',
     icon: '🚶',
     workflow: [
-      { id: 'where', text: { en: 'Where is the issue?', kn: 'ಸಮಸ್ಯೆ ಎಲ್ಲಿದೆ?', hi: 'समस्या कहाँ है?', te: 'సమస్య ఎక్కడ ఉంది?' }, type: 'location', required: true },
       { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
+      { id: 'where', text: { en: 'Where is the issue?', kn: 'ಸಮಸ್ಯೆ ಎಲ್ಲಿದೆ?', hi: 'समस्या कहाँ है?', te: 'సమస్య ఎక్కడ ఉంది?' }, type: 'location', required: true },
       { id: 'photo', text: { en: 'Photo evidence?', kn: 'ಫೋಟೋ ಸಾಕ್ಷ್ಯ?', hi: 'फ़ोटो सबूत?', te: 'ఫోటో సాక్ష్యం?' }, type: 'evidence', required: false },
       { id: 'additional', text: { en: 'Additional information?', kn: 'ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'अतिरिक्त जानकारी?', te: 'అదనపు సమాచారం?' }, type: 'text', required: false },
     ],
@@ -321,6 +317,7 @@ export const scenarios: IncidentCategory[] = [
     nameTe: 'డ్రైనేజీ అడ్డుకోలు',
     icon: '🚰',
     workflow: [
+      { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
       { id: 'where', text: { en: 'Where is the drainage blockage?', kn: 'ಚರಂಡಿ ತಡೆ ಎಲ್ಲಿದೆ?', hi: 'नाली अवरोध कहाँ है?', te: 'డ్రైనేజీ అడ్డుకోలు ఎక్కడ ఉంది?' }, type: 'location', required: true },
       { id: 'photo', text: { en: 'Photo evidence?', kn: 'ಫೋಟೋ ಸಾಕ್ಷ್ಯ?', hi: 'फ़ोटो सबूत?', te: 'ఫోటో సాక్ష్యం?' }, type: 'evidence', required: false },
       { id: 'recurring', text: { en: 'Is this recurring?', kn: 'ಇದು ಪುನರಾವರ್ತಿತವೇ?', hi: 'क्या यह बार-बार हो रहा है?', te: 'ఇది పునరావృతమవుతోందా?' }, type: 'boolean', required: false },
@@ -406,6 +403,8 @@ export const scenarios: IncidentCategory[] = [
     nameTe: 'లంచం',
     icon: '💰',
     workflow: [
+      { id: 'what_happened', text: { en: 'What happened?', kn: 'ಏನಾಯ್ತು?', hi: 'क्या हुआ?', te: 'ఏమైంది?' }, type: 'text', required: true },
+      { id: 'location', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: false },
       { id: 'department', text: { en: 'Which department/office asked for bribe?', kn: 'ಯಾವ ಇಲಾಖೆ/ಕಛೇರಿ ಲಂಚ ಕೇಳಿತು?', hi: 'कौन सा विभाग/कार्यालय रिश्वत माँग रहा है?', te: 'ఏ శాఖ/కార్యాలయం లంచం అడిగింది?' }, type: 'select', required: true, options: [
         { value: 'rto', label: { en: 'RTO (Transport)', kn: 'ಆರ್‌ಟಿಓ (ಸಾರಿಗೆ)', hi: 'RTO (परिवहन)', te: 'RTO (రవాణా)' } },
         { value: 'bbmp', label: { en: 'BBMP (Municipal Corporation)', kn: 'ಬಿಬಿಎಂಪಿ (ನಗರಪಾಲಿಕೆ)', hi: 'BBMP (नगर निगम)', te: 'BBMP (మున్సిపల్ కార్పొరేషన్)' } },
@@ -475,7 +474,6 @@ export const scenarios: IncidentCategory[] = [
         { value: 'exam', label: { en: 'Exam / Evaluation', kn: 'ಪರೀಕ್ಷೆ / ಮೌಲ್ಯಮಾಪನ', hi: 'परीक्षा / मूल्यांकन', te: 'పరీక్ష / మూల్యాంకనం' } },
         { value: 'other', label: { en: 'Other (Type below)', kn: 'ಇತರೆ (ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ)', hi: 'अन्य (नीचे टाइप करें)', te: 'ఇతర (కింద టైప్ చేయండి)' } },
       ]},
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'time_of_day', text: { en: 'What time of day?', kn: 'ದಿನದ ಯಾವ ಸಮಯ?', hi: 'दिन का कौन सा समय?', te: 'రోజులో ఏ సమయం?' }, type: 'select', required: true, options: [
         { value: 'morning', label: { en: 'Morning (6AM-12PM)', kn: 'ಬೆಳಿಗ್ಗೆ (6AM-12PM)', hi: 'सुबह (6AM-12PM)', te: 'ఉదయం (6AM-12PM)' } },
         { value: 'afternoon', label: { en: 'Afternoon (12PM-4PM)', kn: 'ಮಧ್ಯಾಹ್ನ (12PM-4PM)', hi: 'दोपहर (12PM-4PM)', te: 'మధ్యాహ్నం (12PM-4PM)' } },
@@ -484,7 +482,6 @@ export const scenarios: IncidentCategory[] = [
       ]},
       { id: 'person_name', text: { en: 'Name of person who asked (if known)?', kn: 'ಕೇಳಿದ ವ್ಯಕ್ತಿಯ ಹೆಸರು (ತಿಳಿದಿದ್ದರೆ)?', hi: 'माँगने वाले का नाम (अगर पता हो)?', te: 'అడిగిన వ్యక్తి పేరు (తెలిస్తే)?' }, type: 'text', required: false },
       { id: 'person_designation', text: { en: 'Their designation/role (if known)?', kn: 'ಅವರ ಹುದ್ದೆ/ಪಾತ್ರ (ತಿಳಿದಿದ್ದರೆ)?', hi: 'उनका पद/भूमिका (अगर पता हो)?', te: 'వారి పదవి/పాత్ర (తెలిస్తే)?' }, type: 'text', required: false },
-      { id: 'location', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: false },
       { id: 'evidence', text: { en: 'Any evidence (receipt, recording, screenshot)?', kn: 'ಯಾವುದಾದರೂ ಸಾಕ್ಷ್ಯ (ರಸೀದಿ, ರೆಕಾರ್ಡಿಂಗ್, ಸ್ಕ್ರೀನ್‌ಶಾಟ್)?', hi: 'कोई सबूत (रसीद, रिकॉर्डिंग, स्क्रीनशॉट)?', te: 'ఏదైనా సాక్ష్యం (రసీదు, రికార్డింగ్, స్క్రీన్‌షాట్)?' }, type: 'evidence', required: false },
       { id: 'additional', text: { en: 'Additional information?', kn: 'ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'अतिरिक्त जानकारी?', te: 'అదనపు సమాచారం?' }, type: 'text', required: false },
     ],
@@ -499,6 +496,7 @@ export const scenarios: IncidentCategory[] = [
     icon: '🚌',
     workflow: [
       { id: 'what_happened', text: { en: 'What happened with the bus?', kn: 'ಬಸ್‌ನಲ್ಲಿ ಏನಾಯ್ತು?', hi: 'बस में क्या हुआ?', te: 'బస్సులో ఏమైంది?' }, type: 'text', required: true },
+      { id: 'where', text: { en: 'Where did this happen (which stop / area)?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು (ಯಾವ ನಿಲ್ದಾಣ / ಪ್ರದೇಶ)?', hi: 'कहाँ हुआ (कौन सा स्टॉप / इलाका)?', te: 'ఎక్కడ జరిగింది (ఏ స్టాప్ / ప్రాంతం)?' }, type: 'location', required: false },
       { id: 'issue_type', text: { en: 'What kind of problem was it?', kn: 'ಯಾವ ರೀತಿಯ ಸಮಸ್ಯೆ?', hi: 'किस तरह की समस्या थी?', te: 'ఏ రకమైన సమస్య?' }, type: 'select', required: true, options: [
         { label: { en: 'Bus did not come / long delay', kn: 'ಬಸ್ ಬಂದಿಲ್ಲ / ತುಂಬಾ ತಡ', hi: 'बस नहीं आई / बहुत देर', te: 'బస్సు రాలేదు / చాలా ఆలస్యం' }, value: 'no_bus' },
         { label: { en: 'Broke down mid-journey', kn: 'ಮಧ್ಯದಲ್ಲಿ ನಿಂತುಹೋಯಿತು', hi: 'रास्ते में खराब हो गई', te: 'దారిలో ఆగిపోయింది' }, value: 'breakdown' },
@@ -508,14 +506,12 @@ export const scenarios: IncidentCategory[] = [
         { label: { en: 'Dirty / water leaking', kn: 'ಕೊಳಚೆ / ನೀರು ಸೋರುತ್ತಿದೆ', hi: 'गंदा / पानी लीक', te: 'మురికి / నీరు చినుకుతోంది' }, value: 'dirty' },
         { label: { en: 'Other (type below)', kn: 'ಇತರೆ (ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ)', hi: 'अन्य (नीचे टाइप करें)', te: 'ఇతర (కింద టైప్ చేయండి)' }, value: 'other' },
       ]},
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'bus_number', text: { en: 'Do you know the bus number? (e.g. 401K, 500D)', kn: 'ಬಸ್ ಸಂಖ್ಯೆ ಗೊತ್ತಿದೆಯೇ? (ಉದಾ. 401K, 500D)', hi: 'क्या बस नंबर पता है? (जैसे 401K, 500D)', te: 'బస్ నంబర్ తెలుసా? (ఉదా. 401K, 500D)' }, type: 'text', required: false },
       { id: 'route_from', text: { en: 'Travelling from which bus stop?', kn: 'ಯಾವ ಬಸ್ ನಿಲ್ದಾಣದಿಂದ ಪ್ರಯಾಣಿಸುತ್ತಿದ್ದಿರಿ?', hi: 'किस बस स्टॉप से यात्रा कर रहे थे?', te: 'ఏ బస్ స్టాప్ నుండి ప్రయాణిస్తున్నారు?' }, type: 'text', required: true, suggest: 'bmtc_stops' },
       { id: 'route_to', text: { en: 'Going to which bus stop?', kn: 'ಯಾವ ಬಸ್ ನಿಲ್ದಾಣಕ್ಕೆ ಹೋಗುತ್ತಿದ್ದಿರಿ?', hi: 'किस बस स्टॉप तक जा रहे थे?', te: 'ఏ బస్ స్టాప్‌కి వెళ్తున్నారు?' }, type: 'text', required: true, suggest: 'bmtc_stops' },
       { id: 'bus_stop', text: { en: 'Which bus stop was this at? (pick from the list)', kn: 'ಇದು ಯಾವ ಬಸ್ ನಿಲ್ದಾಣದಲ್ಲಿ ನಡೆಯಿತು? (ಪಟ್ಟಿಯಿಂದ ಆಯ್ಕೆಮಾಡಿ)', hi: 'यह किस बस स्टॉप पर हुआ? (सूची से चुनें)', te: 'ఇది ఏ బస్ స్టాప్ వద్ద జరిగింది? (జాబితా నుండి ఎంచుకోండి)' }, type: 'text', required: false, suggest: 'bmtc_stops' },
       { id: 'ticket', text: { en: 'Do you have the ticket?', kn: 'ನಿಮ್ಮ ಬಳಿ ಟಿಕೆಟ್ ಇದೆಯೇ?', hi: 'क्या आपके पास टिकट है?', te: 'మీ దగ్గర టికెట్ ఉందా?' }, type: 'boolean', required: false },
       { id: 'ticket_details', text: { en: 'Ticket number, fare paid, or pass details (if any)', kn: 'ಟಿಕೆಟ್ ಸಂಖ್ಯೆ, ಪಾವತಿಸಿದ ದರ ಅಥವಾ ಪಾಸ್ ವಿವರ (ಇದ್ದರೆ)', hi: 'टिकट नंबर, चुकाया किराया या पास विवरण (अगर हो)', te: 'టికెట్ నంబర్, చెల్లించిన ఛార్జీ లేదా పాస్ వివరాలు (ఉంటే)' }, type: 'text', required: false },
-      { id: 'where', text: { en: 'Where did this happen (which stop / area)?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು (ಯಾವ ನಿಲ್ದಾಣ / ಪ್ರದೇಶ)?', hi: 'कहाँ हुआ (कौन सा स्टॉप / इलाका)?', te: 'ఎక్కడ జరిగింది (ఏ స్టాప్ / ప్రాంతం)?' }, type: 'location', required: false },
       { id: 'photos', text: { en: 'Do you have photos / video evidence?', kn: 'ಫೋಟೋ / ವೀಡಿಯೋ ಸಾಕ್ಷ್ಯ ಇದೆಯೇ?', hi: 'फ़ोटो / वीडियो सबूत है?', te: 'ఫోటో / వీడియో సాక్ష్యం ఉందా?' }, type: 'boolean', required: false },
       { id: 'additional', text: { en: 'Any additional information?', kn: 'ಯಾವುದಾದರೂ ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'कोई अतिरिक्त जानकारी?', te: 'ఏదైనా అదనపు సమాచారం?' }, type: 'text', required: false },
     ],
@@ -530,13 +526,13 @@ export const scenarios: IncidentCategory[] = [
     icon: '🧑‍✈️',
     workflow: [
       { id: 'what_happened', text: { en: 'What did the staff do?', kn: 'ಸಿಬ್ಬಂದಿ ಏನು ಮಾಡಿದರು?', hi: 'स्टाफ ने क्या किया?', te: 'సిబ్బంది ఏం చేశారు?' }, type: 'text', required: true },
+      { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'staff_role', text: { en: 'Who was involved?', kn: 'ಯಾರು ಭಾಗಿಯಾಗಿದ್ದರು?', hi: 'कौन शामिल था?', te: 'ఎవరు పాల్గొన్నారు?' }, type: 'select', required: true, options: [
         { label: { en: 'Driver', kn: 'ಚಾಲಕ', hi: 'ड्राइवर', te: 'డ్రైవర్' }, value: 'driver' },
         { label: { en: 'Conductor', kn: 'ಕಂಡಕ್ಟರ್', hi: 'कंडक्टर', te: 'కండక్టర్' }, value: 'conductor' },
         { label: { en: 'Checking staff / inspector', kn: 'ತಪಾಸಣೆ ಸಿಬ್ಬಂದಿ / ನಿರೀಕ್ಷಕ', hi: 'जाँच स्टाफ / निरीक्षक', te: 'తనిఖీ సిబ్బంది / ఇన్స్పెక్టర్' }, value: 'inspector' },
         { label: { en: 'Other (type below)', kn: 'ಇತರೆ (ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ)', hi: 'अन्य (नीचे टाइप करें)', te: 'ఇతర (కింద టైప్ చేయండి)' }, value: 'other' },
       ]},
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'bus_number', text: { en: 'Do you know the bus number? (e.g. 401K, 500D)', kn: 'ಬಸ್ ಸಂಖ್ಯೆ ಗೊತ್ತಿದೆಯೇ? (ಉದಾ. 401K, 500D)', hi: 'क्या बस नंबर पता है? (जैसे 401K, 500D)', te: 'బస్ నంబర్ తెలుసా? (ఉదా. 401K, 500D)' }, type: 'text', required: false },
       { id: 'route_from', text: { en: 'Travelling from which bus stop?', kn: 'ಯಾವ ಬಸ್ ನಿಲ್ದಾಣದಿಂದ ಪ್ರಯಾಣಿಸುತ್ತಿದ್ದಿರಿ?', hi: 'किस बस स्टॉप से यात्रा कर रहे थे?', te: 'ఏ బస్ స్టాప్ నుండి ప్రయాణిస్తున్నారు?' }, type: 'text', required: true, suggest: 'bmtc_stops' },
       { id: 'route_to', text: { en: 'Going to which bus stop?', kn: 'ಯಾವ ಬಸ್ ನಿಲ್ದಾಣಕ್ಕೆ ಹೋಗುತ್ತಿದ್ದಿರಿ?', hi: 'किस बस स्टॉप तक जा रहे थे?', te: 'ఏ బస్ స్టాప్‌కి వెళ్తున్నారు?' }, type: 'text', required: true, suggest: 'bmtc_stops' },
@@ -558,6 +554,7 @@ export const scenarios: IncidentCategory[] = [
     icon: '🎟️',
     workflow: [
       { id: 'what_happened', text: { en: 'What happened with the fare or ticket?', kn: 'ದರ ಅಥವಾ ಟಿಕೆಟ್‌ನಲ್ಲಿ ಏನಾಯ್ತು?', hi: 'किराये या टिकट में क्या हुआ?', te: 'ఛార్జీ లేదా టికెట్‌లో ఏమైంది?' }, type: 'text', required: true },
+      { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'issue_type', text: { en: 'What kind of problem was it?', kn: 'ಯಾವ ರೀತಿಯ ಸಮಸ್ಯೆ?', hi: 'किस तरह की समस्या थी?', te: 'ఏ రకమైన సమస్య?' }, type: 'select', required: true, options: [
         { label: { en: 'Overcharged / excess fare', kn: 'ಹೆಚ್ಚು ದರ ವಸೂಲಿ', hi: 'ज़्यादा किराया वसूला', te: 'ఎక్కువ ఛార్జీ వసూలు' }, value: 'overcharged' },
         { label: { en: 'Ticket not given', kn: 'ಟಿಕೆಟ್ ನೀಡಲಿಲ್ಲ', hi: 'टिकट नहीं मिली', te: 'టికెట్ ఇవ్వలేదు' }, value: 'no_ticket' },
@@ -566,7 +563,6 @@ export const scenarios: IncidentCategory[] = [
         { label: { en: 'QR / ticket machine not working', kn: 'QR / ಟಿಕೆಟ್ ಯಂತ್ರ ಕೆಲಸ ಮಾಡುತ್ತಿಲ್ಲ', hi: 'क्यूआर / टिकट मशीन खराब', te: 'QR / టికెట్ మెషీన్ పనిచేయడం లేదు' }, value: 'machine_down' },
         { label: { en: 'Other (type below)', kn: 'ಇತರೆ (ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ)', hi: 'अन्य (नीचे टाइप करें)', te: 'ఇతర (కింద టైప్ చేయండి)' }, value: 'other' },
       ]},
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'bus_number', text: { en: 'Do you know the bus number? (e.g. 401K, 500D)', kn: 'ಬಸ್ ಸಂಖ್ಯೆ ಗೊತ್ತಿದೆಯೇ? (ಉದಾ. 401K, 500D)', hi: 'क्या बस नंबर पता है? (जैसे 401K, 500D)', te: 'బస్ నంబర్ తెలుసా? (ఉదా. 401K, 500D)' }, type: 'text', required: false },
       { id: 'route_from', text: { en: 'Travelling from which bus stop?', kn: 'ಯಾವ ಬಸ್ ನಿಲ್ದಾಣದಿಂದ ಪ್ರಯಾಣಿಸುತ್ತಿದ್ದಿರಿ?', hi: 'किस बस स्टॉप से यात्रा कर रहे थे?', te: 'ఏ బస్ స్టాప్ నుండి ప్రయాణిస్తున్నారు?' }, type: 'text', required: true, suggest: 'bmtc_stops' },
       { id: 'route_to', text: { en: 'Going to which bus stop?', kn: 'ಯಾವ ಬಸ್ ನಿಲ್ದಾಣಕ್ಕೆ ಹೋಗುತ್ತಿದ್ದಿರಿ?', hi: 'किस बस स्टॉप तक जा रहे थे?', te: 'ఏ బస్ స్టాప్‌కి వెళ్తున్నారు?' }, type: 'text', required: true, suggest: 'bmtc_stops' },
@@ -588,6 +584,7 @@ export const scenarios: IncidentCategory[] = [
     icon: '🚇',
     workflow: [
       { id: 'what_happened', text: { en: 'What happened on the metro?', kn: 'ಮೆಟ್ರೋದಲ್ಲಿ ಏನಾಯ್ತು?', hi: 'मेट्रो में क्या हुआ?', te: 'మెట్రోలో ఏమైంది?' }, type: 'text', required: true },
+      { id: 'where', text: { en: 'Where did this happen (station / coach)?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು (ನಿಲ್ದಾಣ / ಕೋಚ್)?', hi: 'कहाँ हुआ (स्टेशन / कोच)?', te: 'ఎక్కడ జరిగింది (స్టేషన్ / కోచ్)?' }, type: 'location', required: false },
       { id: 'issue_type', text: { en: 'What kind of problem was it?', kn: 'ಯಾವ ರೀತಿಯ ಸಮಸ್ಯೆ?', hi: 'किस तरह की समस्या थी?', te: 'ఏ రకమైన సమస్య?' }, type: 'select', required: true, options: [
         { label: { en: 'Train delayed / service gap', kn: 'ಟ್ರೈನ್ ತಡ / ಸೇವೆ ವ್ಯತ್ಯಾಸ', hi: 'ट्रेन देर / सेवा में अंतर', te: 'రైలు ఆలస్యం / సర్వీస్ గ్యాప్' }, value: 'delay' },
         { label: { en: 'Overcrowding / no space', kn: 'ಜನ ತುಂಬಿ / ಜಾಗ ಇಲ್ಲ', hi: 'भीड़ / जगह नहीं', te: 'రద్దు / చోటు లేదు' }, value: 'crowded' },
@@ -607,7 +604,6 @@ export const scenarios: IncidentCategory[] = [
         { label: { en: 'Yellow Line', kn: 'ಹಳದಿ ಮಾರ್ಗ', hi: 'येलो लाइन', te: 'యెల్లో లైన్' }, value: 'yellow' },
         { label: { en: 'Not sure', kn: 'ಗೊತ್ತಿಲ್ಲ', hi: 'पता नहीं', te: 'తెలియదు' }, value: 'unknown' },
       ]},
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'time_of_day', text: { en: 'What time of day?', kn: 'ದಿನದ ಯಾವ ಸಮಯ?', hi: 'दिन का कौन सा समय?', te: 'రోజులో ఏ సమయం?' }, type: 'select', required: false, options: [
         { value: 'morning', label: { en: 'Morning (6AM-12PM)', kn: 'ಬೆಳಿಗ್ಗೆ (6AM-12PM)', hi: 'सुबह (6AM-12PM)', te: 'ఉదయం (6AM-12PM)' } },
         { value: 'afternoon', label: { en: 'Afternoon (12PM-4PM)', kn: 'ಮಧ್ಯಾಹ್ನ (12PM-4PM)', hi: 'दोपहर (12PM-4PM)', te: 'మధ్యాహ్నం (12PM-4PM)' } },
@@ -616,7 +612,6 @@ export const scenarios: IncidentCategory[] = [
       ]},
       { id: 'details', text: { en: 'Any details? (train/coach, gate, platform, token no.)', kn: 'ಯಾವುದಾದರೂ ವಿವರ? (ಟ್ರೈನ್, ಗೇಟ್, ಪ್ಲಾಟ್‌ಫಾರ್ಮ್, ಟೋಕನ್)', hi: 'कोई विवरण? (ट्रेन, गेट, प्लेटफ़ॉर्म, टोकन)', te: 'ఏదైనా వివరాలు? (రైలు, గేట్, ప్లాట్‌ఫారమ్, టోకెన్)' }, type: 'text', required: false },
       { id: 'photos', text: { en: 'Do you have photos / video evidence?', kn: 'ಫೋಟೋ / ವೀಡಿಯೋ ಸಾಕ್ಷ್ಯ ಇದೆಯೇ?', hi: 'फ़ोटो / वीडियो सबूत है?', te: 'ఫోటో / వీడియో సాక్ష్యం ఉందా?' }, type: 'boolean', required: false },
-      { id: 'where', text: { en: 'Where did this happen (station / coach)?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು (ನಿಲ್ದಾಣ / ಕೋಚ್)?', hi: 'कहाँ हुआ (स्टेशन / कोच)?', te: 'ఎక్కడ జరిగింది (స్టేషన్ / కోచ్)?' }, type: 'location', required: false },
       { id: 'additional', text: { en: 'Any additional information?', kn: 'ಯಾವುದಾದರೂ ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ?', hi: 'कोई अतिरिक्त जानकारी?', te: 'ఏదైనా అదనపు సమాచారం?' }, type: 'text', required: false },
     ],
   },
@@ -629,7 +624,6 @@ export const scenarios: IncidentCategory[] = [
     nameTe: 'మరొకటి',
     icon: '❓',
     workflow: [
-      { id: 'when', text: { en: 'When did this happen?', kn: 'ಯಾವಾಗ ಆಯ್ತು?', hi: 'कब हुआ?', te: 'ఎప్పుడు జరిగింది?' }, type: 'date', required: true },
       { id: 'where', text: { en: 'Where did this happen?', kn: 'ಎಲ್ಲಿ ಆಯ್ತು?', hi: 'कहाँ हुआ?', te: 'ఎక్కడ జరిగింది?' }, type: 'location', required: true },
       { id: 'evidence', text: { en: 'Any evidence (photo/video)?', kn: 'ಯಾವುದಾದರೂ ಸಾಕ್ಷ್ಯ (ಫೋಟೋ/ವೀಡಿಯೋ)?', hi: 'कोई सबूत (फ़ोटो/वीडियो)?', te: 'ఏదైనా సాక్ష్యం (ఫోటో/వీడియో)?' }, type: 'evidence', required: false },
       { id: 'additional', text: { en: 'Anything else to add?', kn: 'ಬೇರೇನಾದರೂ ಸೇರಿಸಲು ಇದೆಯೇ?', hi: 'कुछ और जोड़ना है?', te: 'మరేదైనా చేర్చాలా?' }, type: 'text', required: false },

@@ -199,7 +199,10 @@ export default function FeedPage() {
             <div className="text-xs text-gray-400">{visible.length} {t('feed.issues', lang)}</div>
             {visible.map(item => {
               const sev = severityKey(item.severity);
-              const context = item.ai_context?.trim() || buildFallbackContext(item, lang);
+              // Primary: the citizen's actual words (PII stripped upstream).
+              // Legacy rows with no stored text fall back to analysed context.
+              const report = item.original_text?.trim();
+              const context = report || item.ai_context?.trim() || buildFallbackContext(item, lang);
               return (
                 <article key={item.incident_id} data-testid="feed-card" className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
@@ -220,7 +223,7 @@ export default function FeedPage() {
                     </span>
                   </div>
 
-                  {/* Four-line analysed context instead of the raw complaint */}
+                  {/* What the citizen actually reported (PII stripped) */}
                   <p className="mt-2.5 text-sm text-gray-700 leading-relaxed whitespace-pre-line" data-testid="feed-context">
                     {context}
                   </p>

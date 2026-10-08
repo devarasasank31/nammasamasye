@@ -113,18 +113,30 @@ async function main() {
     check(tag + 'L4 next question ready', await waitUntil(inputReady, 20000));
   };
 
-  // Parking workflow order (proven by prior E2E): location → description → evidence → boolean → when.
+  // New flow order (scripts/check-workflow-order.mjs):
+  // what happened (typed) → where (map) → when (picker) → details → review.
   const walkToWhen = async (tag, descText) => {
+    check(tag + 'L0 what-happened asked first', await waitUntil(async () => await has('What happened?'), 10000));
+    check(tag + 'L0b description input ready', await waitUntil(inputReady, 10000));
+    check(tag + 'L5 typed description', (await typeInto(descText)) === 'OK');
+    await sleep(300); await pressEnter(); await sleep(800);
     await answerLocation(tag);
-    if (await waitUntil(inputReady, 15000)) {
-      check(tag + 'L5 typed description', (await typeInto(descText)) === 'OK');
-      await sleep(300); await pressEnter(); await sleep(1200);
+    return await waitUntil(async () => await has('When did this happen?'), 15000);
+  };
+
+  // WHEN-Continue resumes the workflow: vehicle text → photo skip → boolean.
+  const finishDetails = async (tag) => {
+    check(tag + 'D1 details resumed after when', await waitUntil(inputReady, 12000));
+    if (results[results.length - 1][1]) {
+      await typeInto('white sedan near the market road');
+      await sleep(300); await pressEnter(); await sleep(1000);
     }
     const evSkip = await waitUntil(async () => (await ev(`Array.from(document.querySelectorAll('button')).some(b => /^Skip\\s*[\\u2010-\\u2015-]?\\s*No evidence/i.test(b.innerText.trim()))`)), 12000);
     if (evSkip) { await ev(`(() => { const b = Array.from(document.querySelectorAll('button')).find(x => /^Skip\\s*[\\u2010-\\u2015-]?\\s*No evidence/i.test(x.innerText.trim())); b.click(); return 1; })()`); await sleep(900); }
+    check(tag + 'D2 evidence skip', evSkip);
     const noBtn = await waitUntil(async () => (await ev(`Array.from(document.querySelectorAll('button')).some(b => b.innerText.trim() === 'No')`)), 12000);
     if (noBtn) { await clickBtn('No'); await sleep(900); }
-    return await waitUntil(async () => await has('When did this happen?'), 15000);
+    check(tag + 'D3 boolean answered', noBtn);
   };
 
   const submitFromReview = async (_tag) => {
@@ -181,6 +193,8 @@ async function main() {
     // ---------- Scenario A: prefill "yesterday" → specific date+time → EXACT ----------
     await reset('A');
     check('A1 category button', (await clickBtn('Illegal Parking')) === 'CLICKED');
+    await sleep(900);
+    check('A1b map NOT open before description', (await ev(`!!document.querySelector('.leaflet-container')`)) === false);
     check('A2 reached when step', await walkToWhen('A', 'streetlight pole fell down yesterday evening near the market road'));
     const aY = await chipClass('Yesterday');
     check('A3 yesterday prefilled', typeof aY === 'string' && aY.includes('bg-primary'));
@@ -195,6 +209,7 @@ async function main() {
     await sleep(400);
     check('A10 continue enabled', (await continueDisabled()) === 'false');
     check('A11 continue clicked', (await clickMatch('^Continue$')) === 'CLICKED');
+    await finishDetails('A');
     check('A12 at review', await waitUntil(async () => await has('When:'), 8000));
     const aReview = await text();
     check('A13 review shows 18:30', aReview.includes('18:30'));
@@ -216,6 +231,7 @@ async function main() {
     const bR = await chipClass('Happening right now');
     check('B3 right-now prefilled', typeof bR === 'string' && bR.includes('bg-red-600'));
     check('B4 continue clicked', (await clickMatch('^Continue$')) === 'CLICKED');
+    await finishDetails('B');
     check('B5 review shows ongoing', await waitUntil(async () => (await text()).includes('Happening right now'), 8000));
     check('B6 submitted', await submitFromReview('B'));
     const bInc = await firstIncident();
@@ -230,6 +246,7 @@ async function main() {
     check('C4 unknown picked', (await clickMatch("^I'm not sure$")) === 'CLICKED');
     check('C5 continue enabled after choice', (await continueDisabled()) === 'false');
     check('C6 continue clicked', (await clickMatch('^Continue$')) === 'CLICKED');
+    await finishDetails('C');
     check('C7 review shows not sure', await waitUntil(async () => (await text()).includes("I'm not sure"), 8000));
     check('C8 submitted', await submitFromReview('C'));
     const cInc = await firstIncident();

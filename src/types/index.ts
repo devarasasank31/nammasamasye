@@ -154,8 +154,9 @@ export interface Incident {
 
 /**
  * Sanitised view of an incident for the public issue feed.
- * Deliberately omits original_text, answers, attachments, session id and
- * exact coordinates — only the issue, place and severity are public.
+ * Omits answers, attachments, session id and exact coordinates. The
+ * citizen's own words are published (PII redacted at the store boundary)
+ * so every card shows a real report, not a canned category summary.
  */
 export interface PublicIncident {
   incident_id: string;
@@ -179,6 +180,8 @@ export interface PublicIncident {
   flagged?: boolean;
   /** Sanitised 4-line analysis — safe to show publicly, no personal details. */
   ai_context?: string;
+  /** Citizen's own words, PII-redacted — the primary feed card body. */
+  original_text?: string;
 }
 
 export interface Evidence {
