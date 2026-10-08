@@ -51,7 +51,17 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<'severity' | 'support'>('severity');
   const [category, setCategory] = useState('all');
-  const [showFlagNote, setShowFlagNote] = useState<string | null>(null);
+  const [showFlagNote, setShowFlagNote] = useState<{ id: string; on: boolean } | null>(null);
+
+  const handleFlag = async (incidentId: string) => {
+    // Same button toggles both ways: flag an unclear report, click again
+    // to withdraw the flag.
+    const wasFlagged = items.find(i => i.incident_id === incidentId)?.flagged;
+    await flagIncident(incidentId);
+    setItems(await getPublicFeed());
+    setShowFlagNote({ id: incidentId, on: !wasFlagged });
+    setTimeout(() => setShowFlagNote(null), 2500);
+  };
 
   const load = async (silent = false) => {
     if (!silent) {
@@ -112,13 +122,6 @@ export default function FeedPage() {
     // Same button toggles — support it, then click again to withdraw.
     await supportIncident(incidentId);
     setItems(await getPublicFeed());
-  };
-
-  const handleFlag = async (incidentId: string) => {
-    await flagIncident(incidentId);
-    setItems(await getPublicFeed());
-    setShowFlagNote(incidentId);
-    setTimeout(() => setShowFlagNote(null), 2500);
   };
 
   return (
@@ -252,11 +255,11 @@ export default function FeedPage() {
                     </button>
                     <button
                       onClick={() => void handleFlag(item.incident_id)}
-                      disabled={item.flagged}
-                      title={t('feed.flag', lang)}
+                      aria-pressed={item.flagged}
+                      title={item.flagged ? t('feed.unflag_hint', lang) : t('feed.flag', lang)}
                       className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition ${
                         item.flagged
-                          ? 'bg-amber-50 border-amber-300 text-amber-700 cursor-default'
+                          ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
                           : 'bg-white border-gray-200 text-gray-500 hover:border-amber-300 hover:text-amber-700'
                       }`}
                     >
@@ -266,8 +269,10 @@ export default function FeedPage() {
                     </button>
                   </div>
 
-                  {showFlagNote === item.incident_id && (
-                    <p className="mt-2 text-[11px] text-amber-700">{t('feed.flagged', lang)}</p>
+                  {showFlagNote?.id === item.incident_id && (
+                    <p className="mt-2 text-[11px] text-amber-700">
+                      {showFlagNote.on ? t('feed.flagged', lang) : t('feed.unflagged', lang)}
+                    </p>
                   )}
                 </article>
               );

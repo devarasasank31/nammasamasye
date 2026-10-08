@@ -114,6 +114,8 @@ const translations: Record<string, Record<Language, string>> = {
   'feed.support_hint': { en: 'Click again to withdraw your support', kn: 'ಬೆಂಬಲ ಹಿಂಪಡೆಯಲು ಮತ್ತೆ ಕ್ಲಿಕ್ ಮಾಡಿ', hi: 'अपना समर्थन वापस लेने के लिए फिर से क्लिक करें', te: 'మీ మద్దతును ఉపసంహరించుకోవడానికి మళ్లీ క్లిక్ చేయండి' },
   'feed.flag': { en: 'Flag unclear description', kn: 'ಸ್ಪಷ್ಟವಾಗಿಲ್ಲ ಎಂದು ಗುರುತಿಸಿ', hi: 'अस्पष्ट विवरण बताएँ', te: 'స్పష్టంగా లేదని గుర్తించండి' },
   'feed.flagged': { en: 'Flagged for clarity', kn: 'ಸ್ಪಷ್ಟತೆಗಾಗಿ ಗುರುತಿಸಲಾಗಿದೆ', hi: 'स्पष्टता के लिए चिह्नित', te: 'స్పష్టత కోసం గుర్తించబడింది' },
+  'feed.unflag_hint': { en: 'Click again to remove this flag', kn: 'ಈ ಗುರುತನ್ನು ತೆಗೆದುಹಾಕಲು ಮತ್ತೆ ಕ್ಲಿಕ್ ಮಾಡಿ', hi: 'यह फ़्लैग हटाने के लिए फिर से क्लिक करें', te: 'ఈ ఫ్లాగ్ తొలగించడానికి మళ్లీ క్లిక్ చేయండి' },
+  'feed.unflagged': { en: 'Flag removed', kn: 'ಗುರುತನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ', hi: 'फ़्लैग हटाया गया', te: 'ఫ్లాగ్ తొలగించబడింది' },
   'feed.all': { en: 'All', kn: 'ಎಲ್ಲಾ', hi: 'सभी', te: 'అన్నీ' },
   'feed.ward': { en: 'Ward', kn: 'ವಾರ್ಡ್', hi: 'वार्ड', te: 'వార్డ్' },
   'feed.citizens': { en: '{count} citizens reported this same issue here', kn: 'ಇಲ್ಲಿ {count} ಪೌರರು ಇದೇ ಸಮಸ್ಯೆಯನ್ನು ವರದಿ ಮಾಡಿದ್ದಾರೆ', hi: 'यहाँ {count} नागरिकों ने यही समस्या रिपोर्ट की है', te: 'ఇక్కడ {count} పౌరులు ఇదే సమస్యను నివేదించారు' },

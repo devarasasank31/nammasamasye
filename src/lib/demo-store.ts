@@ -479,13 +479,22 @@ export const demoStore = {
     return { count: after?.support_count ?? 0, supported: supported.includes(incidentId) };
   },
 
-  /** Report a poor/inaccurate description so an admin can improve it. */
+  /**
+   * Toggle a "needs better description" flag — citizens can select it to
+   * flag an unclear report and deselect it again to withdraw the flag
+   * (same two-way behaviour as the support button).
+   */
   flagIncident(incidentId: string): number | null {
     const inc = incidents.find(i => i.incident_id === incidentId);
     if (!inc) return null;
-    if (flagged.includes(incidentId)) return inc.flag_count || 0;
-    flagged.push(incidentId);
-    inc.flag_count = (inc.flag_count || 0) + 1;
+    const idx = flagged.indexOf(incidentId);
+    if (idx >= 0) {
+      flagged.splice(idx, 1);
+      inc.flag_count = Math.max((inc.flag_count || 1) - 1, 0);
+    } else {
+      flagged.push(incidentId);
+      inc.flag_count = (inc.flag_count || 0) + 1;
+    }
     saveToStorage('ns_flagged', flagged);
     persistAll();
     return inc.flag_count;
