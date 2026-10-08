@@ -187,6 +187,7 @@ export default function LandingPage() {
             <a href="/feed" className="hover:text-primary transition">{t('nav.feed', lang)}</a>
             <a href="/privacy" className="hover:text-primary transition">{t('nav.privacy', lang)}</a>
             <a href="/safety" className="hover:text-primary transition">{t('nav.safety', lang)}</a>
+            <a href="/report-issue" title="Have an issue? Let us know." className="hover:text-primary transition">{t('nav.report_issue', lang)}</a>
           </div>
           <div className="flex items-center gap-2 md:hidden">
             <button onClick={toggleTheme} title={themeLabel} aria-label={themeLabel} className="p-2 rounded-lg hover:bg-white/10 transition">
@@ -205,6 +206,7 @@ export default function LandingPage() {
             <a href="/feed" className="block py-2">{t('nav.feed', lang)}</a>
             <a href="/privacy" className="block py-2">{t('nav.privacy', lang)}</a>
             <a href="/safety" className="block py-2">{t('nav.safety', lang)}</a>
+            <a href="/report-issue" title="Have an issue? Let us know." className="block py-2">{t('nav.report_issue', lang)}</a>
           </div>
         )}
       </nav>

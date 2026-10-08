@@ -46,6 +46,22 @@ let sessions: Session[] = loadFromStorage<Session[]>('ns_sessions', []);
 let incidents: DemoIncident[] = loadFromStorage<DemoIncident[]>('ns_incidents', []);
 let idCounter = loadFromStorage<number>('ns_id_counter', 100);
 
+/** A "Report Issue" submission — problems with the website/app itself. */
+export interface FeedbackRecord {
+  feedback_id: string;
+  submitted_date: string;
+  submitted_time: string;
+  issue_date: string;
+  issue_time: string;
+  issue_type: string;
+  what_happened: string;
+  severity: string;
+  rating: number;
+  status: string;
+  created_at: string;
+}
+const feedbacks: FeedbackRecord[] = loadFromStorage<FeedbackRecord[]>('ns_feedbacks', []);
+
 // Problems people typed under "Something Else" — kept with a usage count so
 // the next citizen gets them offered as suggestions instead of retyping.
 export interface CustomProblem {
@@ -506,6 +522,20 @@ export const demoStore = {
 
   hasFlagged(incidentId: string): boolean {
     return flagged.includes(incidentId);
+  },
+
+  // --- App feedback (Report Issue) ---
+  /** Save a feedback record; duplicate Feedback IDs are ignored. */
+  addFeedback(rec: FeedbackRecord): FeedbackRecord {
+    if (!feedbacks.some(f => f.feedback_id === rec.feedback_id)) {
+      feedbacks.push(rec);
+      saveToStorage('ns_feedbacks', feedbacks);
+    }
+    return rec;
+  },
+
+  getFeedbacks(): FeedbackRecord[] {
+    return [...feedbacks];
   },
 
   /** All clusters with 2+ independent citizens — admin "same issue" view. */

@@ -116,6 +116,9 @@ export const LIMITS = {
   /** Local classify / priority endpoints per IP. */
   classifyPerMinute: 20,
   classifyPerDay: 200,
+  /** App/website feedback ("Report Issue") per IP — generous by design. */
+  feedbackPerHour: 250,
+  feedbackPerDay: 10000,
 };
 
 const dailyCounters = new Map<string, { day: string; count: number }>();
