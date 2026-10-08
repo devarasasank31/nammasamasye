@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { detectReplyLanguage, languageName, isLanguage } from '@/lib/ai/language';
 import { Language } from '@/types';
 
-// Translation runs on the same free-tier provider the chatbot uses, so any
-// language can be turned into any other without a paid translation service.
+// Translation runs on the same provider the chatbot uses, so any language can
+// be turned into any other without a paid translation service. AI_API_KEY may
+// hold several comma-separated keys; the ring fails over between them.
 
-const AI_API_KEY = process.env.AI_API_KEY || process.env.GROQ_API_KEY || '';
+import { hasAIKeys, keyRing, markKeyGood, keyTag } from '@/lib/ai-keys';
+
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'openai').trim();
 
 const PROVIDER_CONFIG: Record<string, { baseUrl: string; defaultModel: string }> = {
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, detected, translated: source, changed: false, source: 'local' });
   }
 
-  if (!AI_API_KEY) {
+  if (!hasAIKeys) {
     return NextResponse.json({ ok: true, detected, translated: source, changed: false, source: 'unavailable' });
   }
 
@@ -101,51 +103,73 @@ async function translateWithAI(text: string, target: Language): Promise<Translat
 }
 
 async function callOpenAICompatible(text: string, target: Language): Promise<TranslateResult | null> {
-  const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${AI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [
-        { role: 'system', content: buildPrompt(target) },
-        { role: 'user', content: text },
-      ],
-      max_tokens: 1200,
-      temperature: 0,
-    }),
-  });
+  const ring = keyRing();
+  const keyCount = Math.min(ring.length, 3);
+  for (let k = 0; k < keyCount; k++) {
+    const key = ring[k];
+    try {
+      const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          messages: [
+            { role: 'system', content: buildPrompt(target) },
+            { role: 'user', content: text },
+          ],
+          max_tokens: 1200,
+          temperature: 0,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
 
-  const data = await response.json();
-  if (!response.ok) {
-    console.log('Translate API error:', data.error?.message || response.statusText);
-    return null;
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        markKeyGood(key);
+        return normalise(data.choices?.[0]?.message?.content, target);
+      }
+      console.log('Translate API error' + keyTag(k, ring.length) + ':', data.error?.message || response.statusText);
+    } catch (e) {
+      console.log('Translate API error (network/timeout)' + keyTag(k, ring.length) + ':', e instanceof Error ? e.message : e);
+    }
   }
-  return normalise(data.choices?.[0]?.message?.content, target);
+  return null;
 }
 
 async function callGemini(text: string, target: Language): Promise<TranslateResult | null> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${AI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: buildPrompt(target) }] },
-        contents: [{ role: 'user', parts: [{ text }] }],
-        generationConfig: { maxOutputTokens: 1200, temperature: 0 },
-      }),
-    }
-  );
+  const ring = keyRing();
+  const keyCount = Math.min(ring.length, 3);
+  for (let k = 0; k < keyCount; k++) {
+    const key = ring[k];
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: buildPrompt(target) }] },
+            contents: [{ role: 'user', parts: [{ text }] }],
+            generationConfig: { maxOutputTokens: 1200, temperature: 0 },
+          }),
+          signal: AbortSignal.timeout(15000),
+        }
+      );
 
-  const data = await response.json();
-  if (!response.ok) {
-    console.log('Translate Gemini error:', data.error?.message);
-    return null;
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        markKeyGood(key);
+        return normalise(data.candidates?.[0]?.content?.parts?.[0]?.text, target);
+      }
+      console.log('Translate Gemini error' + keyTag(k, ring.length) + ':', data.error?.message);
+    } catch (e) {
+      console.log('Translate Gemini error (network/timeout)' + keyTag(k, ring.length) + ':', e instanceof Error ? e.message : e);
+    }
   }
-  return normalise(data.candidates?.[0]?.content?.parts?.[0]?.text, target);
+  return null;
 }
 
 function normalise(content: unknown, target: Language): TranslateResult | null {

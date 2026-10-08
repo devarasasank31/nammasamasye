@@ -3,8 +3,11 @@ import { rateLimit, clientIp } from '@/lib/security';
 import { containsPII, redactPII } from '@/lib/ai-context';
 import { matchContextRows } from '@/data/context-corpus';
 
-// Server-side only — same keys the chatbot uses.
-const AI_API_KEY = process.env.AI_API_KEY || process.env.GROQ_API_KEY || '';
+// Server-side only — same provider the chatbot uses. AI_API_KEY may hold
+// several comma-separated keys; the ring fails over between them.
+
+import { hasAIKeys, keyRing, markKeyGood } from '@/lib/ai-keys';
+
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'openai').trim();
 
 const PROVIDER_CONFIG: Record<string, { baseUrl: string; defaultModel: string }> = {
@@ -66,47 +69,71 @@ function cleanAnswer(raw: string): string | null {
 }
 
 async function callOpenAICompatible(system: string, user: string): Promise<string | null> {
-  const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${AI_API_KEY}`,
-    },
-      body: JSON.stringify({
-        model: AI_MODEL,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ],
-        // Reasoning models spend tokens thinking before the visible answer —
-        // leave enough budget or the reply comes back empty.
-        max_tokens: 1200,
-        temperature: 0.3,
-      }),
-    signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
-  });
-  const data = await response.json();
-  if (!response.ok) return null;
-  return data.choices?.[0]?.message?.content ?? null;
+  const ring = keyRing();
+  const keyCount = Math.min(ring.length, 3);
+  for (let k = 0; k < keyCount; k++) {
+    const key = ring[k];
+    try {
+      const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: user },
+          ],
+          // Reasoning models spend tokens thinking before the visible answer —
+          // leave enough budget or the reply comes back empty.
+          max_tokens: 1200,
+          temperature: 0.3,
+        }),
+        signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        markKeyGood(key);
+        return data.choices?.[0]?.message?.content ?? null;
+      }
+    } catch {
+      // network/timeout — try the next key
+    }
+  }
+  return null;
 }
 
 async function callGemini(system: string, user: string): Promise<string | null> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${AI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: 'user', parts: [{ text: user }] }],
-        generationConfig: { maxOutputTokens: 1024, temperature: 0.3 },
-      }),
-      signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
+  const ring = keyRing();
+  const keyCount = Math.min(ring.length, 3);
+  for (let k = 0; k < keyCount; k++) {
+    const key = ring[k];
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: system }] },
+            contents: [{ role: 'user', parts: [{ text: user }] }],
+            generationConfig: { maxOutputTokens: 1024, temperature: 0.3 },
+          }),
+          signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
+        }
+      );
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        markKeyGood(key);
+        return data.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
+      }
+    } catch {
+      // network/timeout — try the next key
     }
-  );
-  const data = await response.json();
-  if (!response.ok) return null;
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
+  }
+  return null;
 }
 
 /**
@@ -127,7 +154,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ context: null, error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  if (!AI_API_KEY) {
+  if (!hasAIKeys) {
     return NextResponse.json({ context: null });
   }
 

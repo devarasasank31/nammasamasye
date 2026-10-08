@@ -8,12 +8,15 @@ import { LocalClassifyResult } from '@/lib/civic-types';
 import { languageName } from '@/lib/ai/language';
 import { Language } from '@/types';
 
-// Server-side only
-const AI_API_KEY = process.env.AI_API_KEY || process.env.GROQ_API_KEY || '';
+// Server-side only — AI_API_KEY may hold several comma-separated keys; the
+// ring rotates to the next key when one is rejected, out of daily quota or
+// rate-limited (see src/lib/ai-keys.ts).
+import { AI_KEYS, hasAIKeys, keyRing, markKeyGood, keyTag } from '@/lib/ai-keys';
+
 // A Groq key (gsk_...) pointed at api.openai.com 401s silently and the bot
 // answers nothing — auto-select Groq unless the provider is explicit.
 const AI_PROVIDER = (process.env.AI_PROVIDER ||
-  (AI_API_KEY.startsWith('gsk_') ? 'groq' : 'openai')).trim();
+  (AI_KEYS[0]?.startsWith('gsk_') ? 'groq' : 'openai')).trim();
 
 const PROVIDER_CONFIG: Record<string, { baseUrl: string; defaultModel: string }> = {
   groq: { baseUrl: 'https://api.groq.com/openai/v1', defaultModel: 'openai/gpt-oss-120b' },
@@ -283,7 +286,7 @@ export async function POST(request: NextRequest) {
 
     // ---- External AI fallback (validated, cached, candidate-scoped) ---------
     let aiResult: AIResult | null = null;
-    if (AI_API_KEY && (!local.category || local.confidence < trustGate || local.margin < MARGIN_TRUST)) {
+    if (hasAIKeys && (!local.category || local.confidence < trustGate || local.margin < MARGIN_TRUST)) {
       const cacheKey = `${replyLang}|${normalizeCacheKey(transcript)}`;
       const cached = aiCacheGet(cacheKey);
       if (cached) {
@@ -528,72 +531,110 @@ async function callAI(transcript: string, lang: string, local: LocalClassifyResu
 }
 
 async function callOpenAICompatible(transcript: string, lang: string, local: LocalClassifyResult): Promise<AIResult | null> {
-  // The free-tier key has a small tokens-per-minute quota (8k TPM ≈ 4 calls
-  // per minute with our ~2k-token prompt). A 429 says exactly how long to
-  // wait — one bounded retry turns a throttled call (and its wrong fallback
-  // answer) into the correct reply.
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${AI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: AI_MODEL,
-        messages: [
-          { role: 'system', content: buildSystemPrompt(lang) },
-          { role: 'user', content: transcript + buildCandidatesBlock(local) },
-        ],
-        max_tokens: 800,
-        temperature: 0.4,
-      }),
-      signal: AbortSignal.timeout(attempt === 0 ? 12000 : 10000),
-    });
+  // Free-tier keys have small tokens-per-minute and tokens-per-day quotas.
+  // The ring tries each configured key in turn: a daily-quota or rejected
+  // key is skipped immediately; a per-minute limit on the LAST key gets one
+  // bounded wait-retry (the 429 says exactly how long to wait).
+  const ring = keyRing();
+  const keyCount = Math.min(ring.length, 3);
+  let tpmRetried = false;
 
-    const data = await response.json().catch(() => ({}));
-    if (response.ok) return normalise(data.choices?.[0]?.message?.content);
+  for (let k = 0; k < keyCount; k++) {
+    const key = ring[k];
+    const tag = keyTag(k, ring.length);
+    try {
+      const response = await fetch(`${CONFIG.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          messages: [
+            { role: 'system', content: buildSystemPrompt(lang) },
+            { role: 'user', content: transcript + buildCandidatesBlock(local) },
+          ],
+          max_tokens: 800,
+          temperature: 0.4,
+        }),
+        signal: AbortSignal.timeout(k === 0 ? 12000 : 10000),
+      });
 
-    const msg = String(data.error?.message || response.statusText || '');
-    if (response.status === 429 && attempt === 0) {
-      // A daily-quota (TPD) limit will not clear in seconds — retrying only
-      // wastes the next call. A per-minute (TPM) limit clears almost at once.
-      if (/tokens per day|\bTPD\b/i.test(msg)) {
-        console.log('API error (daily quota):', msg);
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        markKeyGood(key);
+        return normalise(data.choices?.[0]?.message?.content);
+      }
+
+      const msg = String(data.error?.message || response.statusText || '');
+      if (response.status === 401) {
+        console.log('API error (invalid key)' + tag + ':', msg);
+        continue;
+      }
+      if (response.status === 429) {
+        // A daily-quota (TPD) limit will not clear in seconds — move to the
+        // next key. A per-minute (TPM) limit clears almost at once.
+        if (/tokens per day|\bTPD\b/i.test(msg)) {
+          console.log('API error (daily quota)' + tag + ':', msg);
+          continue;
+        }
+        if (k < keyCount - 1) {
+          console.log('API error (rate limit)' + tag + ' — trying next key');
+          continue;
+        }
+        if (!tpmRetried) {
+          tpmRetried = true;
+          const suggested = /try again in ([\d.]+)s/i.exec(msg);
+          const waitSec = Math.min(suggested ? Number(suggested[1]) : 6, 8);
+          await new Promise(r => setTimeout(r, Math.ceil(waitSec * 1000)));
+          k--;
+          continue;
+        }
+        console.log('API error:', msg);
         return null;
       }
-      const suggested = /try again in ([\d.]+)s/i.exec(msg);
-      const waitSec = Math.min(suggested ? Number(suggested[1]) : 6, 8);
-      await new Promise(r => setTimeout(r, Math.ceil(waitSec * 1000)));
-      continue;
+      console.log('API error:', msg);
+      return null;
+    } catch (e) {
+      console.log('API error (network/timeout)' + tag + ':', e instanceof Error ? e.message : e);
     }
-    console.log('API error:', msg);
-    return null;
   }
   return null;
 }
 
 async function callGemini(transcript: string, lang: string, local: LocalClassifyResult): Promise<AIResult | null> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${AI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: buildSystemPrompt(lang) }] },
-        contents: [{ role: 'user', parts: [{ text: transcript + buildCandidatesBlock(local) }] }],
-        generationConfig: { maxOutputTokens: 800, temperature: 0.4 },
-      }),
-      signal: AbortSignal.timeout(15000),
-    }
-  );
+  const ring = keyRing();
+  const keyCount = Math.min(ring.length, 3);
+  for (let k = 0; k < keyCount; k++) {
+    const key = ring[k];
+    const tag = keyTag(k, ring.length);
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: buildSystemPrompt(lang) }] },
+            contents: [{ role: 'user', parts: [{ text: transcript + buildCandidatesBlock(local) }] }],
+            generationConfig: { maxOutputTokens: 800, temperature: 0.4 },
+          }),
+          signal: AbortSignal.timeout(15000),
+        }
+      );
 
-  const data = await response.json();
-  if (!response.ok) {
-    console.log('Gemini API error:', data.error?.message);
-    return null;
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        markKeyGood(key);
+        return normalise(data.candidates?.[0]?.content?.parts?.[0]?.text);
+      }
+      console.log('Gemini API error' + tag + ':', data.error?.message);
+    } catch (e) {
+      console.log('Gemini API error (network/timeout)' + tag + ':', e instanceof Error ? e.message : e);
+    }
   }
-  return normalise(data.candidates?.[0]?.content?.parts?.[0]?.text);
+  return null;
 }
 
 function normalise(content: unknown): AIResult | null {
