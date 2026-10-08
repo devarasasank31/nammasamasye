@@ -170,10 +170,13 @@ export async function GET(req: NextRequest) {
     const sessionId = searchParams.get('session_id');
 
     if (isDemoMode) {
-      const incidents = sessionId
-        ? demoStore.getIncidentsBySession(sessionId)
-        : demoStore.getAllIncidents();
-      return NextResponse.json({ incidents });
+      // Public list (no session filter) is the sanitised feed shape — the
+      // same redaction the UI gets through getPublicFeed(). A session-scoped
+      // list is the citizen's OWN reports and keeps full text.
+      if (!sessionId) {
+        return NextResponse.json({ incidents: demoStore.getPublicFeed() });
+      }
+      return NextResponse.json({ incidents: demoStore.getIncidentsBySession(sessionId) });
     }
 
     const { supabase } = await import('@/lib/supabase');

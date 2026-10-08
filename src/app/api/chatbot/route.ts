@@ -556,6 +556,12 @@ async function callOpenAICompatible(transcript: string, lang: string, local: Loc
 
     const msg = String(data.error?.message || response.statusText || '');
     if (response.status === 429 && attempt === 0) {
+      // A daily-quota (TPD) limit will not clear in seconds — retrying only
+      // wastes the next call. A per-minute (TPM) limit clears almost at once.
+      if (/tokens per day|\bTPD\b/i.test(msg)) {
+        console.log('API error (daily quota):', msg);
+        return null;
+      }
       const suggested = /try again in ([\d.]+)s/i.exec(msg);
       const waitSec = Math.min(suggested ? Number(suggested[1]) : 6, 8);
       await new Promise(r => setTimeout(r, Math.ceil(waitSec * 1000)));
@@ -664,7 +670,16 @@ const AI_CACHE_MAX = 400;
 const aiCache = new Map<string, { value: AIResult; t: number }>();
 
 function normalizeCacheKey(s: string): string {
-  return s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 500);
+  const norm = s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim();
+  // FNV-1a over the WHOLE transcript. A head slice (the old 500-char key)
+  // meant that once conversation history grew past 500 chars, every new
+  // question mapped to the same key and got the same cached answer forever.
+  let h = 0x811c9dc5;
+  for (let i = 0; i < norm.length; i++) {
+    h ^= norm.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(16) + '_' + norm.length;
 }
 
 function aiCacheGet(key: string): AIResult | null {
