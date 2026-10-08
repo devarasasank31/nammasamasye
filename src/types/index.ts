@@ -18,6 +18,12 @@ export type PriorityLevel = 'P1' | 'P2' | 'P3' | 'P4';
 /** Trained 5-level severity shown on the public feed (most → least severe). */
 export type SeverityLevel = 'life_threatening' | 'urgent' | 'serious' | 'moderate' | 'minor';
 
+/**
+ * How precisely the citizen knows when the incident happened (spec §12).
+ * ONGOING = active emergency ("happening right now").
+ */
+export type IncidentTimePrecision = 'EXACT' | 'APPROXIMATE' | 'UNKNOWN' | 'ONGOING';
+
 /** Sort rank for the trained severity scale (0 = life-threatening). */
 export const SEVERITY_RANK: Record<SeverityLevel, number> = {
   life_threatening: 0,
@@ -97,6 +103,16 @@ export interface Incident {
   location_area?: string;
   location_lat?: number;
   location_lng?: number;
+  /**
+   * When the incident happened — captured on every report and kept separate
+   * from created_at (report submission time). Spec §12: incidentDate,
+   * incidentTime, incidentDateTime, incidentTimePrecision.
+   */
+  incident_date?: string;
+  incident_time?: string;
+  incident_date_time?: string;
+  incident_time_precision?: IncidentTimePrecision;
+  /** Legacy alias kept in sync with incident_date_time. */
   date_of_incident?: string;
   language: Language;
   status: IncidentStatus;

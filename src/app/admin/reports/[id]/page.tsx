@@ -7,6 +7,7 @@ import { getIncidentInternal, getIncidentEvidence, getStatusHistory, getAdminNot
 import { seedDemoData } from '@/lib/demo-store';
 import { ArrowLeft, CheckCircle, ExternalLink, Users, BarChart3, FileText, Shield, LogOut } from 'lucide-react';
 import { getStatusBadgeClass, getStatusColor } from '@/lib/status-colors';
+import { formatIncidentWhen } from '@/lib/incident-when';
 import AttachmentGallery from '@/components/AttachmentGallery';
 import dynamic from 'next/dynamic';
 const StaticMap = dynamic(() => import('@/components/StaticMap'), { ssr: false, loading: () => <div className="h-[200px] rounded-xl bg-gray-100 animate-pulse" /> });
@@ -225,7 +226,24 @@ export default function AdminIncidentDetailPage() {
               <div className="col-span-2"><span className="font-medium text-gray-500">Nearest police station:</span> <span className="text-gray-900">{incident.police_station || '-'}</span>{typeof incident.ward_distance_km === 'number' && <span className="text-gray-400 text-xs"> ({incident.ward_distance_km} km from ward centre)</span>}</div>
               <div><span className="font-medium text-gray-500">Area:</span> <span className="text-gray-900">{incident.location_area || '-'}</span></div>
               <div><span className="font-medium text-gray-500">Language:</span> <span className="text-gray-900">{incident.language}</span></div>
-              <div><span className="font-medium text-gray-500">Created:</span> <span className="text-gray-900">{new Date(incident.created_at).toLocaleString()}</span></div>
+              {/* Spec §20: incident time vs submission time, kept separate. */}
+              <div className="col-span-2">
+                <span className="font-medium text-gray-500">Incident happened:</span>{' '}
+                <span className="text-gray-900">
+                  {formatIncidentWhen(incident)
+                    || (incident.date_of_incident ? new Date(incident.date_of_incident).toLocaleString() : 'Not stated')}
+                </span>
+                {incident.incident_time_precision && (
+                  <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+                    incident.incident_time_precision === 'ONGOING' ? 'bg-red-100 text-red-700'
+                    : incident.incident_time_precision === 'EXACT' ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {incident.incident_time_precision}
+                  </span>
+                )}
+              </div>
+              <div><span className="font-medium text-gray-500">Created (reported at):</span> <span className="text-gray-900">{new Date(incident.created_at).toLocaleString()}</span></div>
               <div><span className="font-medium text-gray-500">AI Confidence:</span> <span className="text-gray-900">{incident.ai_confidence}%</span></div>
             </div>
 

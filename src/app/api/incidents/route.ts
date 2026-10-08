@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDemoMode } from '@/lib/supabase';
 import { demoStore } from '@/lib/demo-store';
-import { Language, PriorityAnalysisEnvelope } from '@/types';
+import { Language, PriorityAnalysisEnvelope, IncidentTimePrecision } from '@/types';
 import { runPriorityPipeline } from '@/lib/priority-engine/pipeline';
 
 interface IncidentBody {
@@ -15,6 +15,11 @@ interface IncidentBody {
   location_area?: string;
   location_lat?: number;
   location_lng?: number;
+  /** When it happened (spec §12) — kept separate from submission time. */
+  incident_date?: string;
+  incident_time?: string;
+  incident_date_time?: string;
+  incident_time_precision?: IncidentTimePrecision;
   date_of_incident?: string;
   language?: Language;
   answers?: Record<string, string>;
@@ -67,6 +72,10 @@ export async function POST(req: NextRequest) {
         location_area: body.location_area || '',
         location_lat: body.location_lat,
         location_lng: body.location_lng,
+        incident_date: body.incident_date,
+        incident_time: body.incident_time,
+        incident_date_time: body.incident_date_time,
+        incident_time_precision: body.incident_time_precision,
         date_of_incident: body.date_of_incident,
         language: body.language || 'en',
         answers: body.answers || {},
@@ -96,6 +105,10 @@ export async function POST(req: NextRequest) {
         location_area: body.location_area || '',
         location_lat: body.location_lat,
         location_lng: body.location_lng,
+        incident_date: body.incident_date || null,
+        incident_time: body.incident_time || null,
+        incident_date_time: body.incident_date_time || null,
+        incident_time_precision: body.incident_time_precision || 'UNKNOWN',
         date_of_incident: body.date_of_incident || null,
         language: body.language || 'en',
         status: 'NEW',

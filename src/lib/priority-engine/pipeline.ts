@@ -14,7 +14,7 @@
 
 import { computePriority } from '@/lib/priority';
 import { searchScenarios } from './retrieval';
-import { requestAiValidation, AiAttempt } from './ai';
+import { requestAiValidation, evaluateAiGate, AiAttempt, AiGateDecision } from './ai';
 import { slaClassFor, slaDaysFor } from './sla';
 import type { PriorityAnalysis, RetrievalInfo } from './types';
 import type { PriorityLevel } from '../../types';
@@ -58,6 +58,8 @@ export interface PriorityPipelineResponse {
     proposal: { priority: PriorityLevel; confidence: number; reason: string } | null;
     attempts: AiAttempt[];
     latencyMs: number;
+    /** Why external AI was (or was not) consulted (spec §14). */
+    gated: AiGateDecision;
   };
   analysis: PriorityAnalysis;
   source: 'safety-override' | 'ai-escalation' | 'ai-ood' | 'local';
@@ -104,7 +106,19 @@ export async function runPriorityPipeline(input: PriorityPipelineInput): Promise
       }
     : null;
 
-  // 3. AI validation (Gemini → OpenRouter → none)
+  // 3. AI validation — gated per spec §14: only when the deterministic
+  // result is uncertain (low confidence, KB conflict, OOD, review flags).
+  const gate = evaluateAiGate({
+    safetyOverride: analysis.safetyOverride,
+    outOfDistribution: analysis.outOfDistribution,
+    needsClarification: analysis.needsClarification,
+    requiresHumanReview: analysis.requiresHumanReview,
+    localPriority: analysis.priority,
+    priorityConfidence: analysis.confidences.priority,
+    retrieval: retrieval && retrieval.priority
+      ? { priority: retrieval.priority, score: retrieval.score, agreement: retrieval.agreement }
+      : null,
+  });
   const aiStart = Date.now();
   const ai = await requestAiValidation({
     text,
@@ -116,6 +130,7 @@ export async function runPriorityPipeline(input: PriorityPipelineInput): Promise
     safetyOverride: analysis.safetyOverride,
     outOfDistribution: analysis.outOfDistribution,
     topScenarios: search.top.map(h => ({ text: h.text, expectedPriority: h.expectedPriority, score: h.score })),
+    gate,
   });
   const aiMs = Date.now() - aiStart;
 
@@ -165,7 +180,7 @@ export async function runPriorityPipeline(input: PriorityPipelineInput): Promise
   };
 
   console.log(
-    `[priority] final=${finalPriority} local=${analysis.priority} score=${analysis.score} override=${analysis.safetyOverride} ood=${analysis.outOfDistribution} source=${source} provider=${envelopeAnalysis.provider} ai=${ai.proposal?.priority || '-'}@${ai.proposal?.confidence || '-'} retrieval=${retrieval ? retrieval.score : '-'} attempts=${ai.attempts.length} ms(total=${Date.now() - started} local=${localMs} ret=${retrievalMs} ai=${aiMs})`
+    `[priority] final=${finalPriority} local=${analysis.priority} score=${analysis.score} override=${analysis.safetyOverride} ood=${analysis.outOfDistribution} source=${source} provider=${envelopeAnalysis.provider} ai=${ai.proposal?.priority || '-'}@${ai.proposal?.confidence || '-'} retrieval=${retrieval ? retrieval.score : '-'} gate=${gate.needed ? 'call(' + gate.reasons.join('|') + ')' : 'skip(' + gate.reasons.join('|') + ')'} attempts=${ai.attempts.length} ms(total=${Date.now() - started} local=${localMs} ret=${retrievalMs} ai=${aiMs})`
   );
 
   return {
@@ -181,7 +196,7 @@ export async function runPriorityPipeline(input: PriorityPipelineInput): Promise
     safetyOverride: analysis.safetyOverride,
     safetyRules: analysis.safetyRules,
     outOfDistribution: analysis.outOfDistribution,
-    needsHumanReview: analysis.outOfDistribution || analysis.safetyOverride,
+    needsHumanReview: analysis.requiresHumanReview || analysis.outOfDistribution,
     confidences: envelopeAnalysis.confidences,
     retrieval,
     ai: {
@@ -192,6 +207,7 @@ export async function runPriorityPipeline(input: PriorityPipelineInput): Promise
       proposal: ai.proposal,
       attempts: ai.attempts,
       latencyMs: aiMs,
+      gated: gate,
     },
     analysis: envelopeAnalysis,
     source,

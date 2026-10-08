@@ -29,13 +29,18 @@ const hasInjury = (f: IncidentFacts, ...kinds: IncidentFacts['injuries'][number]
 const rules: Rule[] = [
   // 1. Serious injury in a traffic accident — suspected injuries still
   //    count (uncertainty never downgrades safety). Requires a vehicle:
-  //    a solo fall is scored, not overridden.
+  //    a solo fall is scored, not overridden. An unspecified but severe
+  //    injury ("badly injured", "cannot walk") counts as serious too
+  //    (spec §33).
   {
     name: 'accident_serious_injury',
     test: f =>
       !f.resolvedNow &&
       f.accidentInvolved &&
-      hasInjury(f, 'fracture', 'unconscious', 'bleeding', 'head_injury', 'crush'),
+      (hasInjury(f, 'fracture', 'unconscious', 'bleeding', 'head_injury', 'crush') ||
+        (hasInjury(f, 'general') &&
+          (/\b(badly|seriously|severe|serious|critical|very)\s+(injured|hurt)\b/.test(f.normalized) ||
+            /\b(cannot|can't|can\s+not|unable\s+to)\s+walk\b/.test(f.normalized)))),
   },
   // 2. Life-threatening electrical hazard — a wire that is down/live/
   //    exposed/sparking or an actual shock (facts.wireDown, multilingual).
@@ -113,27 +118,52 @@ const rules: Rule[] = [
   },
   // 12. Weapon / life-threatening violence in progress — the standing
   //     civic equivalent of the old "assault / threat to life" P1 list.
+  //     Covers serious crime (murder, kidnapping, hostage, shooting,
+  //     stabbing, assault) and attacks in progress ("being attacked
+  //     right now"). NEVER fires for fictional ("murder in the movie")
+  //     or historical ("murdered last year, case closed") contexts.
   {
     name: 'active_violence',
     test: f =>
       !f.resolvedNow &&
       !f.safetyDenied &&
+      !f.fictionContext &&
+      !f.historicalContext &&
       f.incidentTypes.includes('physical_violence') &&
-      (/\b(stabb?ed|stabbing|knife|machete|gun|pistol|acid\s+(attack|throw|on)|threat\s+to\s+life|trying\s+to\s+kill|kill\s+me|set\s+(me|him|her|them)\s+on\s+fire|mob\s+(beating|attack|lynching)|beaten\s+badly|chased\s+me\s+with|murder|homicide|molest\w*|rape)\b/.test(
+      (/\b(stab\w*|knife|machete|gun|pistol|acid\s+(attack|throw|on)|threat\s+to\s+life|trying\s+to\s+kill|kill\s+me|set\s+(me|him|her|them)\s+on\s+fire|mob\s+(beating|attack|lynching)|beaten\s+badly|chased\s+me\s+with|murder\w*|homicide|attempted\s+murder|kidnap\w*|abduct\w*|hostage|shoot\w*|gunshot|shot|assault\w*|molest\w*|rape)\b/.test(
         f.normalized
       ) ||
-        /ಹತ್ಯೆ|ಕತ್ತಿ|ಜೀವ\s+ಬೆದರಿಕೆ/.test(f.normalized) ||
-        /चाकू|जान\s+से\s+मार|हत्या|धमकी\s+जान/.test(f.normalized) ||
-        /హత్య|కత్తి|ప్రాణాలకు\s+ముప్పు/.test(f.normalized)),
+        // Attack in progress (spec: "someone is being attacked right now")
+        // and abduction by any other name ("someone was taken").
+        /\bbeing\s+attack(ed|ing)\b|\battacker(s)?\b|\b(is|are)\s+attacking\b|\battack(ed|ing)\b[^.!?]{0,40}\b(now|currently)\b|\b(was|is|got|has\s+been)\s+taken\b/.test(
+          f.normalized
+        ) ||
+        /ಹತ್ಯೆ|ಕತ್ತಿ|ಜೀವ\s+ಬೆದರಿಕೆ|ಅಪಹರಣ|ಬಂಧಕ/.test(f.normalized) ||
+        /चाकू|जान\s+से\s+मार|हत्या|धमकी\s+जान|अपहरण|बंधक|गोली/.test(f.normalized) ||
+        /హత్య|కత్తి|ప్రాణాలకు\s+ముప్పు|అపహరణ|బందీ|కాల్పులు/.test(f.normalized)),
   },
 ];
 
 /**
  * Runs every rule. Deterministic, same input → same output, no I/O.
  * Returns which rules fired; `override` forces the final priority to P1.
+ *
+ * Narrative-context gate (spec §34.8/§34.9): an incident described purely
+ * inside a fiction ("the novel describes an explosion") or as explicitly
+ * past ("in 2021 a transformer exploded here") is NOT an active emergency,
+ * so no override rule may fire. Present-tense markers ("still sparking",
+ * "happening now", "ಈಗ") re-enable every rule so a hazard that persists
+ * from the past keeps full safety handling.
  */
+const PRESENT_HAZARD_MARKERS =
+  /\b(still|right\s+now|currently|happening\s+now|ongoing|is\s+on\s+fire|abhi\s+bhi|filhaal|ಈಗ|ಇನ್ನೂ|ఇప్పుడు|ఇంకా)\b/;
+
 export function runSafetyEngine(facts: IncidentFacts): SafetyResult {
-  const fired = rules.filter(r => r.test(facts)).map(r => r.name);
+  const narrativeOnly =
+    (facts.fictionContext || facts.historicalContext) &&
+    !PRESENT_HAZARD_MARKERS.test(facts.normalized);
+  const pool = narrativeOnly ? [] : rules;
+  const fired = pool.filter(r => r.test(facts)).map(r => r.name);
   return { override: fired.length > 0, rules: fired };
 }
 

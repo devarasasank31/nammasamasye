@@ -1,0 +1,175 @@
+{
+  "generatedAt": "2026-10-07T21:52:07.880Z",
+  "datasets": {
+    "scenarios": {
+      "dataset": "data/scenarios.jsonl",
+      "total": 5767,
+      "valid": 5767,
+      "invalid": [],
+      "duplicateTextGroups": 0,
+      "duplicateTextRows": 0,
+      "severity": {
+        "medium": 3377,
+        "low": 619,
+        "high": 1602,
+        "critical": 169
+      },
+      "languages": {
+        "en/latin": 4976,
+        "hi": 206,
+        "te": 255,
+        "kn": 330
+      },
+      "hardNegativeAnnotated": 1353,
+      "confusableAnnotated": 4728
+    },
+    "train": {
+      "dataset": "data/priority-scenarios/train.jsonl",
+      "total": 86910,
+      "valid": 86910,
+      "invalid": [],
+      "duplicateTextGroups": 0,
+      "duplicateTextRows": 0,
+      "contradictory": [],
+      "bands": {
+        "P1": 30000,
+        "P2": 13300,
+        "P3": 35670,
+        "P4": 5940,
+        "OOD": 2000
+      },
+      "languages": {
+        "hl": 15080,
+        "kn": 14507,
+        "te": 14549,
+        "en": 27757,
+        "hi": 15017
+      },
+      "safety": {
+        "overrides": 30000,
+        "safetySignals": {
+          "accident_serious_injury": 6000,
+          "severe_bleeding": 4000,
+          "electrical_hazard": 4000,
+          "fire_explosion": 4000,
+          "structural_collapse": 4000,
+          "unconscious": 2000,
+          "person_trapped": 2000,
+          "open_manhole": 2000,
+          "drowning": 2000,
+          "gas_chemical_hazard": 2000,
+          "active_violence": 2000
+        }
+      },
+      "hardNegatives": 86910,
+      "tags": {
+        "ood": 2000,
+        "negation": 1110
+      }
+    },
+    "evalUnseen": {
+      "dataset": "data/priority-scenarios/eval-unseen.jsonl",
+      "total": 11830,
+      "valid": 11830,
+      "invalid": [],
+      "duplicateTextGroups": 0,
+      "duplicateTextRows": 0,
+      "contradictory": [],
+      "bands": {
+        "P1": 3043,
+        "P2": 1583,
+        "P3": 6399,
+        "P4": 605,
+        "OOD": 200
+      },
+      "languages": {
+        "hi": 2056,
+        "te": 1974,
+        "kn": 2016,
+        "en": 3788,
+        "hl": 1996
+      },
+      "safety": {
+        "overrides": 3043,
+        "safetySignals": {
+          "accident_serious_injury": 606,
+          "electrical_hazard": 412,
+          "fire_explosion": 408,
+          "severe_bleeding": 400,
+          "structural_collapse": 400,
+          "open_manhole": 204,
+          "unconscious": 200,
+          "person_trapped": 200,
+          "drowning": 200,
+          "gas_chemical_hazard": 200,
+          "active_violence": 200
+        }
+      },
+      "hardNegatives": 11830,
+      "tags": {
+        "negation": 700,
+        "ood": 200,
+        "typo": 46,
+        "historical": 30,
+        "active": 30,
+        "movie_story": 30,
+        "slang": 25,
+        "very_short": 25,
+        "stt": 20,
+        "ambiguous": 10,
+        "multi_issue": 10,
+        "cause_vs_consequence": 10
+      }
+    },
+    "evalTests": {
+      "dataset": "data/eval_tests.jsonl",
+      "total": 5077,
+      "valid": 5077,
+      "invalid": [],
+      "duplicateTextGroups": 0,
+      "pools": {
+        "positive": 3137,
+        "hard_negative": 1104,
+        "confusion": 770,
+        "negation": 12,
+        "multi_issue": 12,
+        "ambiguous": 10,
+        "safety": 12,
+        "ood": 12,
+        "adversarial": 8
+      },
+      "scripts": {
+        "latin": 4292,
+        "kn+latin": 310,
+        "hi+latin": 227,
+        "latin+te": 239,
+        "kn+latin+te": 2,
+        "hi+kn+latin": 2,
+        "kn": 4,
+        "other": 1
+      }
+    }
+  },
+  "coverage29": {
+    "typo": 46,
+    "stt": 20,
+    "slang": 25,
+    "movie": 30,
+    "short": 25,
+    "negation": 1509,
+    "historical": 385,
+    "active": 194,
+    "multi_issue": 10,
+    "cause_vs_consequence": 10,
+    "ambiguous": 10,
+    "ood": 200
+  },
+  "safetyCoverage": {
+    "traffic_accident": 190,
+    "util_power": 231,
+    "civic_drainage": 416,
+    "safety_harassment": 144,
+    "civic_stray_animals": 122
+  },
+  "missingSafetyCoverage": []
+}

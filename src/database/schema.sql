@@ -27,6 +27,11 @@ CREATE TABLE IF NOT EXISTS incidents (
   location_area TEXT DEFAULT '',
   location_lat DECIMAL,
   location_lng DECIMAL,
+  -- When the incident happened — separate from created_at (report time).
+  incident_date DATE,
+  incident_time TEXT DEFAULT '',
+  incident_date_time TIMESTAMPTZ,
+  incident_time_precision TEXT DEFAULT 'UNKNOWN' CHECK (incident_time_precision IN ('EXACT','APPROXIMATE','UNKNOWN','ONGOING')),
   date_of_incident TIMESTAMPTZ,
   language TEXT NOT NULL DEFAULT 'en',
   status TEXT NOT NULL DEFAULT 'NEW' CHECK (status IN ('NEW','UNDER_REVIEW','MISSING_INFORMATION','ON_HOLD','PROCEEDING','INVALID','CLOSED','RESOLVED')),
@@ -76,6 +81,10 @@ ALTER TABLE incidents ADD COLUMN IF NOT EXISTS flag_count INTEGER DEFAULT 0;
 ALTER TABLE incidents ADD COLUMN IF NOT EXISTS cluster_key TEXT DEFAULT '';
 ALTER TABLE incidents ADD COLUMN IF NOT EXISTS cluster_citizens INTEGER DEFAULT 1;
 ALTER TABLE incidents ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS incident_date DATE;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS incident_time TEXT DEFAULT '';
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS incident_date_time TIMESTAMPTZ;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS incident_time_precision TEXT DEFAULT 'UNKNOWN';
 ALTER TABLE incidents ADD COLUMN IF NOT EXISTS ai_context TEXT DEFAULT '';
 
 -- Incident Q&A

@@ -32,6 +32,48 @@ export interface AiResult {
   totalLatencyMs: number;
 }
 
+/**
+ * Spec §14/§15: call external AI ONLY when necessary — low scenario
+ * confidence, KB conflicts, OOD, or ambiguous safety interpretation.
+ * When the deterministic safety engine already has final authority
+ * (safetyOverride), or the KB and local engine agree with confidence,
+ * an AI call could not change the outcome and is skipped entirely.
+ */
+export interface AiGateDecision {
+  needed: boolean;
+  reasons: string[];
+}
+
+export function evaluateAiGate(input: {
+  safetyOverride: boolean;
+  outOfDistribution: boolean;
+  needsClarification: boolean;
+  requiresHumanReview: boolean;
+  localPriority: PriorityLevel;
+  priorityConfidence: number;
+  retrieval: { priority: PriorityLevel; score: number; agreement: number } | null;
+}): AiGateDecision {
+  // Safety override is final — the merge never lets AI de-escalate, so the
+  // call would only add latency and an external dependency to a P1 path.
+  if (input.safetyOverride) return { needed: false, reasons: ['safety-override'] };
+
+  const reasons: string[] = [];
+  if (input.outOfDistribution) reasons.push('ood');
+  if (input.needsClarification) reasons.push('needs-clarification');
+  if (input.requiresHumanReview) reasons.push('human-review');
+  if (input.retrieval) {
+    // Measured on the 86,910-row KB: top-1 similarity runs 0.33–0.68
+    // (p50 0.45) — below 0.40 the KB is weak evidence for the band.
+    if (input.retrieval.agreement < 1) reasons.push('kb-disagreement');
+    if (input.retrieval.priority !== input.localPriority) reasons.push('kb-conflict');
+    if (input.retrieval.score < 0.4) reasons.push('kb-low-confidence');
+  }
+  // Measured on train: confident bands cluster at 50/95 — only a score
+  // below 50 means the band really sits near an edge.
+  if (input.priorityConfidence < 50) reasons.push('low-priority-confidence');
+  return { needed: reasons.length > 0, reasons };
+}
+
 interface ProviderConfig {
   provider: PriorityProvider;
   model: string;
@@ -169,9 +211,16 @@ export async function requestAiValidation(input: {
   safetyOverride: boolean;
   outOfDistribution: boolean;
   topScenarios: { text: string; expectedPriority: PriorityLevel; score: number }[];
+  /** Spec §14 gate — when present and not needed, no network call happens. */
+  gate?: AiGateDecision;
 }): Promise<AiResult> {
   const started = Date.now();
   const attempts: AiAttempt[] = [];
+
+  if (input.gate && !input.gate.needed) {
+    return { info: null, proposal: null, attempts, totalLatencyMs: 0 };
+  }
+
   const list = providers();
 
   if (list.length === 0) {

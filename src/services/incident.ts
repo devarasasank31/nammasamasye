@@ -1,4 +1,4 @@
-﻿import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta, IncidentStats, PublicIncident, PriorityAnalysisEnvelope } from '@/types';
+﻿import { Incident, IncidentStatus, Evidence, StatusHistory, Language, AttachmentMeta, IncidentStats, PublicIncident, PriorityAnalysisEnvelope, IncidentTimePrecision } from '@/types';
 import { isDemoMode } from '@/lib/supabase';
 import { demoStore } from '@/lib/demo-store';
 import { trainedSeverity } from '@/lib/trained-severity';
@@ -15,6 +15,11 @@ export async function createIncident(data: {
   location_area?: string;
   location_lat?: number;
   location_lng?: number;
+  /** When it happened (spec §12) — kept separate from submission time. */
+  incident_date?: string;
+  incident_time?: string;
+  incident_date_time?: string;
+  incident_time_precision?: IncidentTimePrecision;
   date_of_incident?: string;
   language: Language;
   answers: Record<string, string>;
@@ -50,6 +55,10 @@ export async function createIncident(data: {
       location_area: data.location_area || '',
       location_lat: data.location_lat,
       location_lng: data.location_lng,
+      incident_date: data.incident_date || null,
+      incident_time: data.incident_time || null,
+      incident_date_time: data.incident_date_time || null,
+      incident_time_precision: data.incident_time_precision || 'UNKNOWN',
       date_of_incident: data.date_of_incident || null,
       language: data.language,
       status: 'NEW',

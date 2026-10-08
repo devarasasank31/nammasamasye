@@ -1,6 +1,6 @@
 ﻿import {
   Language, Incident, IncidentStatus, Session, Evidence, StatusHistory, AdminNote,
-  AttachmentMeta, CategoryParent, PublicIncident, PriorityAnalysisEnvelope,
+  AttachmentMeta, CategoryParent, PublicIncident, PriorityAnalysisEnvelope, IncidentTimePrecision,
 } from '@/types';
 import { computePriority } from '@/lib/priority';
 import { trainedSeverity } from '@/lib/trained-severity';
@@ -183,6 +183,11 @@ export const demoStore = {
     location_area?: string;
     location_lat?: number;
     location_lng?: number;
+    /** When it happened (spec §12) — kept separate from submission time. */
+    incident_date?: string;
+    incident_time?: string;
+    incident_date_time?: string;
+    incident_time_precision?: IncidentTimePrecision;
     date_of_incident?: string;
     language: Language;
     answers: Record<string, string>;
@@ -217,6 +222,10 @@ export const demoStore = {
       location_area: data.location_area || data.ward || '',
       location_lat: data.location_lat,
       location_lng: data.location_lng,
+      incident_date: data.incident_date,
+      incident_time: data.incident_time,
+      incident_date_time: data.incident_date_time,
+      incident_time_precision: data.incident_time_precision || 'UNKNOWN',
       date_of_incident: data.date_of_incident,
       language: data.language,
       status: 'NEW',

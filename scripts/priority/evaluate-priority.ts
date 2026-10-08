@@ -5,7 +5,8 @@
 //
 //  1. REGRESSION — the hard acceptance cases from the spec (P1
 //     false-negatives, negation, resolved-state, multi-incident,
-//     cause-vs-consequence, allegations, Indic inputs). Any failure
+//     cause-vs-consequence, allegations, Indic inputs) plus spec §28's
+//     exact 27 cases run as their own suite (spec-28). Any failure
 //     fails the run (exit 1).
 //
 //  2. UNSEEN — data/priority-scenarios/eval-unseen.jsonl, a labelled
@@ -34,8 +35,11 @@ const BANDS: PriorityLevel[] = ['P1', 'P2', 'P3', 'P4'];
 
 interface RegressionExpectation {
   priority?: PriorityLevel;
+  priorityIn?: PriorityLevel[];
   notP1?: boolean;
   safetyOverride?: boolean;
+  /** At least one deterministic safety rule must have fired. */
+  safetyFired?: boolean;
   incidentType?: string;
   injury?: string;
   normalCivicSla?: boolean;
@@ -47,7 +51,7 @@ interface RegressionExpectation {
 
 interface RegressionCase {
   id: string;
-  suite: 'spec-57' | 'spec-45' | 'hard-negative';
+  suite: 'spec-57' | 'spec-45' | 'hard-negative' | 'spec-28';
   input: PriorityInput;
   expect: RegressionExpectation;
 }
@@ -229,6 +233,180 @@ const regressionCases: RegressionCase[] = [
     input: { text: 'main bike se gir gaya tha aur mera haath chot laga hai, bleeding thodi hai', category: 'TRAFFIC', subcategory: 'traffic_accident' },
     expect: { notP1: true },
   },
+
+  // --- Spec §28: the exact 27 acceptance cases ------------------------------
+  // Raw citizen text with no classifier hint (category/subcategory empty) —
+  // the deterministic engine must stand on the words alone. Any failure
+  // fails the run.
+  {
+    id: 's28-01-drunk-driver-leg-broke',
+    suite: 'spec-28',
+    input: { text: 'i fell donw someone was drunk and hit me with car my leg broke', category: '', subcategory: '' },
+    expect: {
+      priority: 'P1',
+      safetyOverride: true,
+      incidentType: 'vehicle_collision',
+      injury: 'suspected_fracture',
+      normalCivicSla: true,
+      allegationsIntoxication: true,
+    },
+  },
+  {
+    id: 's28-02-someone-got-murdered',
+    suite: 'spec-28',
+    input: { text: 'someone got murdered', category: '', subcategory: '' },
+    expect: { priority: 'P1', safetyOverride: true, normalCivicSla: true, requiresHumanReview: true },
+  },
+  {
+    id: 's28-03-attacked-right-now',
+    suite: 'spec-28',
+    input: { text: 'someone is being attacked right now', category: '', subcategory: '' },
+    expect: { priority: 'P1' },
+  },
+  {
+    id: 's28-04-murdered-last-year-closed',
+    suite: 'spec-28',
+    input: { text: 'someone was murdered last year and the case is closed', category: '', subcategory: '' },
+    expect: { notP1: true },
+  },
+  {
+    id: 's28-05-murder-in-movie',
+    suite: 'spec-28',
+    input: { text: 'there is a murder in the movie I am watching', category: '', subcategory: '' },
+    expect: { notP1: true },
+  },
+  {
+    id: 's28-06-streetlight-not-working',
+    suite: 'spec-28',
+    input: { text: 'streetlight not working', category: '', subcategory: '' },
+    expect: { priorityIn: ['P3', 'P4'] },
+  },
+  {
+    id: 's28-07-streetlight-pole-live-wire',
+    suite: 'spec-28',
+    input: { text: 'streetlight pole fell onto live electrical wire', category: '', subcategory: '' },
+    expect: { priority: 'P1', safetyOverride: true },
+  },
+  {
+    id: 's28-08-there-is-a-pothole',
+    suite: 'spec-28',
+    input: { text: 'there is a pothole', category: '', subcategory: '' },
+    expect: { priority: 'P3' },
+  },
+  {
+    id: 's28-09-pothole-caused-accident-leg-broke',
+    suite: 'spec-28',
+    input: { text: 'pothole caused accident and my leg broke', category: '', subcategory: '' },
+    expect: { priority: 'P1', safetyOverride: true, injury: 'suspected_fracture' },
+  },
+  {
+    id: 's28-10-live-wire-public-road',
+    suite: 'spec-28',
+    input: { text: 'live electrical wire has fallen onto public road', category: '', subcategory: '' },
+    expect: { priority: 'P1', safetyOverride: true },
+  },
+  {
+    id: 's28-11-unconscious-after-accident',
+    suite: 'spec-28',
+    input: { text: 'person unconscious after accident', category: '', subcategory: '' },
+    expect: { priority: 'P1', safetyOverride: true },
+  },
+  {
+    id: 's28-12-building-collapsed-trapped',
+    suite: 'spec-28',
+    input: { text: 'building collapsed and people may be trapped', category: '', subcategory: '' },
+    expect: { priority: 'P1', safetyOverride: true },
+  },
+  {
+    id: 's28-13-no-accident-only-streetlight',
+    suite: 'spec-28',
+    input: { text: 'there is no accident only a broken streetlight', category: '', subcategory: '' },
+    expect: { priorityIn: ['P3', 'P4'] },
+  },
+  {
+    id: 's28-14-no-power-cut-but-live-wire',
+    suite: 'spec-28',
+    input: { text: 'there is no power cut but a live wire has fallen on the road', category: '', subcategory: '' },
+    expect: { priority: 'P1', safetyOverride: true },
+  },
+  {
+    id: 's28-15-kidnapp',
+    suite: 'spec-28',
+    input: { text: 'kidnapp', category: '', subcategory: '' },
+    expect: { priority: 'P1', requiresHumanReview: true },
+  },
+  {
+    id: 's28-16-kidnap',
+    suite: 'spec-28',
+    input: { text: 'kidnap', category: '', subcategory: '' },
+    expect: { priority: 'P1' },
+  },
+  {
+    id: 's28-17-hostage',
+    suite: 'spec-28',
+    input: { text: 'hostage', category: '', subcategory: '' },
+    expect: { priority: 'P1', requiresHumanReview: true },
+  },
+  {
+    id: 's28-18-murdred',
+    suite: 'spec-28',
+    input: { text: 'murdred', category: '', subcategory: '' },
+    expect: { priority: 'P1' },
+  },
+  {
+    id: 's28-19-shootng',
+    suite: 'spec-28',
+    input: { text: 'shootng', category: '', subcategory: '' },
+    expect: { priority: 'P1' },
+  },
+  {
+    id: 's28-20-unconcious-person',
+    suite: 'spec-28',
+    input: { text: 'unconcious person', category: '', subcategory: '' },
+    expect: { priority: 'P1', safetyOverride: true },
+  },
+  {
+    id: 's28-21-fire-short-input',
+    suite: 'spec-28',
+    input: { text: 'fire', category: '', subcategory: '' },
+    expect: { safetyFired: true },
+  },
+  {
+    id: 's28-22-movie-about-kidnapping',
+    suite: 'spec-28',
+    input: { text: 'movie about kidnapping', category: '', subcategory: '' },
+    expect: { notP1: true },
+  },
+  {
+    id: 's28-23-kidnapped-yesterday',
+    suite: 'spec-28',
+    input: { text: 'someone was kidnapped yesterday', category: '', subcategory: '' },
+    expect: { requiresHumanReview: true, priorityIn: ['P1', 'P2', 'P3'] },
+  },
+  {
+    id: 's28-24-kidnapped-right-now',
+    suite: 'spec-28',
+    input: { text: 'someone is kidnapped right now', category: '', subcategory: '' },
+    expect: { priority: 'P1' },
+  },
+  {
+    id: 's28-25-live-wire-no-power-outage',
+    suite: 'spec-28',
+    input: { text: 'live wire but no power outage', category: '', subcategory: '' },
+    expect: { priority: 'P1', safetyOverride: true },
+  },
+  {
+    id: 's28-26-garbage-outside-house',
+    suite: 'spec-28',
+    input: { text: 'garbage outside my house', category: '', subcategory: '' },
+    expect: { priorityIn: ['P3', 'P4'] },
+  },
+  {
+    id: 's28-27-pothole-two-years',
+    suite: 'spec-28',
+    input: { text: 'pothole has existed for 2 years', category: '', subcategory: '' },
+    expect: { priority: 'P3' },
+  },
 ];
 
 // --- runners ---------------------------------------------------------------
@@ -249,9 +427,13 @@ function runRegression(): { total: number; passed: number; failures: CaseResult[
     const failures: string[] = [];
     const e = c.expect;
     if (e.priority && a.priority !== e.priority) failures.push(`priority ${a.priority} != ${e.priority}`);
+    if (e.priorityIn && !e.priorityIn.includes(a.priority)) failures.push(`priority ${a.priority} not in [${e.priorityIn.join(', ')}]`);
     if (e.notP1 && a.priority === 'P1') failures.push('expected NOT P1');
     if (e.safetyOverride !== undefined && a.safetyOverride !== e.safetyOverride) {
       failures.push(`safetyOverride ${a.safetyOverride} != ${e.safetyOverride}`);
+    }
+    if (e.safetyFired !== undefined && (a.safetyRules.length > 0) !== e.safetyFired) {
+      failures.push(`safetyRules [${a.safetyRules.join(',')}] fired=${a.safetyRules.length > 0} != ${e.safetyFired}`);
     }
     if (e.incidentType && a.facts.incidentType !== e.incidentType) {
       failures.push(`incidentType ${a.facts.incidentType} != ${e.incidentType}`);
@@ -270,11 +452,14 @@ function runRegression(): { total: number; passed: number; failures: CaseResult[
     if (e.allegationsIntoxication !== undefined) {
       const has = a.facts.allegations.some(x => x.kind === 'intoxication' && !x.verified);
       if (has !== e.allegationsIntoxication) failures.push(`allegationsIntoxication ${has} != ${e.allegationsIntoxication}`);
+      if (e.allegationsIntoxication && a.facts.allegations.some(x => x.kind === 'intoxication' && x.verified)) {
+        failures.push('intoxication must stay unverified (Intoxication Verified = FALSE)');
+      }
     }
     results.push({
       id: c.id,
       suite: c.suite,
-      expected: e.priority || (e.notP1 ? 'not-P1' : 'any'),
+      expected: e.priority || (e.priorityIn ? e.priorityIn.join('/') : (e.notP1 ? 'not-P1' : 'any')),
       actual: a.priority,
       pass: failures.length === 0,
       detail: {
@@ -300,6 +485,14 @@ interface UnseenRow {
   input: PriorityInput;
   expectedPriority: PriorityLevel | 'OOD';
   sourceType: 'REAL_PUBLIC_DATA' | 'SYNTHETIC' | 'AUGMENTED';
+  /**
+   * Soft ceiling for narrative rows (historical / movie-story): the spec only
+   * requires "not an active emergency" (§28 cases 4/5), so the row passes when
+   * the predicted band is at or below the ceiling (P1 worst → P4 best) or the
+   * engine escalates to human review / clarification / OOD instead of asserting
+   * a band. Exact-band rows never carry this field.
+   */
+  maxPriority?: PriorityLevel;
   hardNegativeGroup?: string;
   language?: string;
   tags?: string[];
@@ -338,6 +531,11 @@ function runUnseen(): Record<string, unknown> | null {
   const hardNegatives = { total: 0, correct: 0 };
   const negation = { total: 0, correct: 0 };
   const ood = { total: 0, correctlyEscalated: 0, recognisedAsOod: 0 };
+  const SLICE_TAGS = ['typo', 'stt', 'slang', 'very_short', 'active'] as const;
+  const tagSlices: Record<string, { total: number; correct: number }> = {};
+  for (const t of SLICE_TAGS) tagSlices[t] = { total: 0, correct: 0 };
+  const narrative = { total: 0, correct: 0, escalated: 0 };
+  const narrativeByTag: Record<string, { total: number; correct: number }> = {};
 
   for (const row of rows) {
     const t0 = process.hrtime.bigint();
@@ -346,6 +544,25 @@ function runUnseen(): Record<string, unknown> | null {
     latencies.push(Number(t1 - t0) / 1e6);
 
     const predicted: PriorityLevel | 'OOD' = a.outOfDistribution ? 'OOD' : a.priority;
+
+    if (row.maxPriority) {
+      // Soft narrative rows: measured outside the band matrix so exact-band
+      // accuracy stays comparable. Pass = predicted band ≤ ceiling (never P1)
+      // OR the engine escalated to a human instead of asserting a band.
+      narrative.total += 1;
+      const tag = (row.tags || ['narrative'])[0];
+      const bucket = (narrativeByTag[tag] ||= { total: 0, correct: 0 });
+      bucket.total += 1;
+      const escalated = a.requiresHumanReview || a.needsClarification || a.outOfDistribution;
+      const ceiling = BANDS.indexOf(row.maxPriority);
+      const bandOk = !a.outOfDistribution && BANDS.indexOf(a.priority) >= ceiling;
+      if (escalated || bandOk) {
+        narrative.correct += 1;
+        bucket.correct += 1;
+      }
+      if (escalated) narrative.escalated += 1;
+      continue;
+    }
 
     if (row.expectedPriority === 'OOD') {
       // OOD rows are measured outside the band matrix: the engine must
@@ -379,6 +596,12 @@ function runUnseen(): Record<string, unknown> | null {
     if (row.tags?.includes('negation')) {
       negation.total += 1;
       if (a.priority === row.expectedPriority) negation.correct += 1;
+    }
+    for (const tag of SLICE_TAGS) {
+      if (row.tags?.includes(tag)) {
+        tagSlices[tag].total += 1;
+        if (a.priority === row.expectedPriority) tagSlices[tag].correct += 1;
+      }
     }
   }
 
@@ -423,6 +646,16 @@ function runUnseen(): Record<string, unknown> | null {
     ),
     hardNegative: { ...hardNegatives, accuracy: hardNegatives.total ? +(hardNegatives.correct / hardNegatives.total).toFixed(4) : null },
     negation: { ...negation, accuracy: negation.total ? +(negation.correct / negation.total).toFixed(4) : null },
+    narrative: {
+      ...narrative,
+      accuracy: narrative.total ? +(narrative.correct / narrative.total).toFixed(4) : null,
+      byTag: Object.fromEntries(
+        Object.entries(narrativeByTag).map(([k, v]) => [k, { ...v, accuracy: +(v.correct / v.total).toFixed(4) }])
+      ),
+    },
+    tagSlices: Object.fromEntries(
+      Object.entries(tagSlices).map(([k, v]) => [k, { ...v, accuracy: v.total ? +(v.correct / v.total).toFixed(4) : null }])
+    ),
     ood: {
       ...ood,
       escalated_rate: ood.total ? +(ood.correctlyEscalated / ood.total).toFixed(4) : null,
@@ -566,6 +799,8 @@ function main(): void {
           `P1_FNR=${(unseen as { p1_false_negative_rate: number }).p1_false_negative_rate}`
       );
       console.log(`  ood:`, (unseen as { ood: unknown }).ood);
+      console.log(`  narrative (historical/fiction soft ceiling):`, (unseen as { narrative: unknown }).narrative);
+      console.log(`  tagSlices:`, (unseen as { tagSlices: unknown }).tagSlices);
       console.log(`  latency p50/p95/p99:`, (unseen as { latency_ms: unknown }).latency_ms);
     } else {
       console.log('Unseen: eval-unseen.jsonl not found (run the dataset generator first)');

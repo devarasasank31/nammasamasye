@@ -77,12 +77,15 @@ export function analyzePriorityLocal(input: PriorityInput): PriorityAnalysis {
   };
 
   // Human review when the engine is out of its depth: unrecognised input,
-  // low priority confidence (score sits near a band edge), or a P1 forced
-  // by safety rules on top of a weak classification.
+  // low priority confidence (score sits near a band edge), a P1 forced
+  // by safety rules on top of a weak classification, or a reported
+  // violent crime/attack (spec §7/§28 — allegations are never verified
+  // by the system).
   const requiresHumanReview =
     facts.outOfDistribution ||
     confidences.priority < 45 ||
-    (safety.override && classification < 50);
+    (safety.override && classification < 50) ||
+    safety.rules.includes('active_violence');
   const needsClarification = facts.outOfDistribution || facts.normalized.replace(/\s+/g, '').length < 8;
 
   // Reasons — ordered: safety first, then dominant score dimensions, then band.
@@ -97,6 +100,9 @@ export function analyzePriorityLocal(input: PriorityInput): PriorityAnalysis {
   }
   if (facts.allegations.some(a => a.kind === 'intoxication')) {
     reasons.push('Suspected intoxication reported by the citizen — unverified allegation, not a confirmed fact');
+  }
+  if (safety.rules.includes('active_violence')) {
+    reasons.push('Reported violent crime / attack — human review required (the system never verifies allegations)');
   }
   if (facts.resolvedNow) reasons.push('Report states the situation is already over / nobody hurt — no active emergency');
   const dims: [keyof ScoreWeights, string][] = [

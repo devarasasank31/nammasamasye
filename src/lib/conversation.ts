@@ -138,6 +138,35 @@ export function aiUnavailableReply(lang: string): string {
   return bank[lang] || bank.en;
 }
 
+// Spec §25: questions asking whether to call emergency services must get an
+// immediate, honest recommendation — reporting is not an emergency response.
+// Only QUESTION phrasing matches; declarative reports keep the normal path.
+const EMERGENCY_QUESTION_PATTERNS: RegExp[] = [
+  /\bshould i call\b[^.?!]{0,40}\b(police|fire|ambulance|112|101|108|emergency|rescue)\b/i,
+  /\bdo (i|we) (need to |have to )?call\b[^.?!]{0,40}\b(police|fire|ambulance|112|101|108|emergency)\b/i,
+  /\bwho should i call\b[^.?!]{0,60}\b(emergency|fire|accident|crime|ambulance|police)\b/i,
+  /\bwhat (number|no\.?) (should|do i) call\b/i,
+  /\bemergency number\b/i,
+];
+
+/** True when the citizen asks whether/who to call in an emergency (§25). */
+export function isEmergencyQuestion(text: string): boolean {
+  const s = text.trim();
+  if (!s) return false;
+  return EMERGENCY_QUESTION_PATTERNS.some(p => p.test(s));
+}
+
+/** Honest emergency recommendation (spec §25). Never promises response. */
+export function emergencyAdviceReply(lang: string): string {
+  const bank: Record<string, string> = {
+    en: 'If this is happening right now, call the official emergency number first — 112 connects police, fire and ambulance in India. NammaSamasye is a reporting app: filing a report does not guarantee an emergency response. After you have called, tell me what happened and I will help you file the report.',
+    kn: 'ಇದು ಈಗಾಗಲೇ ನಡೆಯುತ್ತಿದ್ದರೆ, ಮೊದಲು ಅಧಿಕೃತ ತುರ್ತು ಸಂಖ್ಯೆಗೆ ಕರೆ ಮಾಡಿ — 112 ಪೊಲೀಸ್, ಅಗ್ನಿಶಾಮಕ ಮತ್ತು ಆಂಬ್ಯುಲೆನ್ಸ್ ಸಂಪರ್ಕಿಸುತ್ತದೆ. NammaSamasye ಒಂದು ವರದಿ ವ್ಯವಸ್ಥೆ — ವರದಿ ಮಾಡಿದರೆ ತುರ್ತು ಸ್ಪಂದನೆ ಖಾತರಿಯಲ್ಲ. ಕರೆ ಮಾಡಿದ ನಂತರ ಏನಾಯಿತು ಎಂದು ಹೇಳಿ, ವರದಿ ಮಾಡಲು ಸಹಾಯ ಮಾಡುತ್ತೇನೆ.',
+    hi: 'अगर यह अभी हो रहा है, तो पहले आधिकारिक आपातकालीन नंबर पर कॉल करें — 112 पुलिस, फायर और एम्बुलेंस से जोड़ता है। NammaSamasye एक रिपोर्टिंग ऐप है: रिपोर्ट दर्ज करने की आपातकालीन प्रतिक्रिया की गारंटी नहीं है। कॉल करने के बाद बताएँ क्या हुआ, मैं रिपोर्ट दर्ज करने में मदद करूँगा।',
+    te: `ఇది ఇప్పుడు జరుగుతుంటే, ముందుగా అధికారిక అత్యవసర నంబర్‌కి కాల్ చేయండి — 112 పోలీసు, ఫైర్, అంబులెన్స్‌ను కలుపుతుంది. NammaSamasye నివేదిక యాప్: నివేదిక ఇవ్వడం అత్యవసర స్పందనకు హామీ కాదు. కాల్ చేసిన తర్వాత ఏమి జరిగిందో చెప్పండి, నివేదిక నమోదుకు సహాయం చేస్తాను.`,
+  };
+  return bank[lang] || bank.en;
+}
+
 function tLang(key: string, lang: string): string {
   const bank: Record<string, Record<string, string>> = {
     greeting: {

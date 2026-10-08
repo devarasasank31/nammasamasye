@@ -16,6 +16,7 @@ import { shouldGuard, guardReply } from '@/lib/chat-guard';
 import { exactContext } from '@/lib/exact-context';
 import { speechLocale, isLanguage } from '@/lib/ai/language';
 import { t } from '@/lib/translations';
+import { extractIncidentWhen, buildIncidentWhen, formatIncidentWhen, WhenMode } from '@/lib/incident-when';
 import { createIncident, findSimilarIssues, supportIncident } from '@/services/incident';
 import type { SimilarMatch } from '@/lib/analytics';
 import FileUploader from '@/components/FileUploader';
@@ -25,9 +26,9 @@ const LocationPicker = dynamic(() => import('@/components/LocationPicker'), {
   ssr: false,
   loading: () => <div className="h-[420px] rounded-2xl bg-gray-100 animate-pulse" />,
 });
-import { Send, Mic, MicOff, ArrowLeft, Globe, ChevronRight, MapPin, X, Square, Link2, Plus, ShieldCheck, Paperclip, Check, Home } from 'lucide-react';
+import { Send, Mic, MicOff, ArrowLeft, Globe, ChevronRight, MapPin, X, Square, Link2, Plus, ShieldCheck, Paperclip, Check, Home, Calendar, Clock } from 'lucide-react';
 
-type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'review' | 'safety_review' | 'similar' | 'submitted';
+type Step = 'greeting' | 'category_select' | 'free_text' | 'scenario_match' | 'workflow' | 'when' | 'review' | 'safety_review' | 'similar' | 'submitted';
 
 interface ChatMessage {
   id: string;
@@ -170,6 +171,11 @@ export default function ReportPage() {
   const [pickedLocation, setPickedLocation] = useState<PickedLocation | null>(null);
   // Ward + nearest police station, derived offline from the pinned point.
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
+  // WHEN the incident happened (spec §12) — separate from submission time.
+  const [whenMode, setWhenMode] = useState<WhenMode | null>(null);
+  const [whenDate, setWhenDate] = useState('');
+  const [whenTime, setWhenTime] = useState('');
+  const [whenPrefilled, setWhenPrefilled] = useState(false);
   // What the citizen sees after submitting: place + assigned priority.
   const [submitSummary, setSubmitSummary] = useState<{
     ward: string;
@@ -334,8 +340,18 @@ export default function ReportPage() {
       }, 300);
     } else {
       setTimeout(() => {
-        addBotMessage(t('bot.review_before_submit', lang));
-        setStep('review');
+        addBotMessage(t('bot.when_ask', lang));
+        setStep('when');
+        // Prefill from the citizen's own words (incl. emergencies → ONGOING),
+        // so the common case is one tap — never blocking emergency guidance.
+        const described = originalText || Object.values(answers).join(' ');
+        const detected = isEmergencyMessage(described)
+          ? 'right_now'
+          : extractIncidentWhen(described);
+        if (detected) {
+          setWhenMode(detected);
+          setWhenPrefilled(true);
+        }
       }, 300);
     }
   };
@@ -712,6 +728,10 @@ export default function ReportPage() {
       // Local-only path — recomputeDerived re-derives the priority.
     }
 
+    // Captured on the "when" step; UNKNOWN if somehow missing — a report
+    // must never be blocked by a missing field.
+    const whenInfo = buildIncidentWhen(whenMode, whenDate, whenTime);
+
     const incident = await createIncident({
       session_id: sessionId,
       category_id: selectedScenario.parent,
@@ -723,6 +743,12 @@ export default function ReportPage() {
       location,
       location_lat: pickedLocation?.lat,
       location_lng: pickedLocation?.lng,
+      // Incident time ≠ submission time — both stored separately (spec §12).
+      incident_date: whenInfo.incident_date,
+      incident_time: whenInfo.incident_time,
+      incident_date_time: whenInfo.incident_date_time,
+      incident_time_precision: whenInfo.incident_time_precision,
+      date_of_incident: whenInfo.date_of_incident,
       language: lang,
       answers,
       evidence_links: evidenceLinks,
@@ -1094,6 +1120,95 @@ export default function ReportPage() {
           </div>
         )}
 
+        {/* WHEN — incident date/time, captured before Review (spec §12/§13) */}
+        {step === 'when' && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                <Calendar size={18} />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">{t('report.when_title', lang)}</h3>
+                <p className="text-[11px] text-gray-500">{t('bot.when_ask', lang)}</p>
+              </div>
+            </div>
+
+            {whenPrefilled && whenMode && (
+              <p className="text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2">
+                {t('report.when_prefill', lang)}
+              </p>
+            )}
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setWhenMode('right_now')}
+                className={`col-span-2 px-3 py-2.5 rounded-xl text-sm font-semibold border transition ${
+                  whenMode === 'right_now'
+                    ? 'bg-red-600 border-red-600 text-white'
+                    : 'bg-red-50 border-red-200 text-red-700 hover:border-red-400'
+                }`}
+              >
+                🚨 {t('report.when_now', lang)}
+              </button>
+              {(['today', 'yesterday', 'specific', 'unknown'] as WhenMode[]).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setWhenMode(mode)}
+                  className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition ${
+                    whenMode === mode
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-primary'
+                  }`}
+                >
+                  {mode === 'today' ? t('report.when_today', lang)
+                    : mode === 'yesterday' ? t('report.when_yesterday', lang)
+                    : mode === 'specific' ? t('report.when_specific', lang)
+                    : t('report.when_unknown', lang)}
+                </button>
+              ))}
+            </div>
+
+            {/* Calendar + time picker — day known for every mode except
+                right_now/unknown; time optional (EXACT vs APPROXIMATE). */}
+            {whenMode && whenMode !== 'right_now' && whenMode !== 'unknown' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {whenMode === 'specific' && (
+                  <label className="text-xs text-gray-600 space-y-1">
+                    <span className="font-medium">{t('report.when_date_label', lang)}</span>
+                    <input
+                      type="date"
+                      value={whenDate}
+                      max={new Date().toISOString().slice(0, 10)}
+                      onChange={e => setWhenDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+                    />
+                  </label>
+                )}
+                <label className="text-xs text-gray-600 space-y-1">
+                  <span className="font-medium">{t('report.when_time_label', lang)}</span>
+                  <input
+                    type="time"
+                    value={whenTime}
+                    onChange={e => setWhenTime(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+                  />
+                </label>
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                addBotMessage(t('bot.review_before_submit', lang));
+                setStep('review');
+              }}
+              disabled={!whenMode || (whenMode === 'specific' && !whenDate)}
+              className="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-40"
+            >
+              <Check size={18} /> {t('report.when_continue', lang)}
+            </button>
+          </div>
+        )}
+
         {/* Review */}
         {step === 'review' && (
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-sm">
@@ -1101,6 +1216,11 @@ export default function ReportPage() {
             {selectedScenario && <div className="text-sm text-gray-600"><span className="font-medium">{t('report.category', lang)}:</span> {selectedScenario.name}</div>}
             {originalText && <div className="text-sm text-gray-600"><span className="font-medium">{t('report.description', lang)}:</span> {originalText}</div>}
             {location && <div className="text-sm text-gray-600 flex items-center gap-1"><MapPin size={14} /> {location}</div>}
+            <div className="text-sm text-gray-600 flex items-center gap-1">
+              <Clock size={14} />
+              <span className="font-medium">{t('review.when', lang)}:</span>{' '}
+              {formatIncidentWhen(buildIncidentWhen(whenMode, whenDate, whenTime)) || t('report.when_unknown', lang)}
+            </div>
 
             {/* Auto-detected ward + nearest police station */}
             {locationInfo && (
@@ -1397,7 +1517,7 @@ export default function ReportPage() {
       </div>
 
       {/* Input Area */}
-      {step !== 'submitted' && step !== 'review' && step !== 'similar' && step !== 'safety_review' && !showEvidenceForm && !showLocationPicker && (
+      {step !== 'submitted' && step !== 'when' && step !== 'review' && step !== 'similar' && step !== 'safety_review' && !showEvidenceForm && !showLocationPicker && (
         <div className="sticky bottom-0 glass border-t border-gray-200">
           <div className="max-w-2xl mx-auto px-4 py-3">
             {isRecording && (

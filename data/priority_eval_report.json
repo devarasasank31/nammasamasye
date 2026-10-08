@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-07T12:59:01.502Z",
+  "generated_at": "2026-10-08T10:39:15.978Z",
   "engine": "src/lib/priority-engine (local deterministic pipeline)",
   "regression": {
-    "total": 26,
-    "passed": 26,
+    "total": 53,
+    "passed": 53,
     "failures": [],
     "results": [
       {
@@ -600,115 +600,780 @@
           ],
           "requiresHumanReview": false
         }
+      },
+      {
+        "id": "s28-01-drunk-driver-leg-broke",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 80,
+          "safetyOverride": true,
+          "safetyRules": [
+            "accident_serious_injury"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "vehicle_collision",
+          "injuries": [
+            "suspected_fracture"
+          ],
+          "multiIncident": false,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "Emergency Medical Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-02-someone-got-murdered",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": true,
+          "safetyRules": [
+            "active_violence"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "s28-03-attacked-right-now",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": true,
+          "safetyRules": [
+            "active_violence"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "s28-04-murdered-last-year-closed",
+        "suite": "spec-28",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-05-murder-in-movie",
+        "suite": "spec-28",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-06-streetlight-not-working",
+        "suite": "spec-28",
+        "expected": "P3/P4",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "streetlight_outage",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-07-streetlight-pole-live-wire",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 55,
+          "safetyOverride": true,
+          "safetyRules": [
+            "electrical_hazard"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "electrical_hazard",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BESCOM Electrical Safety"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-08-there-is-a-pothole",
+        "suite": "spec-28",
+        "expected": "P3",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 38,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "road_hazard",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-09-pothole-caused-accident-leg-broke",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 84,
+          "safetyOverride": true,
+          "safetyRules": [
+            "accident_serious_injury"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "vehicle_collision",
+          "injuries": [
+            "suspected_fracture"
+          ],
+          "multiIncident": true,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "Emergency Medical Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-10-live-wire-public-road",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 60,
+          "safetyOverride": true,
+          "safetyRules": [
+            "electrical_hazard"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "electrical_hazard",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BESCOM Electrical Safety"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-11-unconscious-after-accident",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 84,
+          "safetyOverride": true,
+          "safetyRules": [
+            "accident_serious_injury",
+            "unconscious"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "vehicle_collision",
+          "injuries": [
+            "suspected_unconscious"
+          ],
+          "multiIncident": false,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "Emergency Medical Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-12-building-collapsed-trapped",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 61,
+          "safetyOverride": true,
+          "safetyRules": [
+            "person_trapped",
+            "structural_collapse"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "structural_collapse",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP Building Permission",
+            "Karnataka Fire & Emergency Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-13-no-accident-only-streetlight",
+        "suite": "spec-28",
+        "expected": "P3/P4",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "unknown",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-14-no-power-cut-but-live-wire",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 60,
+          "safetyOverride": true,
+          "safetyRules": [
+            "electrical_hazard"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "electrical_hazard",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BESCOM Electrical Safety"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-15-kidnapp",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": true,
+          "safetyRules": [
+            "active_violence"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "s28-16-kidnap",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": true,
+          "safetyRules": [
+            "active_violence"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "s28-17-hostage",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": true,
+          "safetyRules": [
+            "active_violence"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "s28-18-murdred",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": true,
+          "safetyRules": [
+            "active_violence"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "s28-19-shootng",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": true,
+          "safetyRules": [
+            "active_violence"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "s28-20-unconcious-person",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 59,
+          "safetyOverride": true,
+          "safetyRules": [
+            "unconscious"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "vehicle_collision",
+          "injuries": [
+            "suspected_unconscious"
+          ],
+          "multiIncident": false,
+          "departments": [
+            "Bengaluru Traffic Police",
+            "Emergency Medical Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-21-fire-short-input",
+        "suite": "spec-28",
+        "expected": "any",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 61,
+          "safetyOverride": true,
+          "safetyRules": [
+            "fire_explosion"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "fire_explosion",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka Fire & Emergency Services"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-22-movie-about-kidnapping",
+        "suite": "spec-28",
+        "expected": "not-P1",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-23-kidnapped-yesterday",
+        "suite": "spec-28",
+        "expected": "P1/P2/P3",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": true,
+          "safetyRules": [
+            "active_violence"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "s28-24-kidnapped-right-now",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 42,
+          "safetyOverride": true,
+          "safetyRules": [
+            "active_violence"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "physical_violence",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "Karnataka State Police"
+          ],
+          "requiresHumanReview": true
+        }
+      },
+      {
+        "id": "s28-25-live-wire-no-power-outage",
+        "suite": "spec-28",
+        "expected": "P1",
+        "actual": "P1",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 55,
+          "safetyOverride": true,
+          "safetyRules": [
+            "electrical_hazard"
+          ],
+          "slaClass": "EMERGENCY",
+          "incidentType": "electrical_hazard",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BESCOM Electrical Safety"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-26-garbage-outside-house",
+        "suite": "spec-28",
+        "expected": "P3/P4",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 36,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "garbage_dumping",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP"
+          ],
+          "requiresHumanReview": false
+        }
+      },
+      {
+        "id": "s28-27-pothole-two-years",
+        "suite": "spec-28",
+        "expected": "P3",
+        "actual": "P3",
+        "pass": true,
+        "detail": {
+          "failures": [],
+          "score": 38,
+          "safetyOverride": false,
+          "safetyRules": [],
+          "slaClass": "NORMAL",
+          "incidentType": "road_hazard",
+          "injuries": [],
+          "multiIncident": false,
+          "departments": [
+            "BBMP"
+          ],
+          "requiresHumanReview": false
+        }
       }
     ]
   },
   "unseen": {
     "file": "C:\\Users\\satya\\Documents\\Default Project\\nammasamasye\\data\\priority-scenarios\\eval-unseen.jsonl",
-    "total": 11600,
-    "band_total": 11400,
+    "total": 11830,
+    "band_total": 11570,
     "byPriority": {
-      "P1": 3000,
-      "P2": 1500,
-      "P3": 6300,
-      "P4": 600
+      "P1": 3043,
+      "P2": 1523,
+      "P3": 6399,
+      "P4": 605
     },
-    "accuracy": 0.8454,
-    "overall_accuracy": 0.848,
-    "macro_f1": 0.7976,
-    "p1_false_negative_rate": 0.0567,
+    "accuracy": 0.8394,
+    "overall_accuracy": 0.8379,
+    "macro_f1": 0.7915,
+    "p1_false_negative_rate": 0.0621,
     "perPriority": {
       "P1": {
-        "support": 3000,
-        "precision": 1,
-        "recall": 0.9433,
-        "f1": 0.9708,
-        "false_negatives": 170
+        "support": 3043,
+        "precision": 0.9996,
+        "recall": 0.9379,
+        "f1": 0.9678,
+        "false_negatives": 189
       },
       "P2": {
-        "support": 1500,
-        "precision": 1,
-        "recall": 0.8547,
-        "f1": 0.9216,
-        "false_negatives": 218
+        "support": 1523,
+        "precision": 0.9969,
+        "recall": 0.8444,
+        "f1": 0.9143,
+        "false_negatives": 237
       },
       "P3": {
-        "support": 6300,
-        "precision": 0.9576,
-        "recall": 0.7817,
-        "f1": 0.8608,
-        "false_negatives": 1375
+        "support": 6399,
+        "precision": 0.9543,
+        "recall": 0.7764,
+        "f1": 0.8562,
+        "false_negatives": 1431
       },
       "P4": {
-        "support": 600,
-        "precision": 0.2797,
-        "recall": 1,
-        "f1": 0.4372,
-        "false_negatives": 0
+        "support": 605,
+        "precision": 0.2722,
+        "recall": 0.9983,
+        "f1": 0.4278,
+        "false_negatives": 1
       }
     },
     "confusion": {
       "P1": {
-        "P1": 2830,
-        "P2": 0,
-        "P3": 0,
-        "P4": 170
+        "P1": 2854,
+        "P2": 4,
+        "P3": 8,
+        "P4": 177
       },
       "P2": {
         "P1": 0,
-        "P2": 1282,
-        "P3": 218,
-        "P4": 0
+        "P2": 1286,
+        "P3": 229,
+        "P4": 8
       },
       "P3": {
-        "P1": 0,
+        "P1": 1,
         "P2": 0,
-        "P3": 4925,
-        "P4": 1375
+        "P3": 4968,
+        "P4": 1430
       },
       "P4": {
         "P1": 0,
         "P2": 0,
-        "P3": 0,
-        "P4": 600
+        "P3": 1,
+        "P4": 604
       }
     },
     "byLanguage": {
       "hi": {
-        "total": 2013,
-        "correct": 1794,
-        "accuracy": 0.8912
+        "total": 2018,
+        "correct": 1798,
+        "accuracy": 0.891
       },
       "te": {
-        "total": 1931,
-        "correct": 1589,
-        "accuracy": 0.8229
+        "total": 1935,
+        "correct": 1590,
+        "accuracy": 0.8217
       },
       "kn": {
-        "total": 1963,
-        "correct": 1687,
-        "accuracy": 0.8594
+        "total": 1968,
+        "correct": 1690,
+        "accuracy": 0.8587
       },
       "en": {
-        "total": 3555,
-        "correct": 3055,
-        "accuracy": 0.8594
+        "total": 3700,
+        "correct": 3118,
+        "accuracy": 0.8427
       },
       "hl": {
-        "total": 1938,
-        "correct": 1512,
-        "accuracy": 0.7802
+        "total": 1949,
+        "correct": 1516,
+        "accuracy": 0.7778
       }
     },
     "hardNegative": {
-      "total": 11400,
-      "correct": 9637,
-      "accuracy": 0.8454
+      "total": 11570,
+      "correct": 9712,
+      "accuracy": 0.8394
     },
     "negation": {
       "total": 700,
       "correct": 700,
       "accuracy": 1
+    },
+    "narrative": {
+      "total": 60,
+      "correct": 55,
+      "escalated": 14,
+      "accuracy": 0.9167,
+      "byTag": {
+        "historical": {
+          "total": 30,
+          "correct": 29,
+          "accuracy": 0.9667
+        },
+        "movie_story": {
+          "total": 30,
+          "correct": 26,
+          "accuracy": 0.8667
+        }
+      }
+    },
+    "tagSlices": {
+      "typo": {
+        "total": 46,
+        "correct": 19,
+        "accuracy": 0.413
+      },
+      "stt": {
+        "total": 20,
+        "correct": 6,
+        "accuracy": 0.3
+      },
+      "slang": {
+        "total": 25,
+        "correct": 7,
+        "accuracy": 0.28
+      },
+      "very_short": {
+        "total": 25,
+        "correct": 18,
+        "accuracy": 0.72
+      },
+      "active": {
+        "total": 30,
+        "correct": 21,
+        "accuracy": 0.7
+      }
     },
     "ood": {
       "total": 200,
@@ -718,10 +1383,10 @@
       "recognised_rate": 1
     },
     "latency_ms": {
-      "p50": 6.01,
-      "p95": 13.83,
-      "p99": 15.79,
-      "max": 22.72
+      "p50": 5.92,
+      "p95": 14.43,
+      "p99": 17.68,
+      "max": 63.71
     }
   },
   "agreement": {

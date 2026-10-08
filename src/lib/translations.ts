@@ -402,6 +402,18 @@ const translations: Record<string, Record<Language, string>> = {
   'terms.l.g6': { en: 'Respect the privacy of others', kn: 'ಇತರರ ಗೌಪ್ಯತೆಯನ್ನು ಗೌರವಿಸಿ', hi: 'दूसरों की गोपनीयता का सम्मान करें', te: 'ఇతరుల గోప్యతను గౌరవించండి' },
   'terms.h.safety': { en: 'Safety Disclaimer', kn: 'ಸುರಕ್ಷಾ ಹೊಣೆಗಾರಿಕೆ ನಿರಾಕರಣೆ', hi: 'सुरक्षा अस्वीकरण', te: 'భద్రతా నిరాకరణ' },
   'terms.p.safety': { en: 'Namma Samasye helps citizens document incidents and navigate available resources. It does not guarantee resolution, does not dispatch emergency responders, and does not replace official authorities. Your safety is your priority.', kn: 'ನಮ್ಮ ಸಮಸ್ಯೆ ನಾಗರಿಕರಿಗೆ ಘಟನೆಗಳನ್ನು ದಾಖಲಿಸಲು ಮತ್ತು ಲಭ್ಯ ಸಂಪನ್ಮೂಲಗಳನ್ನು ನಿರ್ವಹಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ. ಇದು ಪರಿಹಾರವನ್ನು ಖಾತರಿಪಡಿಸುವುದಿಲ್ಲ, ತುರ್ತು ಪ್ರತಿಕ್ರಿಯೆಕರ್ತರನ್ನು ಕಳುಹಿಸುವುದಿಲ್ಲ ಮತ್ತು ಅಧಿಕೃತ ಪ್ರಾಧಿಕಾರಗಳ ಬದಲಿಗೆ ಅಲ್ಲ. ನಿಮ್ಮ ಸುರಕ್ಷತೆ ನಿಮ್ಮ ಆದ್ಯತೆ.', hi: 'नम्मा समस्ये नागरिकों को घटनाओं का दस्तावेज़ीकरण और उपलब्ध संसाधनों का प्रबंधन करने में मदद करता है। यह समाधान की गारंटी नहीं देता, आपातकालीन प्रतिकर्ता नहीं भेजता, और आधिकारिक प्राधिकरणों का विकल्प नहीं है। आपकी सुरक्षा आपकी प्राथमिकता है।', te: 'నమ్మ సమస్యే పౌరులకు సంఘటనలను డాక్యుమెంట్ చేయడానికి మరియు అందుబాటులో ఉన్న వనరులను నావిగేట్ చేయడానికి సహాయపడుతుంది. ఇది పరిష్కారానికి హామీ ఇవ్వదు, అత్యవసర ప్రతిస్పందకులను పంపదు, మరియు అధికారిక అధికారులకు ప్రత్యామ్నాయం కాదు. మీ భద్రత మీ ప్రాధాన్యత.' },
+  'bot.when_ask': { en: 'When did this issue happen?', kn: 'ಈ ಸಮಸ್ಯೆ ಯಾವಾಗ ಸಂಭವಿಸಿತು?', hi: 'यह समस्या कब हुई?', te: 'ఈ సమస్య ఎప్పుడు సంభవించింది?' },
+  'report.when_title': { en: 'When did this happen?', kn: 'ಇದು ಯಾವಾಗ ನಡೆಯಿತು?', hi: 'यह कब हुआ?', te: 'ఇది ఎప్పుడు జరిగింది?' },
+  'report.when_now': { en: 'Happening right now', kn: 'ಈಗ ನಡೆಯುತ್ತಿದೆ', hi: 'अभी हो रहा है', te: 'ఇప్పుడు జరుగుతోంది' },
+  'report.when_today': { en: 'Today', kn: 'ಇಂದು', hi: 'आज', te: 'నేడు' },
+  'report.when_yesterday': { en: 'Yesterday', kn: 'ನಿನ್ನೆ', hi: 'पिछला कल', te: 'నిన్న' },
+  'report.when_specific': { en: 'Pick date & time', kn: 'ದಿನಾಂಕ ಮತ್ತು ಸಮಯ ಆಯ್ಕೆಮಾಡಿ', hi: 'तारीख़ और समय चुनें', te: 'తేదీ మరియు సమయాన్ని ఎంచుకోండి' },
+  'report.when_unknown': { en: "I'm not sure", kn: 'ನನಗೆ ಖಚಿತವಿಲ್ಲ', hi: 'मुझे नहीं पता', te: 'నాకు ఖాయంగా తెలియదు' },
+  'report.when_date_label': { en: 'Date', kn: 'ದಿನಾಂಕ', hi: 'तारीख़', te: 'తేదీ' },
+  'report.when_time_label': { en: 'Time (optional)', kn: 'ಸಮಯ (ಐಚ್ಛಿಕ)', hi: 'समय (वैकल्पिक)', te: 'సమయం (ఐచ్ఛికం)' },
+  'report.when_continue': { en: 'Continue', kn: 'ಮುಂದುವರಿಸಿ', hi: 'आगे बढ़ें', te: 'కొనసాగించండి' },
+  'report.when_prefill': { en: 'Guessed from your description — change it if wrong.', kn: 'ನಿಮ್ಮ ವಿವರಣೆಯಿಂದ ಊಹಿಸಲಾಗಿದೆ — ತಪ್ಪಿದ್ದರೆ ಬದಲಾಯಿಸಿ.', hi: 'आपके विवरण से अनुमान लगाया गया है — गलत हो तो बदलें।', te: 'మీ వివరణ నుండి అంచనా వేయబడింది — తప్పు అయితే మార్చండి.' },
+  'review.when': { en: 'When', kn: 'ಯಾವಾಗ', hi: 'कब', te: 'ఎప్పుడు' },
 };
 
 export function t(key: string, lang: Language): string {

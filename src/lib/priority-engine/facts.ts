@@ -59,6 +59,48 @@ const DENY_INJURY: RegExp[] = [
   /\bbleeding\s+nahi(\s+ho\s+rahi)?\b/,
 ];
 
+// --- fiction context (spec §7/§9/§34.9) ------------------------------------
+// The report is about a movie/film/novel/story — a described "murder" or
+// "kidnapping" in a work of fiction is NOT a real incident. Patterns are
+// construction-gated (movie + watching/about/from …) so a real fire in a
+// movie *theater* still reads as a real emergency.
+const FICTION_PATTERNS: RegExp[] = [
+  /\b(movie|film|novel|story|series|episode|book|comic)\s+(that\s+|which\s+)?(i|we|they)?\s*(am|was|is|are|were)?\s*(watching|reading|saw|seen|following|writing|about)\b/,
+  // "watching a movie …" is fiction UNLESS an emergency clause follows
+  // ("watching a movie when the ceiling fell" is a real incident).
+  /\bwatching\s+(a\s+|the\s+)?(movie|film|show|series|episode|drama)\b(?![^.!?]{0,70}\b(when|while|suddenly|then|midway)\b)(?![^.!?]{0,12}\s+(and|but)\s+(my|the|a|i|we|someone)\b)/,
+  /\b(movie|film|novel|story|series|episode|book)\s+(about|called|named|titled)\b/,
+  /\bfrom\s+(the\s+|that\s+|this\s+)?(movie|film|novel|story|book|series|episode)\b/,
+  /\bbased\s+on\s+(a\s+|the\s+)?(true\s+story|movie|book|novel)\b/,
+  /\bin\s+(the\s+|this\s+|that\s+)?(movie|film|novel|story|series|episode|book|scene)\b(?!\s*(theater|theatre|hall|plex|complex))(?![^.!?]{0,70}\b(when|while|suddenly|then|midway)\b)/,
+  // Narrative constructions: the work DESCRIBES the incident (spec §34.9).
+  /\b(novel|story|book|comic|series|episode|screenplay|script|chapter|plot)\s+(describes?|shows?|tells|features?|mentions?|has|ends?|begins?)\b/,
+  /\ba\s+scene\s+(from|in)\s+(the|a)\s+(movie|film|show|series|episode)\b/,
+  /\b(actor|actress|hero|villain|character|protagonist)\s+(dies?|is\s+killed|is\s+murdered|gets?\s+(killed|attacked|stabbed|beaten))\b/,
+  /\b(fictional|fantasy|imaginary|make-believe)\b/,
+  // Indic: ಸಿನಿಮಾ / సినిమా / फ़िल्म / सिनेमा / ಕಥೆ / కథ / कहानी almost never
+  // appear in a real civic report except when the report is about a work.
+  /ಸಿನಿಮಾ|ಚಲನಚಿತ್ರ|ಕಥೆ\s+(ಬಗ್ಗೆ|ನಲ್ಲಿ)|फ़िल्म|सिनेमा|कहानी|సిನిమా|కథ\s+(లో|గురించి)/,
+];
+
+// --- historical context (spec §7/§34.8) -------------------------------------
+// The event is explicitly from the past — a closed/old case, not an active
+// emergency. "Yesterday"/"today" are deliberately NOT historical: a crime
+// from yesterday is still recent and keeps serious-crime handling.
+const HISTORICAL_PATTERNS: RegExp[] = [
+  /\blast\s+year\b/,
+  /\b(years?|months?|decades?)\s+ago\b/,
+  /\bin\s+(19|20)\d{2}\b/,
+  /\bcase\s+(is\s+)?closed\b/,
+  /\bclosed\s+case\b/,
+  /\blong\s+(back|ago)\b/,
+  /\bhistorical\b/,
+  /\bold\s+(case|incident)\b/,
+  /ವರ್ಷದ\s+ಹಿಂದೆ|ಹಳೆಯ\s+ಪ್ರಕರಣ/,
+  /साल\s+पहले|पुराना\s+मामला/,
+  /సంవత్సరం\s+క్రితం|పాత\s+కేసు/,
+];
+
 // --- concepts --------------------------------------------------------------
 // Every concept: patterns that detect it, deny patterns that negate it in
 // place. Indic scripts cover KN/HI/TE; Hinglish/Tinglish is covered by the
@@ -72,6 +114,14 @@ const CONCEPTS: Record<string, Concept> = {
       /\bby\s+(a|the)?\s*(car|bike|bus|lorry|truck|auto)\b/,
       /\bwas\s+hit\s+by\b/,
       /\bhitt?e?n?\s+me\s+with\s+(a\s+)?car\b/,
+      // vehicle-first word order (spec §33): "car hit me", "vehicle struck me"
+      /\b(car|bike|auto|bus|lorry|truck|vehicle|scooter|two\s?wheeler|autorickshaw)\s+(hit|struck|knocked|ran\s+into|collided\s+with)\b/,
+      // two-wheeler fall / skid (spec §33 family: accident + injury) —
+      // "bike fell on me", "scooter skidded and I fell"
+      /\b(bike|bicycle|cycle|scooter|scooty|motorcycle|motorbike|auto|car|vehicle|two\s?wheeler|autorickshaw)\s+(fell|slipped|skidded|flipped|tumbled|fishtailed)\b/,
+      /\bfell\s+(down\s+)?from\s+(my|the|a|his|her)?\s*(bike|bicycle|cycle|scooter|scooty|motorcycle|motorbike|auto)\b/,
+      /\bwas\s+thrown\s+(off|from)\s+(my|the|a)\s+(bike|scooter|motorcycle|auto)\b/,
+      /\b(struck|smashed)\s+(me|him|her|them|a\s+pedestrian)\b/,
       /ಅಪಘಾತ|ಡಿಕ್ಕಿ|ವಾಹನ\s+ಅಪಘಾತ|ವಾಹನ[^.!?,]{0,15}ತಾಕಿ/,
       /एक्सीडेंट|दुर्घटना|टक्कर|गाड़ी\s+से\s+टक(रा|राय)|स्कूटर\s+से\s+टक्कर|टकरा/,
       /యాక్సిడెంట్|ప్రమాదం|డిక్కి|వాహనం\s+ఢీ|వాహన[^.!?,]{0,15}ఢీ/,
@@ -99,13 +149,21 @@ const CONCEPTS: Record<string, Concept> = {
       /\b(no|not)\s+(a\s+)?(live\s+)?(electric(al)?\s+)?(wire|current|shock|danger)/,
       /\b(wire|line|current|supply)\s+(is\s+|was\s+)?(not|dead|cut|de-?energised|switched\s+off|nahi)\b/,
       /\bno\s+(electric(al)?\s+)?(shock|current)\b/,
-      /\bpower\s+(is\s+)?(cut|supply\s+(is\s+)?(cut|off|normal))\b/,
+      /(?<!no\s)\bpower\s+(is\s+)?(cut|supply\s+(is\s+)?(cut|off|normal))\b/,
       /\bsafe\s+now\b/,
     ],
   },
   fire: {
     patterns: [
+      // A bare, unqualified safety term (spec §8): the input is JUST the
+      // word "fire" — never silently read as a minor/unknown issue. Longer
+      // qualified inputs ("fire alarm not working") take the normal paths.
+      /^(fire|आग|ಬೆಂಕಿ|ಅಗ್ನಿ|ಅಗ್నಿ|అగ్నಿ)\s*[.!?]*$/,
       /\b(on\s+fire|catch(ing)?\s+fire|fire\s+broke|building\s+burning|flames|blaze|cylinder\s+blast|explosion|exploded)\b/,
+      // fire actively burning INSIDE a place (spec §29 fire coverage):
+      // "fire in the shop", "fire at the godown". "fire alarm" never matches.
+      /\bfire\s+(in|inside)\s+(the|a|my|our|this|that|their|one)\s+[a-z]+\b/,
+      /\bfire\s+(in|at)\s+(shop|store|house|home|building|kitchen|theater|theatre|hall|bus|market|bazaar|flat|apartment|room|office|factory|warehouse|shed|tent|stall|temple|church|mosque|mall|school|hospital|hostel|garage|godown|godam|showroom|complex|petrol|workshop)\b/,
       /ಬೆಂಕಿ\s+(ಹತ್ತಿ|ಬೆಂಕಿ)|ಸ್ಫೋಟ/,
       /आग\s+(लग|लगी)|अग्निकांड|विस्फोट|सिलेंडर\s+विस्फोट/,
       /అగ్ని\s+(పెట్టి|మంటలు)|మంటలు|పేలుడు/,
@@ -116,6 +174,9 @@ const CONCEPTS: Record<string, Concept> = {
   collapse: {
     patterns: [
       /\b(building|structure|wall|roof|shed|portion)s?\s+(is\s+|are\s+)?(collaps(e|ed|ing)|cave[sd]?\s+in|caving|falling|about\s+to\s+fall)\b/,
+      // fall-form (spec §29 structural collapse): "the ceiling fell on us",
+      // "roof slab came down"
+      /\b(ceiling|roof|slab|chimney|awning|water\s+tank|portion|shed|wall|structure|building)s?\s+(has\s+|had\s+|is\s+|was\s+|are\s+)?(fallen|fell|come\s+down|came\s+down|collaps\w*|cave\w*)\b/,
       /\b(collapsed|cave[d]?\s+in)\b/,
       /ಕುಸಿ(ತ|ದ)|ಗೋಡೆ\s+ಬಿದ್ದ|ಕಟ್ಟಡ\s+ಕುಸಿ/,
       /(भवन|दीवार|मकान)\s+गिर|गिर\s+गया|भरभरा|कुसित/,
@@ -275,6 +336,8 @@ const CONCEPTS: Record<string, Concept> = {
   fracture: {
     patterns: [
       /\b(fracture[d]?)\b|\b(bone|ribs?)\b[^.!?]{0,25}\b(broke|broken|cracked|fractured)\b|\b(leg|arm|hand|foot|shoulder|ankle|wrist|hip|jaw)\s+(is\s+|are\s+)?(broke|broken|fractured)\b/,
+      // verb-first order (spec §33): "broke my leg", "broke her arm"
+      /\bbroke\s+(my|his|her|their)?\s*(a\s+)?(leg|arm|hand|foot|shoulder|ankle|wrist|hip|jaw|rib|ribs|nose|finger|toe|collarbone|skull)\b/,
       /ಮೂಳೆ\s+(ಮುರಿ|ಬ್ರೇಕ್|ಹೋರಾಟ)|ಫ್ರಾಕ್ಚರ್/,
       /हड्डी\s+(टूट|फ्रैक्चर)|फ्रैक्चर/,
       /ఎముక\s+(విరిగి|మురిగి)|ఫ్రాక్చర్/,
@@ -284,6 +347,7 @@ const CONCEPTS: Record<string, Concept> = {
   injury: {
     patterns: [
       /\b(injured|injury|injuries|hurt|wounded|swollen|bruised)\b/,
+      /\b(cannot|can't|can\s+not|unable\s+to)\s+walk\b/,
       /ಗಾಯ|ಘಾಯ/,
       /घायल|चोट\s+लग|ज़ख्म/,
       /గాయం|గాయపడ/,
@@ -292,13 +356,17 @@ const CONCEPTS: Record<string, Concept> = {
   },
   violence: {
     patterns: [
-      /\b(assault(ed)?|attacked|stabbed|stabbing|beaten|beating|slashed|murder(ed)?|homicide|threat\s+to\s+life|killing|fight(ing|s)?|mob\s+(attack|violence)|set\s+fire\s+to\s+him)\b/,
+      /\b(assault(ed|ing)?|attack(ed|ing|s)?|stab\w*|beaten|beating|slashed|murder\w*|homicide|attempted\s+murder|kidnap\w*|abduct\w*|hostage|held\s+hostage|shoot\w*|shot|gunshot|threat\s+to\s+life|killing|fight(ing|s)?|mob\s+(attack|violence)|set\s+fire\s+to\s+him)\b/,
       /\b(attack|hit|beat)\b[^.!?,]{0,30}\b(with\s+(a\s+)?(knife|rod|stone|weapon|stick))\b/,
       /\b(lathi|chaku|danda|goli|knife|stick|rod)\s+se\s+(mara|mari|maar|diya|hamla|attack|stab|jaan)\b/,
       /\b(ladai|jhagda|maarpeet|mar\s*peet)\b/,
-      /ಹಲ್ಲೆ|ಕೊಲೆ|ಜಗಳ.*ಕತ್ತಿ|ಜಗಳ|ಬೆದರಿಕೆ/,
-      /मारपीट|हत्या|जान\s+से\s+मार|चाकू|धमकी|लड|झगड|हमला|मारा/,
-      /దాగి|హత్య|కత్తి|బెదిరింపు|గొడవ|కొట్ట/,
+      // threats to life and abductions without a crime keyword (spec §33):
+      // "trying to kill me", "someone was taken"
+      /\btrying\s+to\s+kill\b|\bkill\s+me\b|\bgoing\s+to\s+kill\b|\btrying\s+to\s+stab\b/,
+      /\b(someone|some\s+one|child(ren)?|kid(s)?|girl|boy|person|man|woman|lady|guy|he|she|they|my\s+(son|daughter|child|kid|wife|husband|brother|sister|friend))\s+(was|is|got|has\s+been)\s+taken\b/,
+      /ಹಲ್ಲೆ|ಕೊಲೆ|ಜಗಳ.*ಕತ್ತಿ|ಜಗಳ|ಬೆದರಿಕೆ|ಅಪಹರಣ|ಬಂಧಕ/,
+      /मारपीट|हत्या|जान\s+से\s+मार|चाकू|धमकी|लड|झगड|हमला|मारा|अपहरण|बंधक|गोली/,
+      /దాగి|హత్య|కత్తి|బెదిరింపు|గొడవ|కొట్ట|అపహరణ|బందీ|కాల్పులు/,
       /someone is trying to kill me near .{0,60} with a weapon, kindly look into this/,
       /a man was stabbed near .{0,60} and is bleeding, please take action on this/,
       /.{0,60} के पास एक आदमी को चाकू से मारा गया, please take action on this/,
@@ -420,7 +488,7 @@ const CONCEPTS: Record<string, Concept> = {
       /a man attacked me with a stick near .{0,60}, bleeding from the head/,
       /.{0,60} के पास लाठी से हमला हुआ, सिर से खून आ रहा है, please take action on this/,
     ],
-    deny: [/\bno\s+(attack|assault)\b/, /ಹಲ್ಲೆ\s+ಆಗಿಲ್ಲ/, /मारपीट\s+नहींं?/, /దాడి\s+జరగలేదు/],
+    deny: [/\bno\s+(attack|assault)\b/, /\b(no|not)\s+(a\s+)?(one\s+)?(was\s+)?(murder|kill|shoot|stab|kidnap|abduct)\w*\b/, /\b(not|was\s+not)\s+(murdered|kidnapped|stabbed|shot|attacked|abducted)\b/, /ಹಲ್ಲೆ\s+ಆಗಿಲ್ಲ/, /मारपीट\s+नहींं?/, /దాడి\s+జరగలేదు/],
   },
   animal_attack: {
     patterns: [
@@ -904,7 +972,7 @@ const CONCEPTS: Record<string, Concept> = {
       /there is no electricity near .{0,60} since morning, kindly attend to this/,
       /.{0,60} के पास सुबह से बिजली नहीं है/,
     ],
-    deny: [/\b(power|electricity)\s+(is\s+)?(back|normal|restored|working)\b/, /ಕರೆಂಟ್\s+ಇದೆ/, /बिजली\s+है/, /కరెంట్\s+ఉంది/],
+    deny: [/\b(power|electricity)\s+(is\s+)?(back|normal|restored|working)\b/, /\bno\s+(power\s+(cut|outage)|outage)\b/, /ಕರೆಂಟ್\s+ಇದೆ/, /बिजली\s+है/, /కరెంట్\s+ఉంది/],
   },
   noise: {
     patterns: [
@@ -1380,12 +1448,62 @@ const CONCEPT_TO_TYPE: Record<string, IncidentType> = {
 // family so "I fell and broke my leg" is still handled.
 const PERSON_INJURY_CONCEPTS = new Set(['unconscious', 'bleeding', 'fracture', 'injury']);
 
+// Typo / speech-to-text normalisation (spec §8). Applied to Latin text only —
+// every pattern is ASCII with word boundaries, so Indic scripts pass through
+// untouched. Generalises semantic reading of messy input rather than relying
+// on exact keyword matches.
+const TYPO_REPLACEMENTS: [RegExp, string][] = [
+  [/\bkidnapp\b/g, 'kidnapping'],
+  [/\bkidnaped\b/g, 'kidnapped'],
+  [/\bkidnaping\b/g, 'kidnapping'],
+  [/\bmurdred\b/g, 'murdered'],
+  [/\bmurderd\b/g, 'murdered'],
+  [/\bstabed\b/g, 'stabbed'],
+  [/\bshootng\b/g, 'shooting'],
+  [/\bshootingg\b/g, 'shooting'],
+  [/\bunconcious\b/g, 'unconscious'],
+  [/\bunconcous\b/g, 'unconscious'],
+  [/\baccidnt\b/g, 'accident'],
+  [/\bfractur\b/g, 'fracture'],
+  [/\bfractred\b/g, 'fractured'],
+  // Civic vocabulary typos / STT forms (spec §34.7)
+  [/\bpoteholes?\b/g, 'pothole'],
+  [/\bpothols?\b/g, 'pothole'],
+  [/\bpotholl\b/g, 'pothole'],
+  [/\bgarbaeg\b/g, 'garbage'],
+  [/\bgarbge\b/g, 'garbage'],
+  [/\bgarbagge\b/g, 'garbage'],
+  [/\bstrt\b/g, 'street'],
+  [/\bstreetlites?\b/g, 'streetlight'],
+  [/\bst\s+light\b/g, 'street light'],
+  [/\bdrinage\b/g, 'drainage'],
+  [/\bdrainag\b/g, 'drainage'],
+  [/\bmanhoels?\b/g, 'manhole'],
+  [/\bmanholl\b/g, 'manhole'],
+  [/\bman\s+hole\b/g, 'manhole'],
+  [/\bwaterloging\b/g, 'waterlogging'],
+  [/\bwaterr\b/g, 'water'],
+  [/\bwatter\s+(logging|loggin|logg)\b/g, 'water logging'],
+  [/\bwalter\s+(logging|loggin|logg)\b/g, 'water logging'],
+  [/\bsewrage\b/g, 'sewage'],
+  [/\bfloodig\b/g, 'flooding'],
+  [/\bparkign\b/g, 'parking'],
+  [/\bfootpth\b/g, 'footpath'],
+  [/\bbijlii\b/g, 'bijli'],
+  // Injury phrasing after STT/typing (spec §33 generalization)
+  [/\bbroked\b/g, 'broken'],
+  [/\binjurd\b/g, 'injured'],
+  [/\bfraktcher\b/g, 'fracture'],
+];
+
 export function normalizeText(text: string): string {
-  return (text || '')
+  let out = (text || '')
     .toLowerCase()
     .replace(/[‘’]/g, "'")
     .replace(/\s+/g, ' ')
     .trim();
+  for (const [pattern, replacement] of TYPO_REPLACEMENTS) out = out.replace(pattern, replacement);
+  return out;
 }
 
 export function detectLanguage(text: string): IncidentFacts['language'] {
@@ -1465,6 +1583,8 @@ export function extractFacts(input: PriorityInput): IncidentFacts {
   const active = matches.filter(m => !m.denied);
 
   const resolvedNow = RESOLVED_PATTERNS.some(p => p.test(normalized)) || anyDenied(matches);
+  const fictionContext = FICTION_PATTERNS.some(p => p.test(normalized));
+  const historicalContext = HISTORICAL_PATTERNS.some(p => p.test(normalized));
 
   const injuries: InjuryFact[] = [];
   const has = (c: string) => active.some(m => m.concept === c);
@@ -1575,6 +1695,8 @@ export function extractFacts(input: PriorityInput): IncidentFacts {
     wireDown,
     safetyDenied: anyDenied(matches),
     resolvedNow,
+    historicalContext,
+    fictionContext,
     allegations,
     peopleAffected: parsePeople(normalized),
     immediateDanger: immediateDangerActive || accidentDanger,

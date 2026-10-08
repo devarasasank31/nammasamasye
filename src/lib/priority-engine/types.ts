@@ -76,6 +76,10 @@ export interface IncidentFacts {
   safetyDenied: boolean;
   /** True when the report says the situation is already over / nobody hurt. */
   resolvedNow: boolean;
+  /** The described event is explicitly from the past (last year, case closed). */
+  historicalContext: boolean;
+  /** The described incident belongs to a movie/film/novel/story, not reality. */
+  fictionContext: boolean;
   /** Unverified third-party allegations, e.g. suspected intoxication. */
   allegations: { kind: 'intoxication' | 'other'; verified: boolean }[];
   peopleAffected: number | null;
